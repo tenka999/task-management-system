@@ -1,0 +1,12 @@
+@font-face {
+  font-family: "Helvetica";
+  font-display: swap;
+  src: url("/themes/fonts/Helvetica Medium Condensed.otf") format("opentype");
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Helvetica";
+}
