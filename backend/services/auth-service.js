@@ -16,6 +16,7 @@ async function registerUser(email, password, confirmPassword) {
     await prisma.user.findUnique({
       where: {
         email: email,
+        isActive: true,
       },
     })
   )
@@ -23,16 +24,26 @@ async function registerUser(email, password, confirmPassword) {
 
   const user = await prisma.user.create({
     data: {
-      email: email,
+      email,
       passwordHash: hashedPass,
       username: email.split("@")[0],
+
+      roleMaps: {
+        create: {
+          // userId: user.id,
+          roleId: 4,
+        },
+      },
     },
+
     select: {
       id: true,
       email: true,
       username: true,
+      roleMaps: true,
     },
   });
+
   return user;
 }
 async function loginUser(email, password) {
@@ -43,7 +54,14 @@ async function loginUser(email, password) {
   const user = await prisma.user.findUnique({
     where: {
       email,
-      deletedAt: null,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      passwordHash: true,
+      roleMaps: true,
     },
   });
 
@@ -51,19 +69,19 @@ async function loginUser(email, password) {
     return { success: false, message: "Email tidak terdaftar" };
   }
 
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.passwordHash);
 
   if (!isMatch) {
     return { success: false, message: "Password salah" };
   }
 
-  delete user.password;
+  delete user.passwordHash;
 
   const token = generateToken({
     id: user.id,
     email: user.email,
-    role: user.role,
-    nama: user.nama,
+    roleMaps: user.roleMaps,
+    username: user.username,
   });
 
   return {

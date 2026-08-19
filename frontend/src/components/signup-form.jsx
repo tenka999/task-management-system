@@ -11,12 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { useAuthApi } from "@/presentation/logics/useAuthApi";
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import axios from "axios";
 import { toast } from "@/components/ui/toast";
-import SecureStorage from "@/helpers/SecureStorage";
 export function SignupForm({ className, ...props }) {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(false);
@@ -69,7 +66,7 @@ export function SignupForm({ className, ...props }) {
       //   SecureStorage.setStorage("user", response.data.user);
       // }
 
-      navigate("/app");
+      navigate("/login");
     } catch (error) {
       // console.error(
       //   "Auth error:",

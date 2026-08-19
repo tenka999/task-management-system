@@ -9,16 +9,84 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router";
 
+import { useAuthApi } from "@/presentation/logics/useAuthApi";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "@/components/ui/toast";
 export function LoginForm({ className, ...props }) {
   const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const { login } = useAuthApi();
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log(formData);
+
+    try {
+      // const endpoint = isLogin ? "/api/login" : "/api/register";
+      const payload = isLogin
+        ? { email: formData.email, password: formData.password }
+        : {
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          };
+
+      await login.mutateAsync(payload);
+
+      toast.add({
+        type: "success",
+        description: "Login berhasil",
+      });
+
+      // Simpan token jika ada
+      // if (response.data.accessToken) {
+      //   SecureStorage.setStorage("token", response.data.accessToken);
+      // }
+
+      // // Simpan user data ke SecureStorage
+      // if (response.data.user) {
+      //   SecureStorage.setStorage("user", response.data.user);
+      // }
+
+      navigate("/app");
+    } catch (error) {
+      // console.error(
+      //   "Auth error:",
+      //   error.response?.data?.message || error.message,
+      // );
+      const msg = error.response?.data?.message || "Login gagal";
+      // sementara
+      toast.add({
+        type: "warning",
+        description: msg,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
@@ -33,6 +101,9 @@ export function LoginForm({ className, ...props }) {
                   type="email"
                   placeholder="m@example.com"
                   required
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                 />
               </Field>
               <Field>
@@ -45,7 +116,14 @@ export function LoginForm({ className, ...props }) {
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                />
               </Field>
               <Field>
                 <Button type="submit">Login</Button>

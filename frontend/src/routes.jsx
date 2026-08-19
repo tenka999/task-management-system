@@ -62,12 +62,30 @@ const routes = createBrowserRouter(
     {
       path: "/login",
       element: <Login />,
+      loader: redirectMiddleware,
     },
     {
       path: "/signup",
       element: <SignupPage />,
+      loader: redirectMiddleware,
     },
 
+    // {
+    //   path: "/app",
+    //   // Component: Layout,
+    //   loader: authMiddleware,
+    //   unstable_middleware: [ProgressBarIndicator],
+    //   children: [
+    //     {
+    //       index: true,
+    //       Component: Dashboard,
+    //     },
+    //     {
+    //       path: "/app/orders",
+    //       Component: Orders,
+    //     },
+    //   ],
+    // },
     {
       path: "/app",
       // Component: Layout,
@@ -77,10 +95,6 @@ const routes = createBrowserRouter(
         {
           index: true,
           Component: Dashboard,
-        },
-        {
-          path: "/app/orders",
-          Component: Orders,
         },
       ],
     },

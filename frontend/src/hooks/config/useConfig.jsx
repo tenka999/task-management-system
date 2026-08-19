@@ -1,29 +1,28 @@
-import SecureStorage from "@/helpers/SecureStorage"
-import { useNavigate } from "react-router"
+import SecureStorage from "@/helpers/SecureStorage";
+import { useNavigate } from "react-router";
 
 const useConfig = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const Logout = async () => {
-    SecureStorage.removeStorage('user')
-    SecureStorage.removeStorage('token')
-    navigate('/login')
-
-  }
+    SecureStorage.removeStorage("user");
+    SecureStorage.removeStorage("token");
+    navigate("/login");
+  };
 
   const getUser = () => {
     const user = {
       data: {
-        first_name: 'John',
-        last_name: 'Doe'
-      }
-    }
-    return user.data
-  }
+        first_name: "John",
+        last_name: "Doe",
+      },
+    };
+    return user.data;
+  };
 
   return {
     Logout,
-    getUser
-  }
-}
+    getUser,
+  };
+};
 
-export default useConfig
+export default useConfig;
