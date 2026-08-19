@@ -7,6 +7,8 @@ import authMiddleware, {
 } from "./middleware/AuthMiddleware";
 import { ProgressBarIndicator } from "./middleware/ProgressBarIndicator";
 import HomePage from "./presentation/views/home/HomePage";
+import Login from "./presentation/views/home/Login";
+import SignupPage from "./presentation/views/home/SignUp";
 // import { DashboardLayout } from "@/presentation/views/dashboard/Layout/DashboardLayout";
 // import { Dashboard } from "@/presentation/views/dashboard/Pages/Dashboard";
 // import { Orders } from "@/presentation/views/dashboard/Pages/Orders";
@@ -56,6 +58,14 @@ const routes = createBrowserRouter(
       //   { path: "/customers", element: <Customers /> },
       //   { path: "/settings", element: <Settings /> },
       // ],
+    },
+    {
+      path: "/login",
+      element: <Login />,
+    },
+    {
+      path: "/signup",
+      element: <SignupPage />,
     },
 
     {
