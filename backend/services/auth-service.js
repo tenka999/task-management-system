@@ -1,10 +1,16 @@
-import prisma from "../config/database.js";
 import { generateToken } from "../utils/jwt.js";
 import bcrypt from "bcrypt";
-async function registerUser(email, password, nama, telepon) {
+import { prisma } from "../lib/prisma.ts";
+
+async function registerUser(email, password, confirmPassword) {
+  if (password !== confirmPassword) {
+    return {
+      success: false,
+      message: "Password dan confirm password tidak sama",
+    };
+  }
   const hashedPass = await bcrypt.hash(password, 10);
   console.log(hashedPass, "hashedPass");
-  console.log(nama, "nama");
 
   if (
     await prisma.user.findUnique({
@@ -18,14 +24,13 @@ async function registerUser(email, password, nama, telepon) {
   const user = await prisma.user.create({
     data: {
       email: email,
-      password: hashedPass,
-      telepon: telepon,
-      nama: nama,
+      passwordHash: hashedPass,
+      username: email.split("@")[0],
     },
     select: {
       id: true,
       email: true,
-      nama: true,
+      username: true,
     },
   });
   return user;

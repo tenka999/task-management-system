@@ -25,13 +25,12 @@ async function loginUser(req, res) {
 async function registerUser(req, res) {
   console.log("regis");
   console.log(req.body);
-  const { email, password, nama, telepon } = req.body;
-  console.log(email, password, nama, telepon);
+  const { email, password, confirmPassword } = req.body;
+  console.log(email, password, confirmPassword);
   const result = await loginRegisUser.registerUser(
     email,
     password,
-    nama,
-    telepon,
+    confirmPassword,
   );
   if (!result)
     res

@@ -10,82 +10,86 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
+import { useAuthApi } from "@/presentation/logics/useAuthApi";
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
 import { toast } from "@/components/ui/toast";
 import SecureStorage from "@/helpers/SecureStorage";
 export function SignupForm({ className, ...props }) {
-  // toast.add({
-  //           type: "success",
-  //           description: "Event has been created.",
-  //         })
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
-    nama: "",
-    rememberMe: false,
   });
 
-  //  const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
+  const { register } = useAuthApi();
 
-  //   try {
-  //     const endpoint = isLogin ? "/api/login" : "/api/register";
-  //     const payload = isLogin
-  //       ? { email: formData.email, password: formData.password }
-  //       : {
-  //           email: formData.email,
-  //           password: formData.password,
-  //           nama: formData.nama,
-  //         };
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-  //     const response = await axios.post(
-  //       `http://localhost:5000${endpoint}`,
-  //       payload,
-  //     );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log(formData);
 
-  //     // Simpan token jika ada
-  //     if (response.data.accessToken) {
-  //       SecureStorage.setStorage("token", response.data.accessToken);
-  //     }
+    try {
+      // const endpoint = isLogin ? "/api/login" : "/api/register";
+      const payload = isLogin
+        ? { email: formData.email, password: formData.password }
+        : {
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          };
 
-  //     // Simpan user data ke SecureStorage
-  //     if (response.data.user) {
-  //       SecureStorage.setStorage("user", response.data.user);
-  //     }
+      await register.mutateAsync(payload);
 
-  //     navigate("/app/dashboard");
-  //   } catch (error) {
-  //     // console.error(
-  //     //   "Auth error:",
-  //     //   error.response?.data?.message || error.message,
-  //     // );
-  //     const msg = error.response?.data?.message || "Login gagal";
-  //     // sementara
-  //     toast.current.show({
-  //       severity: "error",
-  //       summary: "Error",
-  //       detail: msg,
-  //       life: 3000,
-  //     });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+      toast.add({
+        type: "success",
+        description: "Login berhasil",
+      });
+
+      // Simpan token jika ada
+      // if (response.data.accessToken) {
+      //   SecureStorage.setStorage("token", response.data.accessToken);
+      // }
+
+      // // Simpan user data ke SecureStorage
+      // if (response.data.user) {
+      //   SecureStorage.setStorage("user", response.data.user);
+      // }
+
+      navigate("/app");
+    } catch (error) {
+      // console.error(
+      //   "Auth error:",
+      //   error.response?.data?.message || error.message,
+      // );
+      const msg = error.response?.data?.message || "Login gagal";
+      // sementara
+      toast.add({
+        type: "warning",
+        description: msg,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create your account</h1>
@@ -97,8 +101,11 @@ export function SignupForm({ className, ...props }) {
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="m@example.com"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   required
                 />
                 <FieldDescription>
@@ -110,13 +117,27 @@ export function SignupForm({ className, ...props }) {
                 <Field className="grid grid-cols-2 gap-4">
                   <Field>
                     <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input id="password" type="password" required />
+                    <Input
+                      name="password"
+                      id="password"
+                      type="password"
+                      required
+                      value={formData.password}
+                      onChange={handleInputChange}
+                    />
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="confirm-password">
                       Confirm Password
                     </FieldLabel>
-                    <Input id="confirm-password" type="password" required />
+                    <Input
+                      id="confirm-password"
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                    />
                   </Field>
                 </Field>
                 <FieldDescription>
