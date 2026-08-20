@@ -30,7 +30,7 @@ const DashboardLayout = React.lazy(
   () => import("@/presentation/views/dashboard/Layout/DashboardLayout"),
 );
 const Dashboard = React.lazy(
-  () => import("@/presentation/views/dashboard/Pages/Dashboard"),
+  () => import("@/presentation/views/app/dashboard/Dashboard"),
 );
 const Orders = React.lazy(
   () => import("@/presentation/views/dashboard/Pages/Orders"),
