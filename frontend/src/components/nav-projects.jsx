@@ -27,26 +27,27 @@ export function NavProjects({ projects }) {
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => (
-          <SidebarMenuItem
-            key={item.name}
-            className="flex flex-col justify-between gap-2"
-          >
-            <SidebarMenuButton asChild>
-              <a href={item.url} className="flex items-center gap-2">
-                <item.icon />
-                <span>{item.name}</span>
-              </a>
-            </SidebarMenuButton>
+          <SidebarMenuItem key={item.name}>
+            <SidebarMenuButton
+              render={
+                <a href={item.url} className="flex items-center gap-2">
+                  <item.icon />
+                  <span>{item.name}</span>
+                </a>
+              }
+            ></SidebarMenuButton>
             <DropdownMenu className="mt-1 mr-3">
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction
-                  showOnHover
-                  className="data-[state=closed]:opacity-100! mt-1 mr-3"
-                >
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarMenuAction
+                    showOnHover
+                    className="data-[state=closed]:opacity-100!  mr-3"
+                  >
+                    <MoreHorizontal />
+                    <span className="sr-only">More</span>
+                  </SidebarMenuAction>
+                }
+              ></DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-48"
                 side={isMobile ? "bottom" : "right"}

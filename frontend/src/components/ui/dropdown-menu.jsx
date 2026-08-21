@@ -20,7 +20,7 @@ function DropdownMenuContent({
   align = "end",
   alignOffset = 1,
   side = "top",
-  sideOffset = -5,
+  sideOffset = 20,
   className,
   ...props
 }) {
@@ -28,8 +28,8 @@ function DropdownMenuContent({
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
         className="isolate z-50  outline-none"
-        align={"center"}
-        alignOffset={23}
+        align={"start"}
+        alignOffset={-10}
         side={"right"}
         sideOffset={sideOffset}
       >

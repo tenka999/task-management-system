@@ -1,0 +1,48 @@
+.dashboard-page {
+  width: 100%;
+  height: 100vh;
+}
+
+.dashboard-page-top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* background-color: red; */
+}
+
+.dashboard-top-headline {
+  padding: 2rem 2rem 0.5rem;
+}
+
+.dashboard-page-top h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.dashboard-page-top h3 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: -0.5rem;
+  margin-bottom: -1.5rem;
+}
+
+.dashboard-page-top h3 span {
+  font-weight: 700;
+}
+
+.dashboard-top-actions {
+  display: flex;
+  /* padding: 0 !important; */
+  align-items: stretch;
+  /* background-color: red; */
+}
+/* 
+.section-cards-task {
+  gap: 10px;
+  background-color: red;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 2rem 0.5rem;
+  width: 100%;
+  height: 100%;
+} */
