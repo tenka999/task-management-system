@@ -101,9 +101,9 @@ export function SectionCardsTask() {
               <h2 className="text-2xl mb-1 pl-2">Recent Activity</h2>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ItemActivity />
-          </CardContent>
+          {/* <CardContent> */}
+          <ItemActivity />
+          {/* </CardContent> */}
           <CardFooter className="flex-col items-end gap-1.5 text-sm">
             <div className="text-muted-foreground">
               <ButtonLink text={"View All Activity"} />

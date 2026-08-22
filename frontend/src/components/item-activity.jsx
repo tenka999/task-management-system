@@ -211,12 +211,12 @@ export function ItemActivity() {
   const teamMember = designMember;
   return (
     <>
-      <ScrollArea className="h-[250px] px-1.5">
+      <ScrollArea className="h-[250px] px-1 mx-1">
         {teamMember.map((member) => (
           <Item
             key={member.username}
             size="xs"
-            className="p-0 flex justify-between"
+            className="px-2.5 py-0 flex justify-between"
           >
             <div className="flex gap-2">
               <ItemMedia variant="icon">

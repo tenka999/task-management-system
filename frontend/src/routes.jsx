@@ -9,6 +9,7 @@ import { ProgressBarIndicator } from "./middleware/ProgressBarIndicator";
 import HomePage from "./presentation/views/home/HomePage";
 import Login from "./presentation/views/home/Login";
 import SignupPage from "./presentation/views/home/SignUp";
+// import DahsboardPage from "./presentation/views/app/dashboard/component/DashboardPage";
 // import { DashboardLayout } from "@/presentation/views/dashboard/Layout/DashboardLayout";
 // import { Dashboard } from "@/presentation/views/dashboard/Pages/Dashboard";
 // import { Orders } from "@/presentation/views/dashboard/Pages/Orders";
@@ -22,15 +23,18 @@ const routesConfig = {
   },
 };
 
-const Layout = React.lazy(() => import("@/layouts/Layout"));
+const Layout = React.lazy(() => import("@/layouts/DashboardLayout"));
 
 const NotFound = React.lazy(() => import("@/presentation/views/NotFound"));
 
 const DashboardLayout = React.lazy(
   () => import("@/presentation/views/dashboard/Layout/DashboardLayout"),
 );
-const Dashboard = React.lazy(
-  () => import("@/presentation/views/app/dashboard/Dashboard"),
+const DashboardPage = React.lazy(
+  () => import("@/presentation/views/app/dashboard/component/DashboardPage"),
+);
+const ProjectPage = React.lazy(
+  () => import("@/presentation/views/app/dashboard/component/ProjectPage"),
 );
 const Orders = React.lazy(
   () => import("@/presentation/views/dashboard/Pages/Orders"),
@@ -88,13 +92,17 @@ const routes = createBrowserRouter(
     // },
     {
       path: "/app",
-      // Component: Layout,
+      Component: Layout,
       loader: authMiddleware,
       unstable_middleware: [ProgressBarIndicator],
       children: [
         {
           index: true,
-          Component: Dashboard,
+          Component: DashboardPage,
+        },
+        {
+          path: "/app/projects",
+          Component: ProjectPage,
         },
       ],
     },

@@ -14,9 +14,7 @@ export default function Page() {
         <SiteHeader />
         <div className="flex flex-1">
           <AppSidebar />
-          <SidebarInset>
-            <DashboardPage />
-          </SidebarInset>
+          <SidebarInset>{/* <DashboardPage /> */}</SidebarInset>
         </div>
       </SidebarProvider>
     </div>
