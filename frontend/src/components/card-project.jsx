@@ -75,7 +75,11 @@ export function CardProject() {
   return (
     <>
       {tableData.map((row) => (
-        <Card size="sm">
+        <Card
+          size="sm"
+          key={row.id}
+          className="bg-[linear-gradient(135deg,color-mix(in_oklch,var(--card),black_8%),var(--card),color-mix(in_oklch,var(--card),white_12%))]!"
+        >
           {/* <CardHeader> */}
           {/* </CardHeader> */}
           <CardContent>

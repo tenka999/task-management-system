@@ -19,28 +19,28 @@ const asiggnedTask = [
   {
     id: "1",
     title: "Fix login bug",
-    priority: "red",
+    priority: "high",
     dueDate: "Today",
     statusBadge: "In Progress",
   },
   {
     id: "2",
     title: "Add new feature",
-    priority: "yellow",
+    priority: "medium",
     dueDate: "Tomorrow",
     statusBadge: "Not Started",
   },
   {
     id: "3",
     title: "Update documentation",
-    priority: "green",
+    priority: "low",
     dueDate: "This week",
     statusBadge: "Done",
   },
   {
     id: "4",
     title: "Fix styling issues",
-    priority: "red",
+    priority: "high",
     dueDate: "Next month",
     statusBadge: "In Progress",
   },
@@ -50,21 +50,21 @@ const createdTask = [
   {
     id: "1",
     title: "Fix styling issues",
-    priority: "red",
+    priority: "high",
     dueDate: "Next month",
     statusBadge: "In Progress",
   },
   {
     id: "2",
     title: "Update documentation",
-    priority: "green",
+    priority: "low",
     dueDate: "This week",
     statusBadge: "Done",
   },
   {
     id: "3",
     title: "Add new feature",
-    priority: "yellow",
+    priority: "medium",
     dueDate: "Tomorrow",
     statusBadge: "Not Started",
   },
@@ -72,7 +72,7 @@ const createdTask = [
   {
     id: "4",
     title: "Fix login bug",
-    priority: "red",
+    priority: "high",
     dueDate: "Today",
     statusBadge: "In Progress",
   },
@@ -82,14 +82,14 @@ const watchingTask = [
   {
     id: "1",
     title: "Add new feature",
-    priority: "yellow",
+    priority: "medium",
     dueDate: "Tomorrow",
     statusBadge: "Not Started",
   },
   {
     id: "2",
     title: "Fix login bug",
-    priority: "red",
+    priority: "high",
     dueDate: "Today",
     statusBadge: "In Progress",
   },
@@ -97,14 +97,14 @@ const watchingTask = [
   {
     id: "3",
     title: "Fix styling issues",
-    priority: "red",
+    priority: "high",
     dueDate: "Next month",
     statusBadge: "In Progress",
   },
   {
     id: "4",
     title: "Update documentation",
-    priority: "green",
+    priority: "low",
     dueDate: "This week",
     statusBadge: "Done",
   },
@@ -175,7 +175,15 @@ export function CheckboxInTable({ tabVal }) {
             </TableCell>
             <TableCell className="font-medium">{row.title}</TableCell>
             <TableCell className="">
-              <IconCircleFilled color={row.priority} />
+              <IconCircleFilled
+                color={
+                  row.priority === "low"
+                    ? "oklch(44.8% 0.119 151.328)"
+                    : row.priority === "medium"
+                      ? "oklch(79.5% 0.184 86.047)"
+                      : "oklch(44.4% 0.177 26.899)"
+                }
+              />
             </TableCell>
             <TableCell>{row.dueDate}</TableCell>
             <TableCell>{row.statusBadge}</TableCell>

@@ -24,6 +24,7 @@ export default function DahsboardPage() {
     <div className="dashboard-page">
       <div className="dashboard-page-top">
         <div className="dashboard-top-headline">
+          <h1>Dashboard</h1>
           <h3>
             Welcome Back, <span>User</span>{" "}
           </h3>
