@@ -16,6 +16,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
+import { ScrollArea } from "./ui/scroll-area";
 
 const designMember = [
   {
@@ -99,7 +100,25 @@ const frontendMember = [
   },
   {
     name: "Evil Rabbit",
-    username: "@evilrabbit",
+    username: "@evilrabbit1",
+    role: "Member",
+    avatarFallback: "ER",
+    status: "online",
+    imageUrl:
+      "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+  },
+  {
+    name: "Evil Rabbit",
+    username: "@evilrabbit2",
+    role: "Member",
+    avatarFallback: "ER",
+    status: "online",
+    imageUrl:
+      "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+  },
+  {
+    name: "Evil Rabbit",
+    username: "@evilrabbit3",
     role: "Member",
     avatarFallback: "ER",
     status: "online",
@@ -120,42 +139,44 @@ export function ItemAvatar({ tabTeamMember }) {
   return (
     <>
       <div className="flex w-full max-w-lg flex-col gap-1">
-        {teamMember.map((member) => (
-          <Item
-            key={member.username}
-            variant={variant === member.username ? "muted" : "default"}
-            size="xs"
-            onMouseEnter={() => setVariant(member.username)}
-            onMouseLeave={() => setVariant(null)}
-          >
-            <ItemMedia>
-              <Avatar className="size-10">
-                <AvatarImage src={member.imageUrl} />
-                <AvatarFallback>{member.avatarFallback}</AvatarFallback>
-                <AvatarBadge
-                  className={`${member.status === "online" ? "bg-green-800" : member.status === "offline" ? "bg-gray-500" : "bg-yellow-600"} `}
-                />
-              </Avatar>
-            </ItemMedia>
-            <ItemContent>
-              <ItemTitle className="flex min-w-0 items-center gap-1">
-                <span className="shrink-0">{member.name}</span>-
-                <span className="min-w-0 truncate">{member.username}</span>
-              </ItemTitle>
-              <ItemDescription>{member.role}</ItemDescription>
-            </ItemContent>
-            <ItemActions>
-              <Button
-                size="icon-sm"
-                variant="outline"
-                className="rounded-full"
-                aria-label="Invite"
-              >
-                <MoreHorizontal />
-              </Button>
-            </ItemActions>
-          </Item>
-        ))}
+        <ScrollArea className="h-[220px]">
+          {teamMember.map((member) => (
+            <Item
+              key={member.username}
+              variant={variant === member.username ? "muted" : "default"}
+              size="xs"
+              onMouseEnter={() => setVariant(member.username)}
+              onMouseLeave={() => setVariant(null)}
+            >
+              <ItemMedia>
+                <Avatar className="size-10">
+                  <AvatarImage src={member.imageUrl} />
+                  <AvatarFallback>{member.avatarFallback}</AvatarFallback>
+                  <AvatarBadge
+                    className={`${member.status === "online" ? "bg-green-800" : member.status === "offline" ? "bg-gray-500" : "bg-yellow-600"} `}
+                  />
+                </Avatar>
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle className="flex min-w-0 items-center gap-1">
+                  <span className="shrink-0">{member.name}</span>-
+                  <span className="min-w-0 truncate">{member.username}</span>
+                </ItemTitle>
+                <ItemDescription>{member.role}</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Button
+                  size="icon-sm"
+                  variant="outline"
+                  className="rounded-full"
+                  aria-label="Invite"
+                >
+                  <MoreHorizontal />
+                </Button>
+              </ItemActions>
+            </Item>
+          ))}
+        </ScrollArea>
       </div>
     </>
   );

@@ -20,6 +20,7 @@ import { ItemAvatar } from "./item-avatar";
 import { TabsLineTeam } from "./tabs-line-team";
 import { ComboboxBasic } from "./combobox-basic";
 import { SelectDemo } from "./select-item";
+import { ItemActivity } from "./item-activity";
 
 const timeBasedGreeting = {
   morning: "Good morning",
@@ -100,6 +101,9 @@ export function SectionCardsTask() {
               <h2 className="text-2xl mb-1 pl-2">Recent Activity</h2>
             </CardTitle>
           </CardHeader>
+          <CardContent>
+            <ItemActivity />
+          </CardContent>
           <CardFooter className="flex-col items-end gap-1.5 text-sm">
             <div className="text-muted-foreground">
               <ButtonLink text={"View All Activity"} />
