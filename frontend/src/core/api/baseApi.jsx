@@ -10,6 +10,52 @@ let failedQueue = [];
 // Maximum number of retry attempts for a request
 const MAX_RETRY_ATTEMPTS = 3;
 
+const clearAuthSession = () => {
+  SecureStorage.removeStorage("token");
+  SecureStorage.removeStorage("user");
+  globalRouter.navigate("/login", { replace: true });
+};
+
+const decodeJwtPayload = (token) => {
+  try {
+    if (!token || typeof token !== "string") return null;
+
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "=",
+    );
+
+    const decoded = atob(padded);
+    return JSON.parse(
+      decodeURIComponent(
+        decoded
+          .split("")
+          .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+          .join(""),
+      ),
+    );
+  } catch (error) {
+    console.error("Failed to decode JWT payload:", error);
+    return null;
+  }
+};
+
+const isTokenExpired = (token) => {
+  if (!token) return true;
+
+  const payload = decodeJwtPayload(token);
+  if (!payload || typeof payload.exp !== "number") {
+    return false;
+  }
+
+  return Date.now() >= payload.exp * 1000;
+};
+
 // Process the queue of failed requests
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
@@ -25,9 +71,20 @@ const processQueue = (error, token = null) => {
 
 const getRefreshToken = async () => {
   try {
-    const remoteResponse = await baseApi.post("/refresh-token");
+    const token = SecureStorage.getStorage("token");
+
+    const remoteResponse = await baseApi.post("/refresh-token", null, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+    });
     const responseData = remoteResponse.data;
-    const { accessToken } = responseData.data;
+    const accessToken =
+      responseData?.data?.accessToken || responseData?.accessToken;
+
+    if (!accessToken) {
+      throw new Error("Refresh token response did not include accessToken");
+    }
 
     return accessToken;
   } catch (error) {
@@ -45,9 +102,13 @@ const requestInterceptor = (config) => {
   if (config.headers["require-auth"]) {
     const token = SecureStorage.getStorage("token");
     console.log("Token from SecureStorage:", token);
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+
+    if (!token || isTokenExpired(token)) {
+      clearAuthSession();
+      return Promise.reject(new Error("Token expired or missing"));
     }
+
+    config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 };
@@ -90,20 +151,15 @@ const responseErrorInterceptor = async (error) => {
     isRefreshing = true;
 
     const token = SecureStorage.getStorage("token");
-    if (!token) {
-      // Handle case when no token exists
+    if (!token || isTokenExpired(token)) {
       isRefreshing = false;
-      // SecureStorage.removeStorage('token')
-      // return globalRouter.navigate('/login', { replace: true })
+      clearAuthSession();
+      return Promise.reject(new Error("Token expired or missing"));
     }
 
     try {
       console.log("Starting token refresh process...");
       baseApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // Testing
-      // if (currentRefreshCount === 5) {
-      //   baseApi.defaults.headers.common['x-api-key'] = 'valid-api-key'
-      // }
       baseApi.defaults.headers.common["x-api-key"] = "valid-api-key";
 
       if (currentRefreshCount >= MAX_RETRY_ATTEMPTS) {

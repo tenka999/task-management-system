@@ -3,6 +3,10 @@
   height: 100vh;
 }
 
+.nav-project {
+  width: 100%;
+}
+
 .dashboard-page-top {
   display: flex;
   flex-direction: column;

@@ -4,7 +4,7 @@ export const usersApi = {
   // GET /users
   findAll: async () => {
     console.log("Fetching all users");
-    const response = await baseApi.get("/users", {
+    const response = await baseApi.get("/user", {
       headers: { "require-auth": true },
     });
     if (response.status !== 200) throw new Error("Failed to fetch users");
@@ -13,7 +13,7 @@ export const usersApi = {
 
   // GET /users/:id
   findOne: async (id) => {
-    const response = await baseApi.get(`/users/${id}`, {
+    const response = await baseApi.get(`/user/${id}`, {
       headers: { "require-auth": true },
     });
     if (response.status !== 200) throw new Error("Failed to fetch user");

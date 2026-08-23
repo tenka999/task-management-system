@@ -107,24 +107,6 @@ const frontendMember = [
     imageUrl:
       "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
   },
-  {
-    name: "Evil Rabbit",
-    username: "@evilrabbit2",
-    role: "Member",
-    avatarFallback: "ER",
-    status: "online",
-    imageUrl:
-      "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Evil Rabbit",
-    username: "@evilrabbit3",
-    role: "Member",
-    avatarFallback: "ER",
-    status: "online",
-    imageUrl:
-      "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
 ];
 
 export function ItemAvatar({ tabTeamMember }) {
