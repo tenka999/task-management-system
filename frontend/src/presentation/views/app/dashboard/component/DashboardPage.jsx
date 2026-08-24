@@ -18,35 +18,38 @@ import { useUserApi } from "@/presentation/logics/app/user";
 import "@/styles/dashboard.css";
 import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react";
 import { SectionCardsTask } from "@/components/section-cards-task";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function DahsboardPage() {
   const { useAllUsers } = useUserApi();
   const { data } = useAllUsers();
   console.log(data);
   return (
-    <div className="dashboard-page">
-      <div className="dashboard-page-top">
-        <div className="dashboard-top-headline">
-          <h1>Dashboard</h1>
-          <h3>
-            Welcome Back, <span>User</span>{" "}
-          </h3>
-        </div>
-        <div className="dashboard-top-actions">
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                <SectionCards />
+    <ScrollArea className="w-full h-[calc(100vh-60px)]">
+      <div className="dashboard-page">
+        <div className="dashboard-page-top">
+          <div className="dashboard-top-headline">
+            <h1>Dashboard</h1>
+            <h3>
+              Welcome Back, <span>User</span>{" "}
+            </h3>
+          </div>
+          <div className="dashboard-top-actions">
+            <div className="flex flex-1 flex-col">
+              <div className="@container/main flex flex-1 flex-col gap-2">
+                <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                  <SectionCards />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="">
-        <div className="px-4 lg:px-6">
-          <SectionCardsTask />
+        <div className="">
+          <div className="px-4 lg:px-6">
+            <SectionCardsTask />
+          </div>
         </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 }

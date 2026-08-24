@@ -28,11 +28,11 @@ export function PopoverStatus({ item }) {
               onClick={() => setOpen(!open)}
               variant="outline"
               size="sm"
-              className="gap-2 text-xs"
+              className="gap-2 text-xs ml-1"
             >
               {/* <CircleCheck className="size-4" /> */}
               <StatusIcon status="inProgress" />
-              60%
+              {/* 60% */}
             </Button>
           }
         />

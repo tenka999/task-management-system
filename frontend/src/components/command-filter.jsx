@@ -25,6 +25,7 @@ import {
   IconCheck,
   IconChevronLeft,
   IconChevronRight,
+  IconFilter2X,
   IconHeartbeat,
 } from "@tabler/icons-react";
 import {
@@ -67,6 +68,12 @@ export function CommandFilter() {
   function handleFilterProject(val) {
     setFilterProject([val]);
   }
+
+  function handleClearFilter() {
+    setHealthFilter([]);
+    setPriorityFilter([]);
+    setSortFilter([]);
+  }
   return (
     <Command className="px-0 py-1  ">
       <CommandList>
@@ -100,6 +107,15 @@ export function CommandFilter() {
                 <IconChevronRight stroke={2} />
               </CommandShortcut>
             </CommandItem>
+            {priorityFilter.length > 0 || healthFilter.length > 0 ? (
+              <>
+                <CommandSeparator className="bg-secondary-foreground opacity-20" />
+                <CommandItem onSelect={handleClearFilter}>
+                  <IconFilter2X className="size-5" />
+                  Clear All Filter
+                </CommandItem>
+              </>
+            ) : null}
           </CommandGroup>
         ) : filterProject[0] === "health" ? (
           <>

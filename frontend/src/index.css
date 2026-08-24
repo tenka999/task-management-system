@@ -133,3 +133,7 @@ body {
     @apply font-sans;
   }
 }
+
+body {
+  overflow-y: hidden;
+}

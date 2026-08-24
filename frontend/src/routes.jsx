@@ -36,6 +36,9 @@ const DashboardPage = React.lazy(
 const ProjectPage = React.lazy(
   () => import("@/presentation/views/app/dashboard/component/ProjectPage"),
 );
+const TaskPage = React.lazy(
+  () => import("@/presentation/views/app/dashboard/component/TaskPage"),
+);
 const Orders = React.lazy(
   () => import("@/presentation/views/dashboard/Pages/Orders"),
 );
@@ -103,6 +106,10 @@ const routes = createBrowserRouter(
         {
           path: "/app/projects",
           Component: ProjectPage,
+        },
+        {
+          path: "/app/task",
+          Component: TaskPage,
         },
       ],
     },

@@ -8,8 +8,9 @@ import * as React from "react";
 // import { ProjectFilterProvider } from "@/context/ProjectFilterContext";
 
 import { ProjectFilterProvider } from "@/context/FilterProvider";
+import { ItemTask } from "@/components/item-task";
 import { ScrollArea } from "@/components/ui/scroll-area";
-export default function ProjectPage() {
+export default function TaskPage() {
   // const [healthFilter, setHealthFilter] = React.useState([]);
 
   const [toggleProject, setToggleProject] = useState("all");
@@ -22,18 +23,10 @@ export default function ProjectPage() {
             <ButtonGroupDemo />
           </div>
         </div>
-        <div className="flex h-[30px]   items-center  w-full border-b px-5  ">
-          <div className="flex  w-full justify-between  ">
-            <p className="text-sm font-light opacity-50 flex-10">Name</p>
-            <p className="text-sm font-light opacity-50 flex-2">Health</p>
-            <p className="text-sm font-light opacity-50 flex-1">Priority</p>
-            <p className="text-sm font-light opacity-50 flex-2">Status</p>
-          </div>
-        </div>
       </div>
       <div className=" w-full  ">
         <ScrollArea className="w-full h-[calc(100vh-140px)]">
-          <ItemLink />
+          <ItemTask />
         </ScrollArea>
       </div>
     </ProjectFilterProvider>
