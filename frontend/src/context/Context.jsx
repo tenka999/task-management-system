@@ -4,3 +4,4 @@ export const LayoutContext = createContext({});
 export const MenuContext = createContext({});
 export const ToastContext = createContext({});
 export const ThemeContext = createContext({});
+export const HealthFilterContext = createContext({});

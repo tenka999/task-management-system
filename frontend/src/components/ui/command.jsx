@@ -54,8 +54,8 @@ function CommandDialog({
 
 function CommandInput({ className, ...props }) {
   return (
-    <div data-slot="command-input-wrapper" className="p-1 pb-0">
-      <InputGroup className="h-9 bg-input/0">
+    <div data-slot="command-input-wrapper" className="px-1">
+      <InputGroup className="h-9 bg-input/50">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
