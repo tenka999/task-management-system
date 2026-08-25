@@ -70,7 +70,7 @@ const statuses = [
 
 export function CommandStatus() {
   return (
-    <Command className="px-1 py-1  ">
+    <Command className="px-1  py-1 pt-2 ">
       <CommandInput placeholder="Set Priority" className="" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>

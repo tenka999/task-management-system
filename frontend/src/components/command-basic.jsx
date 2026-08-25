@@ -22,8 +22,8 @@ import {
 
 export function CommandBasic() {
   return (
-    <Command className="px-1 py-1  ">
-      <CommandInput placeholder="Set Priority" className="" />
+    <Command className="px-1 py-1 pt-2 ">
+      <CommandInput placeholder="Set Priority" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>

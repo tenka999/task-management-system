@@ -25,7 +25,7 @@ export default function TaskPage() {
         </div>
       </div>
       <div className=" w-full  ">
-        <ScrollArea className="w-full h-[calc(100vh-140px)]">
+        <ScrollArea className="w-full h-[calc(100vh-100px)]">
           <ItemTask />
         </ScrollArea>
       </div>
