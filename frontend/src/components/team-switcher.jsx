@@ -223,10 +223,7 @@ export function TeamSwitcher({ teams }) {
 
             <DropdownMenuGroup>
               <DropdownMenuItem className="rounded-lg">
-                Invite members
-              </DropdownMenuItem>
-              <DropdownMenuItem className="rounded-lg">
-                Manage members
+                Invite and manage members
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
