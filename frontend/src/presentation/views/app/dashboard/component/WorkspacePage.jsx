@@ -105,41 +105,10 @@ export default function WorkspacePage() {
             <div className="">
               <h1 className="font-bold text-4xl">Manage members</h1>
             </div>
-            <div className="">
-              <InputGroup className="h-13">
-                <InputGroupInput
-                  ref={inputRef}
-                  className="text-base!"
-                  value={inputMember}
-                  onChange={(e) => handleInputMember(e)}
-                  placeholder="Search or invite by email"
-                />
-                <InputGroupAddon>
-                  <SearchIcon className="size-4 shrink-0 opacity-50" />
-                </InputGroupAddon>
-                <InputGroupAddon onClick={handleClear} align="inline-end">
-                  <InputGroupButton variant="outline" size="icon">
-                    <IconX />
-                  </InputGroupButton>
-                </InputGroupAddon>
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    variant="default"
-                    size="sm"
-                    className="ml-auto"
-                  >
-                    <PlusIcon />
-                    Invite members
-                  </InputGroupButton>
-                </InputGroupAddon>
-              </InputGroup>
-            </div>
-            <div className="">
-              <PopoverMembers />
-            </div>
+
             <div className="">
               {/* <SimpleDataTable /> */}
-              <DataTableDemo />
+              <DataTableDemo inputMember={inputMember} />
               {/* <DataTable columns={columns} data={projects} /> */}
             </div>
             <div className="dashboard-top-actions">

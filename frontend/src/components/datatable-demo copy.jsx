@@ -24,8 +24,6 @@ import {
   XCircle,
   Clock,
   Loader2,
-  SearchIcon,
-  PlusIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -78,14 +76,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/components/ui/toast";
 
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import { IconX } from "@tabler/icons-react";
-import { PopoverMembers } from "./popover-members";
 /**
  * @typedef {Object} Payment
  * @property {string} id - Unique identifier for the payment
@@ -94,7 +84,7 @@ import { PopoverMembers } from "./popover-members";
  * @property {string} email - Customer email address
  * @property {string} name - Customer name
  * @property {string} date - Payment date
- * @property {"guest" | "member" | "admin" | "owner"} role - Payment role level
+ * @property {"low" | "medium" | "high"} priority - Payment priority level
  * @property {string} [avatar] - Optional avatar URL
  */
 
@@ -106,10 +96,10 @@ import { PopoverMembers } from "./popover-members";
  */
 
 /**
- * @typedef {Object} RoleConfig
- * @property {string} label - Display label for role
- * @property {string} className - CSS classes for role
- * @property {string} badgeVariant - Badge variant for role
+ * @typedef {Object} PriorityConfig
+ * @property {string} label - Display label for priority
+ * @property {string} className - CSS classes for priority
+ * @property {string} badgeVariant - Badge variant for priority
  */
 
 // Status configuration with icons
@@ -137,26 +127,21 @@ const statusConfig = {
   },
 };
 
-// Role configuration
-/** @type {Record<string, RoleConfig>} */
-const roleConfig = {
-  guest: {
-    label: "Guest",
+// Priority configuration
+/** @type {Record<string, PriorityConfig>} */
+const priorityConfig = {
+  low: {
+    label: "Low",
     className: "text-muted-foreground",
     badgeVariant: "outline",
   },
-  member: {
-    label: "Member",
+  medium: {
+    label: "Medium",
     className: "text-blue-600",
     badgeVariant: "secondary",
   },
-  admin: {
-    label: "Admin",
-    className: "text-red-600 font-semibold",
-    badgeVariant: "destructive",
-  },
-  owner: {
-    label: "Owner",
+  high: {
+    label: "High",
     className: "text-red-600 font-semibold",
     badgeVariant: "destructive",
   },
@@ -172,7 +157,7 @@ const initialData = [
     email: "ken99@yahoo.com",
     name: "Ken Smith",
     date: "2024-01-15",
-    role: "owner",
+    priority: "high",
   },
   {
     id: "3u1reuv4",
@@ -181,8 +166,7 @@ const initialData = [
     email: "Abe45@gmail.com",
     name: "Abe Johnson",
     date: "2024-01-14",
-    role: "member",
-    invitedBy: "Ken Smith",
+    priority: "medium",
   },
   {
     id: "derv1ws0",
@@ -191,8 +175,7 @@ const initialData = [
     email: "Monserrat44@gmail.com",
     name: "Monserrat Garcia",
     date: "2024-01-13",
-    role: "guest",
-    invitedBy: "Ken Smith",
+    priority: "low",
   },
   {
     id: "5kma53ae",
@@ -201,8 +184,7 @@ const initialData = [
     email: "Silas22@gmail.com",
     name: "Silas Brown",
     date: "2024-01-12",
-    role: "admin",
-    invitedBy: "Ken Smith",
+    priority: "high",
   },
   {
     id: "bhqecj4p",
@@ -211,8 +193,7 @@ const initialData = [
     email: "carmella@hotmail.com",
     name: "Carmella Wilson",
     date: "2024-01-11",
-    role: "guest",
-    invitedBy: "Ken Smith",
+    priority: "medium",
   },
   {
     id: "x1y2z3a4",
@@ -221,8 +202,7 @@ const initialData = [
     email: "john.doe@example.com",
     name: "John Doe",
     date: "2024-01-10",
-    role: "member",
-    invitedBy: "Ken Smith",
+    priority: "low",
   },
   {
     id: "b5c6d7e8",
@@ -231,8 +211,7 @@ const initialData = [
     email: "jane.smith@example.com",
     name: "Jane Smith",
     date: "2024-01-09",
-    role: "member",
-    invitedBy: "Ken Smith",
+    priority: "high",
   },
   {
     id: "f9g0h1i2",
@@ -241,8 +220,7 @@ const initialData = [
     email: "mike.wilson@example.com",
     name: "Mike Wilson",
     date: "2024-01-08",
-    role: "member",
-    invitedBy: "Ken Smith",
+    priority: "medium",
   },
   {
     id: "j3k4l5m6",
@@ -251,8 +229,7 @@ const initialData = [
     email: "sarah.brown@example.com",
     name: "Sarah Brown",
     date: "2024-01-07",
-    role: "guest",
-    invitedBy: "Ken Smith",
+    priority: "high",
   },
   {
     id: "n7o8p9q0",
@@ -261,8 +238,7 @@ const initialData = [
     email: "tom.johnson@example.com",
     name: "Tom Johnson",
     date: "2024-01-06",
-    role: "guest",
-    invitedBy: "Ken Smith",
+    priority: "low",
   },
   {
     id: "r1s2t3u4",
@@ -271,8 +247,7 @@ const initialData = [
     email: "emma.davis@example.com",
     name: "Emma Davis",
     date: "2024-01-05",
-    role: "member",
-    invitedBy: "Ken Smith",
+    priority: "medium",
   },
   {
     id: "v5w6x7y8",
@@ -281,8 +256,7 @@ const initialData = [
     email: "alex.miller@example.com",
     name: "Alex Miller",
     date: "2024-01-04",
-    role: "member",
-    invitedBy: "Ken Smith",
+    priority: "high",
   },
 ];
 
@@ -412,11 +386,11 @@ export const columns = [
     },
   },
   {
-    accessorKey: "role",
-    header: "Role",
+    accessorKey: "priority",
+    header: "Priority",
     cell: ({ row }) => {
-      const role = row.getValue("role");
-      const config = roleConfig[role] || roleConfig.low;
+      const priority = row.getValue("priority");
+      const config = priorityConfig[priority] || priorityConfig.low;
 
       return (
         <Badge variant={config.badgeVariant} className={config.className}>
@@ -429,6 +403,23 @@ export const columns = [
     },
   },
   {
+    accessorKey: "amount",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="flex items-center gap-2 hover:bg-muted -ml-3"
+      >
+        Amount
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("amount"));
+      return <div className="font-medium">{formatCurrency(amount)}</div>;
+    },
+  },
+  {
     accessorKey: "date",
     header: ({ column }) => (
       <Button
@@ -436,7 +427,7 @@ export const columns = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         className="flex items-center gap-2 hover:bg-muted -ml-3"
       >
-        Last active
+        Date
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
@@ -445,23 +436,6 @@ export const columns = [
       return <div className="text-muted-foreground">{formatDate(date)}</div>;
     },
   },
-
-  {
-    accessorKey: "invitedBy",
-    header: "Invited by",
-    cell: ({ row }) => {
-      // const status = row.getValue("status");
-      // const config = statusConfig[status] || statusConfig.pending;
-
-      return (
-        <div className="text-muted-foreground">{row.getValue("invitedBy")}</div>
-      );
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-
   {
     id: "actions",
     enableHiding: false,
@@ -570,6 +544,7 @@ export const columns = [
  * @param {number} [props.defaultPageSize] - Default page size
  */
 export function DataTableDemo({
+  inputMember,
   data = initialData,
   showToolbar = true,
   showPagination = true,
@@ -581,8 +556,7 @@ export function DataTableDemo({
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
-  const [roleFilter, setRoleFilter] = React.useState("all");
-  // const [inputMember, setInputMember] = React.useState("");
+  const [priorityFilter, setPriorityFilter] = React.useState("all");
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: defaultPageSize,
@@ -606,11 +580,20 @@ export function DataTableDemo({
       columnFilters,
       columnVisibility,
       rowSelection,
-      globalFilter,
-      // inputMember,
+      // globalFilter,
+      inputMember,
       pagination,
     },
-    globalFilterFn: (row, columnId, filterValue) => {
+    // globalFilterFn: (row, columnId, filterValue) => {
+    //   const search = filterValue.toLowerCase();
+    //   const name = row.getValue("name")?.toString().toLowerCase() ?? "";
+    //   const email = row.getValue("email")?.toString().toLowerCase() ?? "";
+    //   const id = row.original.id?.toLowerCase() ?? "";
+    //   return (
+    //     name.includes(search) || email.includes(search) || id.includes(search)
+    //   );
+    // },
+    inputMemberFn: (row, columnId, filterValue) => {
       const search = filterValue.toLowerCase();
       const name = row.getValue("name")?.toString().toLowerCase() ?? "";
       const email = row.getValue("email")?.toString().toLowerCase() ?? "";
@@ -630,14 +613,14 @@ export function DataTableDemo({
     }
   }, [statusFilter, table]);
 
-  // Apply role filter
+  // Apply priority filter
   React.useEffect(() => {
-    if (roleFilter !== "all") {
-      table.getColumn("role")?.setFilterValue([roleFilter]);
+    if (priorityFilter !== "all") {
+      table.getColumn("priority")?.setFilterValue([priorityFilter]);
     } else {
-      table.getColumn("role")?.setFilterValue(undefined);
+      table.getColumn("priority")?.setFilterValue(undefined);
     }
-  }, [roleFilter, table]);
+  }, [priorityFilter, table]);
 
   /**
    * Export data to CSV
@@ -661,7 +644,7 @@ export function DataTableDemo({
       Name: row.getValue("name"),
       Email: row.getValue("email"),
       Status: row.getValue("status"),
-      Role: row.getValue("role"),
+      Priority: row.getValue("priority"),
       Amount: row.getValue("amount"),
       Date: row.getValue("date"),
     }));
@@ -691,7 +674,7 @@ export function DataTableDemo({
   const clearFilters = () => {
     setGlobalFilter("");
     setStatusFilter("all");
-    setRoleFilter("all");
+    setPriorityFilter("all");
     table.resetColumnFilters();
     toast({
       title: "Filters Cleared",
@@ -699,57 +682,119 @@ export function DataTableDemo({
     });
   };
 
-  const inputRef = React.useRef(null);
-
-  function handleInputMember(event) {
-    setGlobalFilter(event.target.value);
-  }
-  const handleClear = () => {
-    setGlobalFilter("");
-    inputRef.current?.focus();
-  };
-
   return (
     <div className="w-full space-y-4">
       {showToolbar && (
-        <div className=" space-y-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="w-full">
-            <InputGroup className="h-13">
-              <InputGroupInput
-                ref={inputRef}
-                className="text-base!"
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-1 flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
+            <div className="relative flex-1 sm:max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search customers..."
                 value={globalFilter}
-                onChange={(e) => handleInputMember(e)}
-                placeholder="Search or invite by email"
+                onChange={(event) => setGlobalFilter(event.target.value)}
+                className="pl-8"
               />
-              <InputGroupAddon>
-                <SearchIcon className="size-4 shrink-0 opacity-50" />
-              </InputGroupAddon>
-              <InputGroupAddon onClick={handleClear} align="inline-end">
-                <InputGroupButton variant="outline" size="icon">
-                  <IconX />
-                </InputGroupButton>
-              </InputGroupAddon>
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  variant="default"
-                  size="sm"
-                  className="ml-auto"
-                >
-                  <PlusIcon />
-                  Invite members
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
+            </div>
+            <div className="flex space-x-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="processing">Processing</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {(globalFilter ||
+              statusFilter !== "all" ||
+              priorityFilter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="text-muted-foreground"
+              >
+                Clear Filters
+              </Button>
+            )}
           </div>
-          <div className="">
-            <PopoverMembers />
+
+          <div className="flex items-center space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button variant="outline" size="sm" onClick={exportData}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Export
+                    </Button>
+                  }
+                ></TooltipTrigger>
+                <TooltipContent>Export as CSV</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="outline" size="sm">
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Columns
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                }
+              ></DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          className="capitalize"
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(value) =>
+                            column.toggleVisibility(!!value)
+                          }
+                        >
+                          {column.id}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Add New
+            </Button>
           </div>
         </div>
       )}
 
       {/* Selection info */}
-      {/* {table.getFilteredSelectedRowModel().rows.length > 0 && (
+      {table.getFilteredSelectedRowModel().rows.length > 0 && (
         <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2">
           <span className="text-sm text-muted-foreground">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}
@@ -780,7 +825,7 @@ export function DataTableDemo({
             </Button>
           </div>
         </div>
-      )} */}
+      )}
 
       {/* Table */}
       <div className="rounded-md border">
