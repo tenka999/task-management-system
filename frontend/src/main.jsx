@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider";
+import { Toaster } from "@/components/ui/toast";
 const config = {
   ripple: true,
 };
@@ -15,6 +16,7 @@ createRoot(document.getElementById("root")).render(
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <App />
+        <Toaster />
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,

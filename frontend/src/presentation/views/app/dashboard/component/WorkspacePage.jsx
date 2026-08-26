@@ -77,8 +77,12 @@ export const projects = [
   },
 ];
 
-import { DataTable } from "@/components/data-table";
-import { columns } from "@/components/column";
+// import { DataTable } from "@/components/data-table";
+// import { columns } from "@/components/column";
+// import DataTableDemo from "@/components/datatable-demo";
+// import { DataTableDemo } from "@/components/datatable-demo";
+import { SimpleDataTable } from "@/components/simple-datatable";
+import { DataTableDemo } from "@/components/datatable-demo";
 
 export default function WorkspacePage() {
   const inputRef = React.useRef(null);
@@ -134,7 +138,9 @@ export default function WorkspacePage() {
               <PopoverMembers />
             </div>
             <div className="">
-              <DataTable columns={columns} data={projects} />
+              {/* <SimpleDataTable /> */}
+              <DataTableDemo />
+              {/* <DataTable columns={columns} data={projects} /> */}
             </div>
             <div className="dashboard-top-actions">
               <div className="flex flex-1 flex-col">
