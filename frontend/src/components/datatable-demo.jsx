@@ -53,6 +53,7 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -87,6 +88,16 @@ import {
 import { IconX } from "@tabler/icons-react";
 import { PopoverMembers } from "./popover-members";
 import DialogInviteMember from "./dialog-invite-member";
+import { IconUserCog, IconUserEdit, IconUserSearch } from "@tabler/icons-react";
+import { useState } from "react";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "./ui/item";
+
 /**
  * @typedef {Object} Payment
  * @property {string} id - Unique identifier for the payment
@@ -319,6 +330,29 @@ const memberStatus = [
   },
 ];
 
+const items = [
+  {
+    label: "Member",
+    value: "member",
+    description: "Can access all public item in your workspace",
+    icon: IconUserEdit,
+  },
+  {
+    label: "Guest",
+    value: "guest",
+    description:
+      "Can't use all features or be added to Spaces. Can only access items shared with them.",
+    icon: IconUserSearch,
+  },
+  {
+    label: "Admin",
+    value: "admin",
+    description:
+      "Can manage Spaces, People,Billing and other Workspace settings.",
+    icon: IconUserCog,
+  },
+];
+
 /**
  * Format currency
  * @param {number} amount - Amount to format
@@ -450,11 +484,53 @@ export const columns = [
     cell: ({ row }) => {
       const role = row.getValue("role");
       const config = roleConfig[role] || roleConfig.low;
+      const [EditRole, setEditRole] = useState("member");
+      const EditRoleMember = items.find((item) => item.value === EditRole);
 
       return (
-        <Badge variant={config.badgeVariant} className={config.className}>
-          {config.label}
-        </Badge>
+        // <Badge variant={config.badgeVariant} className={config.className}>
+        //   {config.label}
+        // </Badge>
+        <Select
+          value={EditRole}
+          onValueChange={setEditRole}
+          defaultValue={items[0].value}
+          items={items}
+        >
+          <SelectTrigger className="bg-transparent w-full h-full! ">
+            <SelectValue className="">
+              <Item size="xs" className="p-0  ">
+                <ItemContent>
+                  <ItemTitle className="whitespace-nowrap">
+                    {EditRoleMember.label}
+                  </ItemTitle>
+                </ItemContent>
+              </Item>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="w-[350px]" alignItemWithTrigger={false}>
+            <SelectGroup>
+              {/* <SelectLabel>Fruits</SelectLabel> */}
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  <Item size="xs" className="p-0 ">
+                    <ItemMedia className="border p-3 bg-secondary rounded-lg">
+                      <item.icon />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle className="whitespace-nowrap">
+                        {item.label}
+                      </ItemTitle>
+                      <ItemDescription className="whitespace-normal text-xs">
+                        {item.description}
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       );
     },
     filterFn: (row, id, value) => {
