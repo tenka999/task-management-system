@@ -9,6 +9,7 @@ import { ProgressBarIndicator } from "./middleware/ProgressBarIndicator";
 import HomePage from "./presentation/views/home/HomePage";
 import Login from "./presentation/views/home/Login";
 import SignupPage from "./presentation/views/home/SignUp";
+import ProfileUserPage from "./presentation/views/app/dashboard/component/ProfileUser";
 // import DahsboardPage from "./presentation/views/app/dashboard/component/DashboardPage";
 // import { DashboardLayout } from "@/presentation/views/dashboard/Layout/DashboardLayout";
 // import { Dashboard } from "@/presentation/views/dashboard/Pages/Dashboard";
@@ -117,6 +118,10 @@ const routes = createBrowserRouter(
         {
           path: "/app/workspace/members",
           Component: WorkspacePage,
+        },
+        {
+          path: "/app/settings/profile",
+          Component: ProfileUserPage,
         },
       ],
     },
