@@ -18,65 +18,6 @@ import {
 import { IconX } from "@tabler/icons-react";
 import { PopoverMembers } from "@/components/popover-members";
 
-export const projects = [
-  {
-    id: 1,
-    name: "Task Management System",
-    status: "In Progress",
-    members: 5,
-    createdAt: "2026-08-20",
-  },
-  {
-    id: 2,
-    name: "Company Profile",
-    status: "Completed",
-    members: 3,
-    createdAt: "2026-08-18",
-  },
-  {
-    id: 3,
-    name: "E-Commerce Platform",
-    status: "Planning",
-    members: 8,
-    createdAt: "2026-08-15",
-  },
-  {
-    id: 4,
-    name: "Mobile Application",
-    status: "In Progress",
-    members: 6,
-    createdAt: "2026-08-12",
-  },
-  {
-    id: 5,
-    name: "Mobile Application",
-    status: "In Progress",
-    members: 6,
-    createdAt: "2026-08-12",
-  },
-  {
-    id: 6,
-    name: "Mobile Application",
-    status: "In Progress",
-    members: 6,
-    createdAt: "2026-08-12",
-  },
-  {
-    id: 7,
-    name: "Mobile Application",
-    status: "In Progress",
-    members: 6,
-    createdAt: "2026-08-12",
-  },
-  {
-    id: 8,
-    name: "Mobile Application",
-    status: "In Progress",
-    members: 6,
-    createdAt: "2026-08-12",
-  },
-];
-
 // import { DataTable } from "@/components/data-table";
 // import { columns } from "@/components/column";
 // import DataTableDemo from "@/components/datatable-demo";

@@ -20,35 +20,38 @@ import { CommandFilter } from "./command-filter";
 import { useMemberFilter } from "@/hooks/useMemberFilter";
 import { CommandMembers } from "./command-members";
 
-const memberStatus = [
-  {
-    id: "all-users",
-    label: "All User",
-    count: 0,
-  },
-  {
-    id: "admin",
-    label: "Admins",
-    count: 2,
-  },
-  {
-    id: "member",
-    label: "Members",
-    count: 4,
-  },
-  {
-    id: "guest",
-    label: "Guests",
-    count: 1,
-  },
-];
+// const memberStatus = [
+//   {
+//     id: "all-users",
+//     label: "All User",
+//     count: 0,
+//   },
+//   {
+//     id: "admin",
+//     label: "Admins",
+//     count: 2,
+//   },
+//   {
+//     id: "member",
+//     label: "Members",
+//     count: 4,
+//   },
+//   {
+//     id: "guest",
+//     label: "Guests",
+//     count: 1,
+//   },
+// ];
 
-export function PopoverMembers({ item }) {
+export function PopoverMembers({
+  item,
+  roleFilter,
+  setRoleFilter,
+  memberStatus,
+}) {
   const { memberFilter, setMemberFilter } = useMemberFilter();
   const [open, setOpen] = useState(false);
-  const countAllUsers = memberStatus
-    .map((status) => status.count)
-    .reduce((a, b) => a + b, 0);
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -64,9 +67,7 @@ export function PopoverMembers({ item }) {
               {memberFilter !== "all-users" &&
                 memberStatus.find((status) => status.id === memberFilter).label}
               {memberFilter === "all-users" && "All Users"} (
-              {memberFilter !== "all-users" &&
-                memberStatus.find((status) => status.id === memberFilter).count}
-              {memberFilter === "all-users" && countAllUsers})
+              {memberStatus.find((status) => status.id === memberFilter).count})
             </Button>
           }
         />
@@ -74,6 +75,8 @@ export function PopoverMembers({ item }) {
           <CommandMembers
             memberStatus={memberStatus}
             setOpen={setOpen}
+            roleFilter={roleFilter}
+            setRoleFilter={setRoleFilter}
             // setActiveMemberStatus={setActiveMemberStatus}
           />
         </PopoverContent>

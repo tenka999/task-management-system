@@ -86,6 +86,7 @@ import {
 } from "@/components/ui/input-group";
 import { IconX } from "@tabler/icons-react";
 import { PopoverMembers } from "./popover-members";
+import DialogInviteMember from "./dialog-invite-member";
 /**
  * @typedef {Object} Payment
  * @property {string} id - Unique identifier for the payment
@@ -286,6 +287,38 @@ const initialData = [
   },
 ];
 
+const roleCount = initialData.reduce((acc, user) => {
+  if (user.role === "owner") {
+    acc["admin"] = (acc["admin"] || 0) + 1;
+  } else {
+    acc[user.role] = (acc[user.role] || 0) + 1;
+  }
+  return acc;
+}, {});
+
+const memberStatus = [
+  {
+    id: "all-users",
+    label: "All User",
+    count: initialData.length,
+  },
+  {
+    id: "admin",
+    label: "Admins",
+    count: roleCount.admin || 0,
+  },
+  {
+    id: "member",
+    label: "Members",
+    count: roleCount.member || 0,
+  },
+  {
+    id: "guest",
+    label: "Guests",
+    count: roleCount.guest || 0,
+  },
+];
+
 /**
  * Format currency
  * @param {number} amount - Amount to format
@@ -470,7 +503,6 @@ export const columns = [
       //   const { toast } = useToast();
 
       const handleCopyId = () => {
-        console.log(payment.id);
         navigator.clipboard.writeText(payment.id);
         // toast.add({
         //   type: "Copied!",
@@ -581,7 +613,7 @@ export function DataTableDemo({
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
-  const [roleFilter, setRoleFilter] = React.useState("all");
+  const [roleFilter, setRoleFilter] = React.useState("all-users");
   // const [inputMember, setInputMember] = React.useState("");
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
@@ -632,8 +664,12 @@ export function DataTableDemo({
 
   // Apply role filter
   React.useEffect(() => {
-    if (roleFilter !== "all") {
-      table.getColumn("role")?.setFilterValue([roleFilter]);
+    if (roleFilter !== "all-users") {
+      if (roleFilter === "admin") {
+        table.getColumn("role")?.setFilterValue(["admin", "owner"]);
+      } else {
+        table.getColumn("role")?.setFilterValue([roleFilter]);
+      }
     } else {
       table.getColumn("role")?.setFilterValue(undefined);
     }
@@ -691,7 +727,7 @@ export function DataTableDemo({
   const clearFilters = () => {
     setGlobalFilter("");
     setStatusFilter("all");
-    setRoleFilter("all");
+    setRoleFilter("all-users");
     table.resetColumnFilters();
     toast({
       title: "Filters Cleared",
@@ -731,19 +767,16 @@ export function DataTableDemo({
                 </InputGroupButton>
               </InputGroupAddon>
               <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  variant="default"
-                  size="sm"
-                  className="ml-auto"
-                >
-                  <PlusIcon />
-                  Invite members
-                </InputGroupButton>
+                <DialogInviteMember />
               </InputGroupAddon>
             </InputGroup>
           </div>
           <div className="">
-            <PopoverMembers />
+            <PopoverMembers
+              roleFilter={roleFilter}
+              setRoleFilter={setRoleFilter}
+              memberStatus={memberStatus}
+            />
           </div>
         </div>
       )}

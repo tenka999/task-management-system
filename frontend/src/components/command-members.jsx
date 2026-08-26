@@ -23,7 +23,12 @@ import {
 } from "@tabler/icons-react";
 import { useMemberFilter } from "@/hooks/useMemberFilter";
 
-export function CommandMembers({ memberStatus, setOpen }) {
+export function CommandMembers({
+  memberStatus,
+  setOpen,
+  roleFilter,
+  setRoleFilter,
+}) {
   const { memberFilter, setMemberFilter } = useMemberFilter();
 
   const countAllUsers = memberStatus
@@ -35,7 +40,7 @@ export function CommandMembers({ memberStatus, setOpen }) {
     setOpen(false);
   };
   return (
-    <Command className="p-0">
+    <Command className="p-0" value={roleFilter} onValueChange={setRoleFilter}>
       <CommandList>
         <CommandGroup>
           {memberStatus.map((status) => (
@@ -43,14 +48,12 @@ export function CommandMembers({ memberStatus, setOpen }) {
               <CommandItem
                 onSelect={() => handleSelect(status.id)}
                 key={status.id}
-                value={status.label}
+                value={status.id}
                 className="gap-2"
               >
                 <span>{status.label}</span>
                 <CommandShortcut>
-                  <span className="ml-auto">
-                    {status.label === "All User" ? countAllUsers : status.count}
-                  </span>
+                  <span className="ml-auto">{status.count}</span>
                 </CommandShortcut>
               </CommandItem>
               {status.id === "all-users" && (
