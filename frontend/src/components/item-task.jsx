@@ -601,15 +601,10 @@ export function ItemTask() {
     .map((item) => item[0])
     .map((items) => (items ? items.items : []));
 
-  console.log(z);
-  console.log(a);
-  console.log(b);
-  console.log(c);
-  //   console.log(b.map((item) => item.id));
   return (
     <div className="flex w-full flex-col ">
       {tasks.map((task) => (
-        <>
+        <div key={task.id}>
           <Item className="p-0 gap-0" key={task.id}>
             <Item variant="muted" size="xs" className="rounded-none  ">
               <ItemContent className="">
@@ -641,7 +636,6 @@ export function ItemTask() {
                 <ItemContent>
                   <div className="flex">
                     <ItemTitle className="flex w-full px-3  justify-between ">
-                      {/* <div className="flex"></div> */}
                       <div className="flex-10 flex gap-1 items-center w-0 ">
                         <p className="opacity-60 flex items-center shrink-0">
                           <PopoverPriority item={item} />
@@ -654,10 +648,6 @@ export function ItemTask() {
                         >
                           {item.title}
                         </div>
-                        {/* <Badge variant="secondary"> */}
-                        {/* <IconCircleFilled color={item.tag.color} /> */}
-                        {/* {item.tag.label} */}
-                        {/* </Badge> */}
                       </div>
                     </ItemTitle>
                     <ItemActions className="gap-2 mr-7 ">
@@ -692,46 +682,8 @@ export function ItemTask() {
               </Item>
             ))}
           </Item>
-        </>
+        </div>
       ))}
     </div>
   );
-}
-
-{
-  /* <Item
-                 key={item.id}
-                 className="rounded-none"
-                 size="sm"
-                 variant={variaty === item.id ? "muted" : "default"}
-                 onMouseEnter={() => setVariaty(item.id)}
-                 onMouseLeave={() => setVariaty(null)}
-               > */
-}
-
-//               </Item>
-{
-  /* <ItemContent>
-                  <ItemTitle className="flex w-full justify-between">
-                    <div className="flex-10 flex gap-2">
-                      <Button variant="link" className="gap-2">
-                        <item.icon className="size-4" />
-                        {item.id} - {item.title}{" "}
-                      </Button>
-                      <Badge variant="secondary">
-                        <IconCircleFilled color={item.tag.color} />
-                        {item.tag.label}
-                      </Badge>
-                    </div>
-                    <div className="flex-2">
-                      <PopoverBasic item={item} />
-                    </div>
-                    <div className="flex-1 opacity-60">
-                      <PopoverPriority item={item} />
-                    </div>
-                    <div className="flex-2">
-                      <PopoverStatus item={item} />
-                    </div>
-                  </ItemTitle>
-                </ItemContent> */
 }

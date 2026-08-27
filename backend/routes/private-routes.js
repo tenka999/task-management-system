@@ -1,10 +1,3 @@
-import {
-  coverBook,
-  uploadArticle,
-  uploadGallery,
-  uploadPdf,
-  uploadProfile,
-} from "../middlewares/cover-book.js";
 import { Router } from "express";
 import authMiddleWare from "../middlewares/auth.js";
 import userRoleController from "../controllers/user-role-controller.js";
@@ -12,7 +5,7 @@ import userController from "../controllers/user-controller.js";
 
 const privateRouter = Router();
 
-// privateRouter.use(authMiddleWare);
+privateRouter.use(authMiddleWare);
 
 //#region user
 privateRouter.get("/user", userController.getAllUsers);

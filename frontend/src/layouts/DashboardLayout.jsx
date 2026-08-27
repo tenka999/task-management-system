@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { LayoutContext } from "@/context/Context";
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   Outlet,
   redirect,
@@ -20,7 +20,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 export const iframeHeight = "800px";
 
 export const description = "A sidebar with a header and a search form.";
-
 const Layout = () => {
   return (
     <React.Fragment>

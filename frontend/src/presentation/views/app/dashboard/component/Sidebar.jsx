@@ -4,6 +4,7 @@ import DashboardPage from "./DashboardPage";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const iframeHeight = "800px";
+import { WorkspaceForm } from "./workpace-form";
 
 export const description = "A sidebar with a header and a search form.";
 
@@ -14,7 +15,7 @@ export default function Page() {
         <SiteHeader />
         <div className="flex flex-1">
           <AppSidebar />
-          <SidebarInset>{/* <DashboardPage /> */}</SidebarInset>
+          <SidebarInset></SidebarInset>
         </div>
       </SidebarProvider>
     </div>

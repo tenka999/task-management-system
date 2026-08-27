@@ -62,7 +62,7 @@ export default function ProfileUserPage() {
         <div className="w-full px-[10rem] py-[5rem]  h-full">
           <div className="flex flex-col gap-4 h-full  ">
             <div className="">
-              <h1 className="font-bold text-4xl">Manage members</h1>
+              <h1 className="font-bold text-4xl">Profile</h1>
             </div>
             <div className=" h-full border rounded-xl flex    ">
               <FieldSet className="w-full h-full  ">
