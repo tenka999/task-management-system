@@ -111,7 +111,7 @@ export function TeamSwitcher({ teams }) {
               <DropdownMenuGroup>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="rounded-lg">
-                    Swith workspacce
+                    Switch workspacce
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent className="rounded-lg">

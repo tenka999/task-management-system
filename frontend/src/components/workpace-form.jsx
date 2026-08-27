@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 import LogoUploader from "@/components/logo-uploader";
+import { Label } from "./ui/label";
 const workspaceSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
@@ -151,34 +153,53 @@ export function WorkspaceForm({ initialData, onSubmit, isLoading }) {
                 name="logoUrl"
                 render={({ field }) => <LogoUploader field={field} />}
               />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="PERSONAL">Personal</SelectItem>
-                          <SelectItem value="TEAM">Team</SelectItem>
-                          <SelectItem value="ORGANIZATION">
-                            Organization
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="flex gap-2 ">
+                <div className=" flex-1 gap-4">
+                  <FormField
+                    className="w-full"
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type</FormLabel>
+                        <Select
+                          className="w-full"
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="PERSONAL">Personal</SelectItem>
+                            <SelectItem value="TEAM">Team</SelectItem>
+                            <SelectItem value="ORGANIZATION">
+                              Organization
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex-1">
+                  <FormField
+                    control={form.control}
+                    name="settings"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex justify-end items-center space-x-2">
+                          <Label>Allow guest</Label>
+                          <Switch id="airplane-mode" defaultChecked />
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
           </div>
