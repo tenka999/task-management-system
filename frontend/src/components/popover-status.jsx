@@ -17,27 +17,39 @@ import { useState } from "react";
 import { StatusIcon } from "./status-icon";
 import { CommandStatus } from "./command-status";
 
-export function PopoverStatus({ item }) {
+export function PopoverStatus({
+  item,
+  showLabel = false,
+  showPercent = false,
+}) {
+  const [status, setStatus] = useState({
+    id: "inProgress",
+    label: "In Progress",
+  });
+
   const [open, setOpen] = useState(false);
+
   return (
     <>
-      <Popover className=" ">
+      <Popover open={open} onOpenChange={setOpen} className="">
         <PopoverTrigger
+          className=""
           render={
             <Button
               onClick={() => setOpen(!open)}
               variant="outline"
               size="sm"
-              className="gap-2 text-xs ml-1"
+              className=" gap-2 text-xs ml-1"
             >
               {/* <CircleCheck className="size-4" /> */}
-              <StatusIcon status="inProgress" />
-              {/* 60% */}
+              <StatusIcon status={status.id} />
+              {showLabel && status.label}
+              {showPercent && "70%"}
             </Button>
           }
         />
-        <PopoverContent align="center" className="w-max p-0 " side="bottom">
-          <CommandStatus />
+        <PopoverContent align="center" className="w-full p-0 " side="bottom">
+          <CommandStatus setStatus={setStatus} open={open} setOpen={setOpen} />
         </PopoverContent>
       </Popover>
     </>

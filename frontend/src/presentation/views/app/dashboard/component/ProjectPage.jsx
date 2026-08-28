@@ -9,9 +9,11 @@ import * as React from "react";
 
 import { ProjectFilterProvider } from "@/context/FilterProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ProjectDialog from "@/components/project-dialog";
 export default function ProjectPage() {
   // const [healthFilter, setHealthFilter] = React.useState([]);
 
+  const handleSuccess = () => {};
   const [toggleProject, setToggleProject] = useState("all");
   return (
     <ProjectFilterProvider>
@@ -22,12 +24,14 @@ export default function ProjectPage() {
             <ButtonGroupDemo />
           </div>
         </div>
-        <div className="flex h-[30px]   items-center  w-full border-b px-5  ">
-          <div className="flex  w-full justify-between  ">
-            <p className="text-sm font-light opacity-50 flex-10">Name</p>
-            <p className="text-sm font-light opacity-50 flex-2">Health</p>
-            <p className="text-sm font-light opacity-50 flex-1">Priority</p>
-            <p className="text-sm font-light opacity-50 flex-2">Status</p>
+        <div className="flex h-[30px]   items-center  w-full border-b  px-5  ">
+          <div className=" flex  w-full justify-between   ">
+            <p className="text-sm font-light opacity-50 w-[70%] pl-7  ">Name</p>
+            <p className="text-sm font-light opacity-50 w-[12%]  ">Health</p>
+            <p className="text-sm font-light opacity-50 w-[6%] ">Priority</p>
+            <p className="text-sm font-light opacity-50 w-[12%] pl-3 ">
+              Status
+            </p>
           </div>
         </div>
       </div>

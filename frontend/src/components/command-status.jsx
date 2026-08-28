@@ -68,15 +68,24 @@ const statuses = [
   },
 ];
 
-export function CommandStatus() {
+export function CommandStatus({ setStatus, setOpen, open }) {
+  const handleSelect = (id, label) => {
+    setOpen(false);
+    setStatus({ id, label });
+  };
   return (
-    <Command className="px-1  py-1 pt-2 ">
-      <CommandInput placeholder="Set Priority" className="" />
+    <Command className="px-1  py-1 pt-2  w-[210px]">
+      <CommandInput placeholder="Set Priority" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
           {statuses.map((status) => (
-            <CommandItem key={status.id} value={status.label} className="gap-2">
+            <CommandItem
+              onSelect={() => handleSelect(status.id, status.label)}
+              key={status.id}
+              value={status.id}
+              className="gap-2 text-sm"
+            >
               <StatusIcon status={status.id} size={20} />
 
               <span>{status.label}</span>

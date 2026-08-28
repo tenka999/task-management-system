@@ -30,10 +30,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PopoverFilter } from "./popover-filter";
+import ProjectDialog from "./project-dialog";
 export function ButtonGroupDemo() {
   const [label, setLabel] = React.useState("personal");
+  const handleSuccess = () => {};
   return (
     <ButtonGroup>
+      <ButtonGroup className="hidden sm:flex">
+        <ProjectDialog
+          mode="create"
+          workspaceId="workspace123"
+          createdById="user123"
+          onSuccess={handleSuccess}
+        />
+      </ButtonGroup>
       <ButtonGroup className="hidden sm:flex">
         <PopoverFilter />
       </ButtonGroup>

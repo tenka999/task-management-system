@@ -196,9 +196,9 @@ export function ItemLink() {
               onMouseLeave={() => setVariaty(null)}
             >
               <ItemContent>
-                <ItemTitle className="flex w-full justify-between">
+                <ItemTitle className=" flex w-full justify-between">
                   {/* <div className="flex"></div> */}
-                  <div className="flex-10 flex gap-2">
+                  <div className="w-[70%] flex gap-2">
                     <Button variant="link" className="gap-2">
                       <item.icon className="size-4" />
                       {item.workspace} - {item.name}{" "}
@@ -208,17 +208,21 @@ export function ItemLink() {
                       {item.tag.label}
                     </Badge>
                   </div>
-                  <div className="flex-2">
+                  <div className="w-[12%] ">
                     <PopoverBasic item={item} />
                   </div>
-                  <div className="flex-1 opacity-60">
+                  <div className="w-[6%]  opacity-60">
                     {/* <Button variant="outline" size="icon">
                       <IconAlertSquareFilled className="size-5" />
                     </Button> */}
                     <PopoverPriority item={item} />
                   </div>
-                  <div className="flex-2">
-                    <PopoverStatus item={item} />
+                  <div className="w-[12%]  ">
+                    <PopoverStatus
+                      showLabel={false}
+                      showPercent={true}
+                      item={item}
+                    />
                   </div>
                 </ItemTitle>
               </ItemContent>
