@@ -46,6 +46,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -76,6 +77,11 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { ButtonLink } from "@/components/button-link";
+import { ItemTask } from "@/components/item-task";
+import { ButtonGroupDemo } from "@/components/button-group";
+import { ToggleGroupOutline } from "@/components/toggle-group";
+import { ProjectFilterProvider } from "@/context/FilterProvider";
+import DataTableDemo from "@/components/datatable-demo";
 
 const summary = {
   dueToday: 12,
@@ -202,10 +208,13 @@ const ProjectDetailPage = () => {
       .slice(0, 2);
   };
 
-  const [variant, setVariant] = React.useState(null);
+  const [inputMember, setInputMember] = useState("");
 
+  const [variant, setVariant] = React.useState(null);
+  const [toggleProject, setToggleProject] = useState("all");
+  const [tabValue, setTabValue] = useState("overview");
   return (
-    <ScrollArea className="w-full h-[calc(100vh-60px)]">
+    <ScrollArea className="w-full z-20 h-[calc(100vh-60px)]">
       <div className="min-h-screen ">
         {/* Header */}
         <div className="h-full  border-b">
@@ -274,26 +283,30 @@ const ProjectDetailPage = () => {
                     Edit Project
                   </Button>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      }
+                    ></DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Duplicate Project
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Archive className="w-4 h-4 mr-2" />
-                        Archive Project
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Project
-                      </DropdownMenuItem>
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Duplicate Project
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Archive className="w-4 h-4 mr-2" />
+                          Archive Project
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Project
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -303,20 +316,39 @@ const ProjectDetailPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto ">
+        <div className=" max-w-7xl mx-auto ">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
             className="space-y-3 "
           >
-            <div className="bg-transparent border-b py-2">
+            <div className=" bg-transparent border-b py-2">
               <TabsList className="bg-transparent px-4 sm:px-6 lg:px-8">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger
+                  value="overview"
+                  onClick={() => setTabValue("overview")}
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="tasks" onClick={() => setTabValue("tasks")}>
+                  Tasks
+                </TabsTrigger>
                 <TabsTrigger value="members">Members</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
             </div>
+            {tabValue === "tasks" && (
+              <ProjectFilterProvider>
+                <div className="sticky top-0  bg-background z-0   flex flex-col w-full items-center bg-background">
+                  <div className="flex h-[50px]   items-center  w-full border-b px-5  ">
+                    <div className="flex  w-full justify-between  ">
+                      <ToggleGroupOutline setToggleProject={setToggleProject} />
+                      <ButtonGroupDemo />
+                    </div>
+                  </div>
+                </div>
+              </ProjectFilterProvider>
+            )}
 
             {/* Overview Tab */}
             <TabsContent
@@ -641,70 +673,11 @@ const ProjectDetailPage = () => {
 
             {/* Tasks Tab */}
             <TabsContent value="tasks">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Project Tasks</CardTitle>
-                  <CardDescription>
-                    Manage and track project tasks
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        title: "Design homepage mockup",
-                        status: "COMPLETED",
-                        assignee: "Jane Smith",
-                      },
-                      {
-                        title: "Implement responsive layout",
-                        status: "IN_PROGRESS",
-                        assignee: "Mike Johnson",
-                      },
-                      {
-                        title: "Set up CI/CD pipeline",
-                        status: "COMPLETED",
-                        assignee: "Sarah Wilson",
-                      },
-                      {
-                        title: "Write documentation",
-                        status: "TODO",
-                        assignee: "John Doe",
-                      },
-                    ].map((task, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex items-center space-x-3">
-                          {task.status === "COMPLETED" ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-500" />
-                          ) : task.status === "IN_PROGRESS" ? (
-                            <AlertCircle className="w-5 h-5 text-blue-500" />
-                          ) : (
-                            <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
-                          )}
-                          <span
-                            className={
-                              task.status === "COMPLETED"
-                                ? "line-through text-gray-500"
-                                : ""
-                            }
-                          >
-                            {task.title}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Badge variant="outline">{task.status}</Badge>
-                          <span className="text-sm text-gray-500">
-                            {task.assignee}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className=" w-full  ">
+                {/* <ScrollArea className="w-full h-[100vh]"> */}
+                <ItemTask />
+                {/* </ScrollArea> */}
+              </div>
             </TabsContent>
 
             {/* Members Tab */}
@@ -717,62 +690,7 @@ const ProjectDetailPage = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[400px]">
-                    <div className="space-y-4">
-                      {[
-                        {
-                          name: "John Doe",
-                          email: "john@example.com",
-                          role: "Project Lead",
-                        },
-                        {
-                          name: "Jane Smith",
-                          email: "jane@example.com",
-                          role: "Designer",
-                        },
-                        {
-                          name: "Mike Johnson",
-                          email: "mike@example.com",
-                          role: "Developer",
-                        },
-                        {
-                          name: "Sarah Wilson",
-                          email: "sarah@example.com",
-                          role: "Developer",
-                        },
-                        {
-                          name: "Alex Brown",
-                          email: "alex@example.com",
-                          role: "QA Engineer",
-                        },
-                      ].map((member, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div className="flex items-center">
-                            <Avatar className="h-10 w-10 mr-3">
-                              <AvatarFallback>
-                                {getInitials(member.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{member.name}</p>
-                              <p className="text-sm text-gray-500">
-                                {member.email}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="secondary">{member.role}</Badge>
-                            <Button variant="ghost" size="sm">
-                              <Settings className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                  <DataTableDemo inputMember={inputMember} />
                 </CardContent>
               </Card>
             </TabsContent>
