@@ -412,7 +412,7 @@ export function ProjectDialog({
                                   <Button
                                     variant="outline"
                                     className={cn(
-                                      "w-full pl-3 text-left font-normal",
+                                      "w-full  pl-3 text-left font-normal",
                                       !field.value && "text-muted-foreground",
                                     )}
                                   >
@@ -427,7 +427,7 @@ export function ProjectDialog({
                               }
                             ></PopoverTrigger>
                             <PopoverContent
-                              className="w-auto p-0"
+                              className=" w-auto p-0"
                               align="start"
                             >
                               <Calendar
@@ -561,7 +561,7 @@ export function ProjectDialog({
                     name="isPublic"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
+                        <div className="">
                           <FormLabel className="text-base">
                             Public Project
                           </FormLabel>
