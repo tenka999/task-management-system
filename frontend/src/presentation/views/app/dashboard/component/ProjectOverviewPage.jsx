@@ -84,6 +84,8 @@ import { ProjectFilterProvider } from "@/context/FilterProvider";
 import DataTableDemo from "@/components/datatable-demo";
 import { MemberFilterProvider } from "@/context/MemberFilterProvider";
 import DataTableMemberProject from "@/components/datatable-member-project";
+import ProjectUpdateActivity from "@/components/project-update-activity";
+import ProjectUpdates from "@/components/project-update-activity";
 
 const summary = {
   dueToday: 12,
@@ -336,22 +338,22 @@ const ProjectDetailPage = () => {
                   Tasks
                 </TabsTrigger>
                 <TabsTrigger
+                  value="activity"
+                  onClick={() => setTabValue("activity")}
+                >
+                  Activity
+                </TabsTrigger>
+                <TabsTrigger
                   value="members"
                   onClick={() => setTabValue("members")}
                 >
                   Members
                 </TabsTrigger>
-                <TabsTrigger
-                  value="settings"
-                  onClick={() => setTabValue("settings")}
-                >
-                  Settings
-                </TabsTrigger>
               </TabsList>
             </div>
             {tabValue === "tasks" && (
               <ProjectFilterProvider>
-                <div className="sticky top-0  bg-background z-0   flex flex-col w-full items-center bg-background">
+                <div className="relative top-0  bg-background z-0   flex flex-col w-full items-center bg-background">
                   <div className="flex h-[50px]   items-center  w-full border-b px-5  ">
                     <div className="flex  w-full justify-between  ">
                       <ToggleGroupOutline setToggleProject={setToggleProject} />
@@ -685,7 +687,7 @@ const ProjectDetailPage = () => {
 
             {/* Tasks Tab */}
             <TabsContent value="tasks">
-              <div className=" w-full  ">
+              <div className="relative ">
                 {/* <ScrollArea className="w-full h-[100vh]"> */}
                 <ItemTask />
                 {/* </ScrollArea> */}
@@ -700,43 +702,10 @@ const ProjectDetailPage = () => {
             </TabsContent>
 
             {/* Settings Tab */}
-            <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Project Settings</CardTitle>
-                  <CardDescription>
-                    Configure project preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="font-medium">General Settings</h3>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Public Access</p>
-                        <p className="text-sm text-gray-500">
-                          Make this project visible to everyone
-                        </p>
-                      </div>
-                      <Badge
-                        variant={project.isPublic ? "default" : "secondary"}
-                      >
-                        {project.isPublic ? "Public" : "Private"}
-                      </Badge>
-                    </div>
-                    <Separator />
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Notifications</p>
-                        <p className="text-sm text-gray-500">
-                          Receive project updates via email
-                        </p>
-                      </div>
-                      <Badge variant="secondary">Enabled</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="activity">
+              <div className=" flex items-center justify-center">
+                <ProjectUpdates />
+              </div>
             </TabsContent>
           </Tabs>
         </div>

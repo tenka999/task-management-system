@@ -602,7 +602,7 @@ export function ItemTask() {
     .map((items) => (items ? items.items : []));
 
   return (
-    <div className="relative -z-1 flex w-full flex-col z-0 ">
+    <div className="relative  flex w-full flex-col  ">
       {tasks.map((task) => (
         <div key={task.id}>
           <Item className="p-0 gap-0" key={task.id}>
