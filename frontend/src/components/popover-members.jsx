@@ -51,7 +51,6 @@ export function PopoverMembers({
 }) {
   const { memberFilter, setMemberFilter } = useMemberFilter();
   const [open, setOpen] = useState(false);
-
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>

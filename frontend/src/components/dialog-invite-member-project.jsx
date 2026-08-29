@@ -35,6 +35,33 @@ import {
 import { description } from "./chart-area-interactive";
 import { useState } from "react";
 
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
+
+const members = [
+  {
+    id: "1",
+    name: "John Doe",
+    email: "Dd0tC1@example.com",
+  },
+  {
+    id: "2",
+    name: "John Doe",
+    email: "Dd0tC2@example.com",
+  },
+  {
+    id: "3",
+    name: "abe",
+    email: "Dd0tC3@example.com",
+  },
+];
+
 const items = [
   {
     label: "Member",
@@ -58,11 +85,14 @@ const items = [
   },
 ];
 
-export default function DialogInviteMember() {
+export default function DialogInviteMemberProject() {
   const [activeItems, setActiveItems] = useState("member");
+  const [selectedMember, setSelectedMember] = useState(null);
   const activeItem = items.find((item) => item.value === activeItems);
+
   return (
     <Dialog>
+      {/* Trigger berada di luar form */}
       <form>
         <DialogTrigger
           render={
@@ -72,36 +102,71 @@ export default function DialogInviteMember() {
             </InputGroupButton>
           }
         />
-        <DialogContent className="">
+
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite member</DialogTitle>
           </DialogHeader>
+
           <FieldGroup>
+            {/* EMAIL */}
             <Field>
-              <Label htmlFor="emmail-1">Email</Label>
-              <Input id="email-1" name="email" placeholder="email" />
+              <Label>Email</Label>
+              <Combobox
+                items={members}
+                value={selectedMember}
+                onValueChange={setSelectedMember}
+                itemToStringLabel={(member) => member?.email ?? ""}
+                itemToStringValue={(member) => member?.id ?? ""}
+              >
+                <ComboboxInput
+                  placeholder="Search or invite by email"
+                  autoComplete="new-password"
+                />
+
+                <ComboboxContent>
+                  <ComboboxEmpty>No member found.</ComboboxEmpty>
+
+                  <ComboboxList>
+                    {(member) => (
+                      <ComboboxItem key={member.id} value={member}>
+                        <div>
+                          <p>{member.name}</p>
+                          <p>{member.email}</p>
+                        </div>
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </Field>
+
+            {/* INVITE AS */}
             <Field>
-              <Label htmlFor="username-1">Invite as</Label>
+              <Label htmlFor="invite-as">Invite as</Label>
+
               <Select
                 value={activeItems}
                 onValueChange={setActiveItems}
-                defaultValue={items[0].value}
                 items={items}
               >
-                <SelectTrigger className="w-full h-full!  ">
-                  {/* <SelectItem key={activeItems} value={activeItems}>
-                    {activeItems}
-                  </SelectItem> */}
-                  <SelectValue className="">
-                    <Item size="xs" className="p-0  pb-1">
-                      <ItemMedia className="border p-3 bg-secondary rounded-lg">
-                        <activeItem.icon />
-                      </ItemMedia>
+                <SelectTrigger
+                  id="invite-as"
+                  className="h-full! w-full flex items-center"
+                >
+                  <SelectValue>
+                    <Item size="xs" className="p-0 pb-1  flex  items-center ">
+                      <div className="">
+                        <ItemMedia className=" rounded-lg border bg-secondary p-3 ">
+                          <activeItem.icon />
+                        </ItemMedia>
+                      </div>
+
                       <ItemContent>
                         <ItemTitle className="whitespace-nowrap">
                           {activeItem.label}
                         </ItemTitle>
+
                         <ItemDescription className="whitespace-normal">
                           {activeItem.description}
                         </ItemDescription>
@@ -109,19 +174,21 @@ export default function DialogInviteMember() {
                     </Item>
                   </SelectValue>
                 </SelectTrigger>
+
                 <SelectContent alignItemWithTrigger={false}>
                   <SelectGroup>
-                    {/* <SelectLabel>Fruits</SelectLabel> */}
                     {items.map((item) => (
                       <SelectItem key={item.value} value={item.value}>
-                        <Item size="xs" className="p-0 ">
-                          <ItemMedia className="border p-3 bg-secondary rounded-lg">
+                        <Item size="xs" className="p-0">
+                          <ItemMedia className="rounded-lg border bg-secondary p-3">
                             <item.icon />
                           </ItemMedia>
+
                           <ItemContent>
                             <ItemTitle className="whitespace-nowrap">
                               {item.label}
                             </ItemTitle>
+
                             <ItemDescription className="whitespace-normal text-xs">
                               {item.description}
                             </ItemDescription>
@@ -134,8 +201,10 @@ export default function DialogInviteMember() {
               </Select>
             </Field>
           </FieldGroup>
+
           <DialogFooter>
             <DialogClose render={<Button variant="outline">Cancel</Button>} />
+
             <Button type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>

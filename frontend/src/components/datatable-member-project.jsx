@@ -97,6 +97,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "./ui/item";
+import DialogInviteMemberProject from "./dialog-invite-member-project";
 
 /**
  * @typedef {Object} Payment
@@ -126,6 +127,7 @@ import {
 
 // Status configuration with icons
 /** @type {Record<string, StatusConfig>} */
+
 const statusConfig = {
   pending: {
     label: "Pending",
@@ -182,6 +184,7 @@ const initialData = [
     amount: 316,
     status: "success",
     email: "ken99@yahoo.com",
+    username: "ken99",
     name: "Ken Smith",
     date: "2024-01-15",
     role: "owner",
@@ -191,6 +194,7 @@ const initialData = [
     amount: 242,
     status: "success",
     email: "Abe45@gmail.com",
+    username: "abe45",
     name: "Abe Johnson",
     date: "2024-01-14",
     role: "member",
@@ -201,6 +205,7 @@ const initialData = [
     amount: 837,
     status: "processing",
     email: "Monserrat44@gmail.com",
+    username: "monserrat44",
     name: "Monserrat Garcia",
     date: "2024-01-13",
     role: "guest",
@@ -211,6 +216,7 @@ const initialData = [
     amount: 874,
     status: "success",
     email: "Silas22@gmail.com",
+    username: "silas22",
     name: "Silas Brown",
     date: "2024-01-12",
     role: "admin",
@@ -221,6 +227,7 @@ const initialData = [
     amount: 721,
     status: "failed",
     email: "carmella@hotmail.com",
+    username: "carmella",
     name: "Carmella Wilson",
     date: "2024-01-11",
     role: "guest",
@@ -231,6 +238,7 @@ const initialData = [
     amount: 150,
     status: "pending",
     email: "john.doe@example.com",
+    username: "john.doe",
     name: "John Doe",
     date: "2024-01-10",
     role: "member",
@@ -241,6 +249,7 @@ const initialData = [
     amount: 925,
     status: "success",
     email: "jane.smith@example.com",
+    username: "jane.smith",
     name: "Jane Smith",
     date: "2024-01-09",
     role: "member",
@@ -251,6 +260,7 @@ const initialData = [
     amount: 450,
     status: "processing",
     email: "mike.wilson@example.com",
+    username: "mike.wilson",
     name: "Mike Wilson",
     date: "2024-01-08",
     role: "member",
@@ -261,6 +271,7 @@ const initialData = [
     amount: 675,
     status: "failed",
     email: "sarah.brown@example.com",
+    username: "sarah.brown",
     name: "Sarah Brown",
     date: "2024-01-07",
     role: "guest",
@@ -271,6 +282,7 @@ const initialData = [
     amount: 300,
     status: "success",
     email: "tom.johnson@example.com",
+    username: "tom.johnson",
     name: "Tom Johnson",
     date: "2024-01-06",
     role: "guest",
@@ -281,6 +293,7 @@ const initialData = [
     amount: 550,
     status: "pending",
     email: "emma.davis@example.com",
+    username: "emma.davis",
     name: "Emma Davis",
     date: "2024-01-05",
     role: "member",
@@ -291,6 +304,7 @@ const initialData = [
     amount: 800,
     status: "success",
     email: "alex.miller@example.com",
+    username: "alex.miller",
     name: "Alex Miller",
     date: "2024-01-04",
     role: "member",
@@ -395,38 +409,6 @@ const getInitials = (name) => {
 /** @type {import("@tanstack/react-table").ColumnDef<Payment>[]} */
 export const columns = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-[2px]"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-[2px]"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  //   {
-  //     accessorKey: "email",
-  //     header: "Email",
-  //     cell: ({ row }) => {
-  //       const email = row.getValue("email"); // Sekarang ini akan berfungsi
-  //       return <div>{email}</div>;
-  //     },
-  //   },
-  {
     accessorKey: "name",
     header: ({ column }) => (
       <Button
@@ -434,13 +416,13 @@ export const columns = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         className="flex items-center gap-2 hover:bg-muted -ml-3"
       >
-        Customer
+        Name
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => {
       const name = row.getValue("name");
-      const email = row.original.email;
+      const email = row.original.username;
 
       const avatar = row.original.avatar;
 
@@ -461,23 +443,30 @@ export const columns = [
     },
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "email",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="flex items-center gap-2 hover:bg-muted -ml-3"
+      >
+        Email
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
-      const status = row.getValue("status");
-      const config = statusConfig[status] || statusConfig.pending;
+      const email = row.getValue("email");
 
       return (
-        <Badge variant={config.variant} className="flex items-center">
-          {config.icon}
-          {config.label}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col">
+            <span className="font-medium">{email}</span>
+          </div>
+        </div>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
   },
+
   {
     accessorKey: "role",
     header: "Role",
@@ -677,7 +666,7 @@ export const columns = [
  * @param {boolean} [props.showPagination] - Show/hide pagination
  * @param {number} [props.defaultPageSize] - Default page size
  */
-export function DataTableDemo({
+export function DataTableMemberProject({
   data = initialData,
   showToolbar = true,
   showPagination = true,
@@ -730,13 +719,6 @@ export function DataTableDemo({
   });
 
   // Apply status filter
-  React.useEffect(() => {
-    if (statusFilter !== "all") {
-      table.getColumn("status")?.setFilterValue([statusFilter]);
-    } else {
-      table.getColumn("status")?.setFilterValue(undefined);
-    }
-  }, [statusFilter, table]);
 
   // Apply role filter
   React.useEffect(() => {
@@ -824,7 +806,7 @@ export function DataTableDemo({
   return (
     <div className="w-full space-y-4">
       {showToolbar && (
-        <div className=" space-y-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="  px-6 space-y-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="w-full">
             <InputGroup className="h-13">
               <InputGroupInput
@@ -845,8 +827,12 @@ export function DataTableDemo({
                 >
                   <IconX />
                 </InputGroupButton>
-                <DialogInviteMember />
+                <DialogInviteMemberProject />
               </div>
+              {/* <InputGroupAddon onClick={handleClear} align="inline-end"> */}
+              {/* </InputGroupAddon> */}
+              {/* <InputGroupAddon align="inline-end"> */}
+              {/* </InputGroupAddon> */}
             </InputGroup>
           </div>
           <div className="">
@@ -1041,4 +1027,4 @@ export function DataTableDemo({
   );
 }
 
-export default DataTableDemo;
+export default DataTableMemberProject;

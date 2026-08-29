@@ -82,6 +82,8 @@ import { ButtonGroupDemo } from "@/components/button-group";
 import { ToggleGroupOutline } from "@/components/toggle-group";
 import { ProjectFilterProvider } from "@/context/FilterProvider";
 import DataTableDemo from "@/components/datatable-demo";
+import { MemberFilterProvider } from "@/context/MemberFilterProvider";
+import DataTableMemberProject from "@/components/datatable-member-project";
 
 const summary = {
   dueToday: 12,
@@ -333,8 +335,18 @@ const ProjectDetailPage = () => {
                 <TabsTrigger value="tasks" onClick={() => setTabValue("tasks")}>
                   Tasks
                 </TabsTrigger>
-                <TabsTrigger value="members">Members</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsTrigger
+                  value="members"
+                  onClick={() => setTabValue("members")}
+                >
+                  Members
+                </TabsTrigger>
+                <TabsTrigger
+                  value="settings"
+                  onClick={() => setTabValue("settings")}
+                >
+                  Settings
+                </TabsTrigger>
               </TabsList>
             </div>
             {tabValue === "tasks" && (
@@ -682,17 +694,9 @@ const ProjectDetailPage = () => {
 
             {/* Members Tab */}
             <TabsContent value="members">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Project Members</CardTitle>
-                  <CardDescription>
-                    Manage team members and their roles
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <DataTableDemo inputMember={inputMember} />
-                </CardContent>
-              </Card>
+              <MemberFilterProvider>
+                <DataTableMemberProject inputMember={inputMember} />
+              </MemberFilterProvider>
             </TabsContent>
 
             {/* Settings Tab */}
