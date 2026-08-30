@@ -10,6 +10,7 @@ import { ProjectFilterProvider } from "@/context/FilterProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProjectDialog from "@/components/project-dialog";
 import { ButtonGroupSprint } from "@/components/button-group-sprint";
+import { ItemSprint } from "@/components/item-sprint";
 export default function SprintPage() {
   // const [healthFilter, setHealthFilter] = React.useState([]);
 
@@ -37,7 +38,7 @@ export default function SprintPage() {
       </div>
       <div className=" w-full  ">
         <ScrollArea className="w-full h-[calc(100vh-140px)]">
-          <ItemLink />
+          <ItemSprint />
         </ScrollArea>
       </div>
     </ProjectFilterProvider>
