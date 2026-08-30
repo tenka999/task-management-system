@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
-import { ButtonGroupDemo } from "@/components/button-group";
+import { ButtonGroupTask } from "@/components/button-group-task";
 import { ToggleGroupOutline } from "@/components/toggle-group";
 import { useState } from "react";
 

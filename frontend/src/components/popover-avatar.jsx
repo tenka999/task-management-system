@@ -18,7 +18,12 @@ import {
   Tools,
 } from "tabler-icons-react";
 
-import { IconPalette, Icon123, IconCircleFilled } from "@tabler/icons-react";
+import {
+  IconPalette,
+  Icon123,
+  IconCircleFilled,
+  IconUser,
+} from "@tabler/icons-react";
 
 import { CircleCheck } from "tabler-icons-react";
 import { Separator } from "./ui/separator";
@@ -29,55 +34,52 @@ import { useState } from "react";
 import { StatusIcon } from "./status-icon";
 import { CommandStatus } from "./command-status";
 import { CommandIcon } from "./command-icon";
+import { CommandAvatar } from "./command-avatar";
 
-const icons = [
+const avatars = [
+  // {
+  //   id: null,
+  //   username: "unassigned",
+  //   avatar: IconUser,
+  //   initial: "CN",
+  // },
   {
-    id: "box",
-    icon: Box,
-    label: "Box",
+    id: 1,
+    username: "shadcn",
+    avatar: "/avatars/shadcn.jpg",
+    initial: "CN",
   },
   {
-    id: "layout-grid",
-    icon: LayoutGrid,
-    label: "Layout Grid",
+    id: 2,
+    username: "ashutosh",
+    avatar: "/avatars/ashutosh.jpg",
+    initial: "AS",
   },
   {
-    id: "lock",
-    icon: Lock,
-    label: "Lock",
+    id: 3,
+    username: "zach",
+    avatar: "/avatars/ashutosh.jpg",
+    initial: "ZC",
   },
   {
-    id: "player-play",
-    icon: PlayerPlay,
-    label: "Player Play",
-  },
-  {
-    id: "tools",
-    icon: Tools,
-    label: "Tools",
-  },
-  {
-    id: "accessible",
-    icon: Accessible,
-    label: "Accessible",
-  },
-  {
-    id: "palette",
-    icon: IconPalette,
-    label: "Palette",
+    id: 4,
+    username: "gabriel",
+    avatar: "/avatars/ashutosh.jpg",
+    initial: "GB",
   },
 ];
 
-export function PopoverIcon({
+export function PopoverAvatar({
   variant = "outline",
   item,
   showLabel = false,
   showPercent = false,
 }) {
-  const [icon, setIcon] = useState({
-    id: "box",
-    icon: Box,
-    label: "Box",
+  const [avatar, setAvatar] = useState({
+    id: null,
+    username: "unassigned",
+    avatar: "/avatars/shadcn.jpg",
+    initial: null,
   });
 
   const [open, setOpen] = useState(false);
@@ -92,18 +94,26 @@ export function PopoverIcon({
               onClick={() => setOpen(!open)}
               variant={variant}
               size="sm"
-              className=" gap-2 text-xs ml-1"
+              className="    gap-2 text-xs ml-1"
             >
-              {/* <CircleCheck className="size-4" /> */}
-              <icon.icon className="size-5" />
-              {icon.label}
+              <Avatar size="sm">
+                <AvatarImage
+                  src={avatar.avatar}
+                  alt="@shadcn"
+                  className="grayscale"
+                />
+                <AvatarFallback>
+                  {avatar.initial ? avatar.initial : <IconUser />}
+                </AvatarFallback>
+              </Avatar>
+              {avatar.username}
             </Button>
           }
         />
         <PopoverContent align="center" className="w-full p-0 " side="bottom">
-          <CommandIcon
-            icons={icons}
-            setIcon={setIcon}
+          <CommandAvatar
+            avatars={avatars}
+            setAvatar={setAvatar}
             open={open}
             setOpen={setOpen}
           />

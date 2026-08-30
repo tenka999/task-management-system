@@ -18,6 +18,7 @@ import { StatusIcon } from "./status-icon";
 import { CommandStatus } from "./command-status";
 
 export function PopoverStatus({
+  variant = "outline",
   item,
   showLabel = false,
   showPercent = false,
@@ -37,7 +38,7 @@ export function PopoverStatus({
           render={
             <Button
               onClick={() => setOpen(!open)}
-              variant="outline"
+              variant={variant}
               size="sm"
               className=" gap-2 text-xs ml-1"
             >

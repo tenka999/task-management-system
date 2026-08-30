@@ -1,4 +1,3 @@
-import { ButtonGroupDemo } from "@/components/button-group";
 import { ItemLink } from "@/components/item-link";
 import { ToggleGroupOutline } from "@/components/toggle-group";
 import { Button } from "@/components/ui/button";

@@ -30,12 +30,10 @@ export function CommandLabel({ label, setLabel, setOpen, labels }) {
 
   const handleSelect = (val) => {
     if (label.map((item) => item.id).includes(val.id)) {
-      console.log(label.filter((item) => item.id !== val.id));
       setLabel(label.filter((item) => item.id !== val.id));
     } else {
       setLabel([...label, val]);
     }
-    console.log(label);
   };
 
   return (

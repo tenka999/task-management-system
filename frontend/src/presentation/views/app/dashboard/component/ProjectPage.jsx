@@ -1,4 +1,4 @@
-import { ButtonGroupDemo } from "@/components/button-group";
+import { ButtonGroupProject } from "@/components/button-group-project";
 import { ItemLink } from "@/components/item-link";
 import { ToggleGroupOutline } from "@/components/toggle-group";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export default function ProjectPage() {
         <div className="flex h-[50px]   items-center  w-full border-b px-5  ">
           <div className="flex  w-full justify-between  ">
             <ToggleGroupOutline setToggleProject={setToggleProject} />
-            <ButtonGroupDemo />
+            <ButtonGroupProject />
           </div>
         </div>
         <div className="flex h-[30px]   items-center  w-full border-b  px-5  ">

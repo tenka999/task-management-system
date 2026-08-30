@@ -78,7 +78,7 @@ import {
 } from "@/components/ui/item";
 import { ButtonLink } from "@/components/button-link";
 import { ItemTask } from "@/components/item-task";
-import { ButtonGroupDemo } from "@/components/button-group";
+import { ButtonGroupProject } from "@/components/button-group-project";
 import { ToggleGroupOutline } from "@/components/toggle-group";
 import { ProjectFilterProvider } from "@/context/FilterProvider";
 import DataTableDemo from "@/components/datatable-demo";
@@ -357,7 +357,7 @@ const ProjectDetailPage = () => {
                   <div className="flex h-[50px]   items-center  w-full border-b px-5  ">
                     <div className="flex  w-full justify-between  ">
                       <ToggleGroupOutline setToggleProject={setToggleProject} />
-                      <ButtonGroupDemo />
+                      <ButtonGroupProject />
                     </div>
                   </div>
                 </div>

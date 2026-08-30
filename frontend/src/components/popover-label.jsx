@@ -89,7 +89,7 @@ const labels = [
   },
 ];
 
-export function PopoverLabel({ item, showLabel = false }) {
+export function PopoverLabel({ variant = "outline", item, showLabel = false }) {
   const [label, setLabel] = useState([]);
 
   const [open, setOpen] = useState(false);
@@ -102,7 +102,7 @@ export function PopoverLabel({ item, showLabel = false }) {
           render={
             <Button
               onClick={() => setOpen(!open)}
-              variant="outline"
+              variant={variant}
               size="sm"
               className="relative gap-2 text-xs ml-1"
             >
@@ -111,6 +111,7 @@ export function PopoverLabel({ item, showLabel = false }) {
               <div className=" flex items-center   ">
                 {label.map((item) => (
                   <IconCircleFilled
+                    key={item.id}
                     className="size-4   first:ml-0 -ml-1.5"
                     color={item.color}
                   />

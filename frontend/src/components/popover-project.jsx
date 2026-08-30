@@ -18,7 +18,12 @@ import {
   Tools,
 } from "tabler-icons-react";
 
-import { IconPalette, Icon123, IconCircleFilled } from "@tabler/icons-react";
+import {
+  IconPalette,
+  Icon123,
+  IconCircleFilled,
+  IconUser,
+} from "@tabler/icons-react";
 
 import { CircleCheck } from "tabler-icons-react";
 import { Separator } from "./ui/separator";
@@ -29,55 +34,53 @@ import { useState } from "react";
 import { StatusIcon } from "./status-icon";
 import { CommandStatus } from "./command-status";
 import { CommandIcon } from "./command-icon";
+import { CommandAvatar } from "./command-avatar";
+import { CommandProject } from "./command-project";
+import { Folder } from "lucide-react";
 
-const icons = [
+const projects = [
   {
-    id: "box",
+    id: 1,
+    workspace: "LNDev UI",
+    name: "Core Components",
     icon: Box,
-    label: "Box",
+    count: 10,
   },
   {
-    id: "layout-grid",
-    icon: LayoutGrid,
-    label: "Layout Grid",
-  },
-  {
-    id: "lock",
+    id: 2,
+    workspace: "LNDev UI",
+    name: "Authentication Flow",
     icon: Lock,
-    label: "Lock",
+    count: 10,
   },
   {
-    id: "player-play",
+    id: 3,
+    workspace: "LNDev UI",
+    name: "Media Player",
     icon: PlayerPlay,
-    label: "Player Play",
+    count: 10,
   },
   {
-    id: "tools",
+    id: 4,
+    workspace: "LNDev UI",
+    name: "Theming",
     icon: Tools,
-    label: "Tools",
-  },
-  {
-    id: "accessible",
-    icon: Accessible,
-    label: "Accessible",
-  },
-  {
-    id: "palette",
-    icon: IconPalette,
-    label: "Palette",
+    count: 10,
   },
 ];
 
-export function PopoverIcon({
+export function PopoverProject({
   variant = "outline",
   item,
   showLabel = false,
   showPercent = false,
 }) {
-  const [icon, setIcon] = useState({
-    id: "box",
-    icon: Box,
-    label: "Box",
+  const [project, setProject] = useState({
+    id: null,
+    workspace: null,
+    name: "No Project",
+    icon: Folder,
+    count: 0,
   });
 
   const [open, setOpen] = useState(false);
@@ -92,18 +95,28 @@ export function PopoverIcon({
               onClick={() => setOpen(!open)}
               variant={variant}
               size="sm"
-              className=" gap-2 text-xs ml-1"
+              className="gap-2 text-xs ml-1"
             >
-              {/* <CircleCheck className="size-4" /> */}
-              <icon.icon className="size-5" />
-              {icon.label}
+              {/* <Avatar size="sm">
+                <AvatarImage
+                  src={avatar.avatar}
+                  alt="@shadcn"
+                  className="grayscale"
+                />
+                <AvatarFallback>
+                  {avatar.initial ? avatar.initial : <IconUser />}
+                </AvatarFallback>
+              </Avatar> */}
+              <project.icon className="w-4 h-4" />
+              {project.workspace ? `${project.workspace} - ` : null}
+              {project.name}
             </Button>
           }
         />
         <PopoverContent align="center" className="w-full p-0 " side="bottom">
-          <CommandIcon
-            icons={icons}
-            setIcon={setIcon}
+          <CommandProject
+            projects={projects}
+            setProject={setProject}
             open={open}
             setOpen={setOpen}
           />
