@@ -37,6 +37,9 @@ const DashboardPage = React.lazy(
 const ProjectPage = React.lazy(
   () => import("@/presentation/views/app/dashboard/component/ProjectPage"),
 );
+const SprintPage = React.lazy(
+  () => import("@/presentation/views/app/dashboard/component/SprintPage"),
+);
 const ProjectOverViewPage = React.lazy(
   () =>
     import("@/presentation/views/app/dashboard/component/ProjectOverviewPage"),
@@ -114,6 +117,10 @@ const routes = createBrowserRouter(
         {
           path: "/app/projects",
           Component: ProjectPage,
+        },
+        {
+          path: "/app/sprint",
+          Component: SprintPage,
         },
         {
           path: "/app/project/overview",
