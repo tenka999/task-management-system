@@ -100,6 +100,11 @@ import DataTableMemberProject from "@/components/datatable-member-project";
 import ProjectUpdateActivity from "@/components/project-update-activity";
 import ProjectUpdates from "@/components/project-update-activity";
 import ProjectDateCard from "@/components/date-card";
+import { PopoverStatus } from "@/components/popover-status";
+import { PopoverPriority } from "@/components/popover-priority";
+import { PopoverAvatar } from "@/components/popover-avatar";
+import { PopoverLabelTask } from "@/components/popover-label-task";
+import { PopoverStatusTask } from "@/components/popover-status-task";
 
 const summary = {
   dueToday: 12,
@@ -275,14 +280,16 @@ const TaskDetailPage = () => {
                 overflow-y-scroll max-w-full p-0 rounded-none focus-within:ring-0 focus-visible:ring-0 focus:outline-none border-none resize-y "
               /> */}
                   <div className="flex justify-between items-center mt-2 ">
-                    <Button
-                      disabled
+                    {/* <Button
                       variant="outline"
                       size="ss"
                       className=" flex  p-1  mr-2 "
-                    >
-                      <IconPlus size={40} />
-                    </Button>
+                    > */}
+                    <IconPlus
+                      size={23}
+                      className="opacity-50 p-0.5 hover:opacity-100 border rounded-lg"
+                    />
+                    {/* </Button> */}
                     <Button size="" className="mr-2 " disabled>
                       Comment
                     </Button>
@@ -330,7 +337,6 @@ const TaskDetailPage = () => {
                 <CardFooter className="p-0 min-w-0">
                   <div className="flex justify-between items-center ">
                     <Button
-                      disabled
                       variant="outline"
                       size="ss"
                       className=" flex  p-1  mr-2 "
@@ -349,43 +355,53 @@ const TaskDetailPage = () => {
         <div className=" w-full px-6 py-4 gap-10 flex flex-col">
           <div className="mt-5 flex flex-col  gap-3  ">
             <p className=" opacity-50">Properties</p>
-            <span className="flex  items-center">
-              <IconCircle size={20} className="mr-2" />
+            <span className="flex gap-2  items-center">
+              <PopoverStatusTask
+                variant="outline"
+                size="icon"
+                showLabel={false}
+                showPercent={false}
+              />
               {taskDetail.status}
             </span>
 
-            <span className="flex  items-center">
-              <IconAntennaBars5 size={20} className="mr-2" />
+            <span className="flex gap-2  items-center">
+              {/* <IconAntennaBars5 size={20} className="mr-2" /> */}
+              <PopoverPriority
+                variant="outline"
+                size="icon"
+                showLabel={false}
+              />
               {taskDetail.priority}
             </span>
-            <span className="flex  items-center gap-2">
-              <Avatar size="sm">
-                <AvatarImage src={taskDetail.assignedTo.imageUrl} />
-                <AvatarFallback>
-                  {taskDetail.assignedTo.avatarFallback}
-                </AvatarFallback>
-              </Avatar>
+            <span className="flex   items-center gap-2">
+              <PopoverAvatar
+                variant="ghost"
+                showLabel={false}
+                showPercent={false}
+                size="icon"
+                sizeAvatar="default"
+              />
               {taskDetail.assignedTo.name}
             </span>
-            <span className="flex  items-center">
-              <IconRunSprint size={20} className="mr-2" />
+            <span className="flex  gap-3 items-center">
+              <IconRunSprint size={20} className="ml-2" />
               {taskDetail.sprintId}
             </span>
           </div>
           <div className="flex flex-col  gap-3  ">
             <p className=" opacity-50">Labels</p>
             <div className="flex gap-2 flex-wrap">
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="flex p-3 items-center">
                 <IconCircleFilled size={20} className="" />
                 Outline
               </Badge>
-              <IconPlus
-                className="opacity-50 hover:opacity-100
-                border-2
-                w-5
-                h-5
-                
-                "
+              <PopoverLabelTask
+                variant="ghost"
+                showLabel={false}
+                showPercent={false}
+                size="icon"
+                sizeAvatar="default"
               />
             </div>
           </div>

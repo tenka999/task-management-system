@@ -72,8 +72,10 @@ const avatars = [
 export function PopoverAvatar({
   variant = "outline",
   item,
-  showLabel = false,
+  showLabel = true,
   showPercent = false,
+  size = "sm",
+  sizeAvatar = "sm",
 }) {
   const [avatar, setAvatar] = useState({
     id: null,
@@ -93,10 +95,10 @@ export function PopoverAvatar({
             <Button
               onClick={() => setOpen(!open)}
               variant={variant}
-              size="sm"
-              className="    gap-2 text-xs ml-1"
+              size={size}
+              className="    gap-2 text-xs "
             >
-              <Avatar size="sm">
+              <Avatar size={sizeAvatar}>
                 <AvatarImage
                   src={avatar.avatar}
                   alt="@shadcn"
@@ -106,7 +108,7 @@ export function PopoverAvatar({
                   {avatar.initial ? avatar.initial : <IconUser />}
                 </AvatarFallback>
               </Avatar>
-              {avatar.username}
+              {showLabel && avatar.username}
             </Button>
           }
         />

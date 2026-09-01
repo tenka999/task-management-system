@@ -17,7 +17,7 @@ import { useState } from "react";
 import { StatusIcon } from "./status-icon";
 import { CommandStatus } from "./command-status";
 
-export function PopoverStatus({
+export function PopoverStatusTask({
   variant = "outline",
   item,
   showLabel = false,
@@ -35,13 +35,12 @@ export function PopoverStatus({
     <>
       <Popover open={open} onOpenChange={setOpen} className="">
         <PopoverTrigger
-          className=""
           render={
             <Button
               onClick={() => setOpen(!open)}
               variant={variant}
               size={size}
-              className=" gap-2 text-xs ml-1"
+              className=" gap-2 text-xs"
             >
               {/* <CircleCheck className="size-4" /> */}
               <StatusIcon status={status.id} />

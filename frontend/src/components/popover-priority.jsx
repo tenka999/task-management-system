@@ -54,6 +54,7 @@ export function PopoverPriority({
   variant = "outline",
   item,
   showLabel = false,
+  size = "sm",
 }) {
   const [open, setOpen] = useState(false);
 
@@ -70,7 +71,11 @@ export function PopoverPriority({
       <Popover open={open} onOpenChange={setOpen} className=" ">
         <PopoverTrigger
           render={
-            <Button onClick={() => setOpen(!open)} variant={variant} size="sm">
+            <Button
+              onClick={() => setOpen(!open)}
+              variant={variant}
+              size={size}
+            >
               <currentIcon.icon className="size-5" />
               {showLabel && priority.label}
             </Button>
