@@ -86,6 +86,7 @@ import { MemberFilterProvider } from "@/context/MemberFilterProvider";
 import DataTableMemberProject from "@/components/datatable-member-project";
 import ProjectUpdateActivity from "@/components/project-update-activity";
 import ProjectUpdates from "@/components/project-update-activity";
+import ProjectDateCard from "@/components/date-card";
 
 const summary = {
   dueToday: 12,
@@ -98,10 +99,11 @@ const summary = {
 const mockProject = {
   id: "clh1234567890abcdef",
   workspaceId: "ws1234567890",
-  name: "Website Redesign Project",
+  order: 1,
+  name: "Foundation",
   description:
     "Complete redesign of our company website with modern UI/UX principles, improved performance, and better conversion optimization. This project includes planning, design, development, and deployment phases.",
-  projectKey: "WEB-REDESIGN",
+  projectName: "Core Component",
   status: "ACTIVE",
   startDate: "2024-01-15T00:00:00Z",
   endDate: "2024-06-30T00:00:00Z",
@@ -232,28 +234,14 @@ const SprintDetailPage = () => {
 
                 <div>
                   <div className="flex space-x-3 mr-5">
-                    <h1 className="text-[2.5rem]  font-bold">{project.name}</h1>
+                    <h1 className="text-[2.5rem]  font-bold">
+                      {project.order ? `Sprint ${project.order} - ` : null}
+                      {project.name}
+                    </h1>
                   </div>
                 </div>
                 <div className="flex gap-2 ">
                   {getStatusBadge(project.status)}
-                  {project.isPublic ? (
-                    <Badge
-                      variant="outline"
-                      className="border-blue-200  text-white"
-                    >
-                      <Globe className="w-3 h-3 mr-1" />
-                      Public
-                    </Badge>
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="border-gray-200 text-gray-600"
-                    >
-                      <Lock className="w-3 h-3 mr-1" />
-                      Private
-                    </Badge>
-                  )}
                 </div>
               </div>
 
@@ -262,7 +250,7 @@ const SprintDetailPage = () => {
                 <div className=" flex-1 flex items-start  space-x-5 text-sm text-gray-500">
                   <span className="flex flex-1 truncate items-center">
                     <Hash className="w-4 h-4 mr-1" />
-                    {project.projectKey}
+                    {project.projectName}
                   </span>
                   <span>•</span>
                   <span className="flex shrink-0 flex-1 items-center">
@@ -337,12 +325,6 @@ const SprintDetailPage = () => {
                   onClick={() => setTabValue("activity")}
                 >
                   Activity
-                </TabsTrigger>
-                <TabsTrigger
-                  value="members"
-                  onClick={() => setTabValue("members")}
-                >
-                  Members
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -468,9 +450,7 @@ const SprintDetailPage = () => {
               <div className="flex gap-5">
                 <Card className="flex-1">
                   <CardHeader className="gap-0">
-                    <CardTitle className="text-2xl  ">
-                      Project Progress
-                    </CardTitle>
+                    <CardTitle className="text-2xl  ">Task Progress</CardTitle>
                     <CardDescription className="">
                       Based on timeline
                     </CardDescription>
@@ -505,7 +485,7 @@ const SprintDetailPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-2xl">Project Details</CardTitle>
+                    <CardTitle className="text-2xl">Sprint Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between">
@@ -516,7 +496,7 @@ const SprintDetailPage = () => {
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="">Workspace ID</span>
+                      <span className="">Sprint ID</span>
                       <span className="font-mono text-sm opacity-50">
                         {project.workspaceId}
                       </span>
@@ -542,7 +522,7 @@ const SprintDetailPage = () => {
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="">Last Updated</span>
+                      <span className="">Complete At</span>
                       <span className="opacity-50">
                         {formatDate(project.updatedAt)}
                       </span>
@@ -615,68 +595,7 @@ const SprintDetailPage = () => {
                     </Button>
                   </CardFooter>
                 </Card> */}
-                <Card className="@container/card flex-3" size="sm">
-                  <CardHeader>
-                    <CardTitle>
-                      <h2 className="text-2xl mb-1 pl-2">Team Member</h2>
-                    </CardTitle>
-                    {/* <SelectDemo setTeamMember={setTeamMember} /> */}
-                    {/* <TabsLineTeam setTeamMember={setTeamMember} /> */}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex w-full max-w-lg flex-col gap-1">
-                      <ScrollArea className="h-[220px]">
-                        {webMember.map((member) => (
-                          <Item
-                            key={member.username}
-                            variant={
-                              variant === member.username ? "muted" : "default"
-                            }
-                            size="xs"
-                            onMouseEnter={() => setVariant(member.username)}
-                            onMouseLeave={() => setVariant(null)}
-                          >
-                            <ItemMedia>
-                              <Avatar className="size-10">
-                                <AvatarImage src={member.imageUrl} />
-                                <AvatarFallback>
-                                  {member.avatarFallback}
-                                </AvatarFallback>
-                                <AvatarBadge
-                                  className={`${member.status === "online" ? "bg-green-800" : member.status === "offline" ? "bg-gray-500" : "bg-yellow-600"} `}
-                                />
-                              </Avatar>
-                            </ItemMedia>
-                            <ItemContent>
-                              <ItemTitle className="flex min-w-0 items-center gap-1">
-                                <span className="shrink-0">{member.name}</span>-
-                                <span className="min-w-0 truncate">
-                                  {member.username}
-                                </span>
-                              </ItemTitle>
-                              <ItemDescription>{member.role}</ItemDescription>
-                            </ItemContent>
-                            <ItemActions>
-                              <Button
-                                size="icon-sm"
-                                variant="outline"
-                                className="rounded-full"
-                                aria-label="Invite"
-                              >
-                                <MoreHorizontal />
-                              </Button>
-                            </ItemActions>
-                          </Item>
-                        ))}
-                      </ScrollArea>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex-col items-end gap-1.5 text-sm">
-                    <div className="text-muted-foreground">
-                      <ButtonLink text={"View All Member"} />
-                    </div>
-                  </CardFooter>
-                </Card>
+                <ProjectDateCard />
               </div>
             </TabsContent>
 
@@ -690,11 +609,6 @@ const SprintDetailPage = () => {
             </TabsContent>
 
             {/* Members Tab */}
-            <TabsContent value="members">
-              <MemberFilterProvider>
-                <DataTableMemberProject inputMember={inputMember} />
-              </MemberFilterProvider>
-            </TabsContent>
 
             {/* Settings Tab */}
             <TabsContent value="activity">

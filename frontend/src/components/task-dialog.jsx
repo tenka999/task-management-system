@@ -3,7 +3,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Plus, Pencil, Trash2 } from "lucide-react";
+import {
+  CalendarIcon,
+  Loader2,
+  Plus,
+  Pencil,
+  Trash2,
+  Clock3,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -331,7 +338,7 @@ export function TaskDialog({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-4 flex flex-col justify-between  h-full"
+              className=" space-y-4 flex flex-col justify-between  h-full"
             >
               <div className="flex justify-between flex-col gap-5">
                 <div className="flex-1 flex flex-col gap-3">
@@ -341,7 +348,7 @@ export function TaskDialog({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Project Name</FormLabel>
+                        <FormLabel>Project name</FormLabel>
                         <FormControl>
                           <Input placeholder="Enter project name" {...field} />
                         </FormControl>
@@ -371,48 +378,96 @@ export function TaskDialog({
 
                   {/* Status */}
                 </div>
-                <div className="gap-2 flex flex-wrap items-center justify-start">
-                  {/* Dates */}
+                <div className=" flex items-end justify-start gap-3">
                   <FormField
                     control={form.control}
                     name="startDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <Popover>
-                          <PopoverTrigger
-                            render={
-                              <FormControl>
-                                <Button
-                                  variant="secondary"
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                  )}
-                                >
-                                  <CalendarIcon className="ml-auto h-4 w-4 " />
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm ">Due date</label>
+                          <Popover>
+                            <PopoverTrigger
+                              render={
+                                <FormControl>
+                                  <Button
+                                    variant="secondary"
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                    )}
+                                  >
+                                    <CalendarIcon className="ml-auto h-4 w-4 " />
 
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Due date</span>
-                                  )}
-                                </Button>
-                              </FormControl>
-                            }
-                          ></PopoverTrigger>
-                          <PopoverContent className=" w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date("2020-01-01")}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                                    {field.value ? (
+                                      format(field.value, "PPP")
+                                    ) : (
+                                      <span>Select date</span>
+                                    )}
+                                  </Button>
+                                </FormControl>
+                              }
+                            ></PopoverTrigger>
+                            <PopoverContent
+                              className=" w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date("2020-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="estimatedHour"
+                    render={({ field }) => (
+                      <FormItem className="  ">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm ">Estimated hours</label>
+
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              placeholder="0"
+                              className="pr-12"
+                            />
+
+                            <span
+                              className="
+                              pointer-events-none
+                              absolute
+                              right-3
+                              top-1/2
+                              -translate-y-1/2
+                              text-sm
+                              text-muted-foreground
+                            "
+                            >
+                              hrs
+                            </span>
+                          </div>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="gap-2 flex flex-wrap items-center justify-start">
+                  {/* Dates */}
+
                   <FormField
                     control={form.control}
                     name="status"
@@ -469,6 +524,7 @@ export function TaskDialog({
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="project"
