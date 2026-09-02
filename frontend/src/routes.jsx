@@ -142,7 +142,7 @@ const routes = createBrowserRouter(
           Component: TaskDetailPage,
         },
         {
-          path: "/app/task",
+          path: "/app/tasks",
           Component: TaskPage,
         },
 

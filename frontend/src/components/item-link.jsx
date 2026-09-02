@@ -198,7 +198,7 @@ export function ItemLink() {
               <ItemContent>
                 <ItemTitle className=" flex w-full justify-between">
                   {/* <div className="flex"></div> */}
-                  <div className="w-[70%] flex gap-2">
+                  <div className="  w-[70%] flex gap-2 items-center">
                     <Button variant="link" className="gap-2">
                       <item.icon className="size-4" />
                       {item.workspace} - {item.name}{" "}

@@ -12,6 +12,12 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  Calendar,
+  Calendar1,
+  CalendarDays,
+  Files,
+  Home,
+  ArrowLeftIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -25,6 +31,10 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Tools } from "tabler-icons-react";
+import { NavTeams } from "./nav-team";
+import { Button } from "./ui/button";
+import { ButtonGroup } from "./ui/button-group";
 
 // This is sample data.
 const data = {
@@ -33,7 +43,7 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
+  workspaces: [
     {
       name: "Acme Inc",
       logo: GalleryVerticalEnd,
@@ -52,106 +62,100 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
+      title: "Dashboard",
+      url: "/app",
+      icon: Home,
+    },
+
+    {
+      title: "My Tasks",
+      url: "/app/tasks",
+      icon: Files,
     },
     {
-      title: "Models",
+      title: "Calender",
+      url: "/app/",
+      icon: CalendarDays,
+    },
+    {
+      title: "Agent",
       url: "#",
       icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
     },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
+    // {
+    //   title: "Agent",
+    //   url: "#",
+    //   icon: Bot,
+    //   items: [
+    //     {
+    //       title: "General",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Team",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Billing",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Limits",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
   ],
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
+      name: "Projects",
+      url: "/app/projects",
       icon: Frame,
     },
     {
-      name: "Sales & Marketing",
+      name: "Sprint",
+      url: "/app/sprint",
+      icon: Calendar,
+    },
+    {
+      name: "Teams",
       url: "#",
       icon: PieChart,
     },
     {
-      name: "Travel",
+      name: "Members",
       url: "#",
       icon: Map,
+    },
+  ],
+  teams: [
+    {
+      title: "LNDev Core",
+      url: "#",
+      icon: Tools,
+      isActive: true,
+      items: [
+        {
+          title: "Home",
+          url: "#",
+        },
+        {
+          title: "Task",
+          url: "#",
+        },
+        {
+          title: "Sprint",
+          url: "#",
+        },
+        {
+          title: "Project",
+          url: "#",
+        },
+        {
+          title: "Members",
+          url: "#",
+        },
+      ],
     },
   ],
 };
@@ -164,11 +168,12 @@ export function AppSidebar({ ...props }) {
       {...props}
     >
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={data.workspaces} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
+        <NavTeams items={data.teams} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
