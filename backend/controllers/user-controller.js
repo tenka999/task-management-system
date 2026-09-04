@@ -1,63 +1,54 @@
-// controllers/reviewController.js
 import userService from "../services/user-service.js";
 import { responseFormat } from "../utils/helper.js";
 
 const userController = {
-  // GET /reviews
+  // GET /users
   async getAllUsers(req, res) {
     try {
-      const reviews = await userService.getAllUsers();
+      const users = await userService.getAllUsers(req.query);
       res
         .status(200)
-        .json(responseFormat("success", reviews, "All role fetched"));
+        .json(responseFormat("success", users, "All users fetched"));
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
   },
 
-  // GET /reviews/book/:bookId
-  async getAllUserById(req, res) {
+  // GET /users/:id
+  async getUserById(req, res) {
     try {
-      const reviews = await userService.getAllUserById(parseInt(req.params.id));
-      res
-        .status(200)
-        .json(responseFormat("success", reviews, "Reviews by book fetched"));
+      const user = await userService.getUserById(req.params.id);
+      res.status(200).json(responseFormat("success", user, "User fetched"));
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
   },
 
-  async creaateRole(req, res) {
+  // PUT /users/:id
+  async updateUser(req, res) {
     try {
-      const genre = await userRoleService.createRole(req.body, req.user?.id);
-      res.status(201).json(responseFormat("success", genre, "Genre created"));
+      const user = await userService.updateUser(req.params.id, req.body);
+      res.status(200).json(responseFormat("success", user, "User updated"));
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
   },
 
-  // PUT /genres/:id
-  async updateRole(req, res) {
+  // PUT /users/:id/password
+  async updatePassword(req, res) {
     try {
-      const genre = await userRoleService.updateRole(
-        parseInt(req.params.id),
-        req.body,
-        req.user?.id,
-      );
-      res.status(200).json(responseFormat("success", genre, "Genre updated"));
+      const user = await userService.updatePassword(req.params.id, req.body);
+      res.status(200).json(responseFormat("success", user, "Password updated"));
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
   },
 
-  // DELETE /reviews/:id
+  // DELETE /users/:id
   async deleteUser(req, res) {
     try {
-      const review = await userService.deleteUser(
-        req.params.id,
-        // req.user?.id,
-      );
-      res.status(200).json(responseFormat("success", review, "Review deleted"));
+      const user = await userService.deleteUser(req.params.id);
+      res.status(200).json(responseFormat("success", user, "User deleted"));
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }

@@ -1,66 +1,122 @@
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "../lib/prisma.js";
 
-async function getAllUsers() {
-  return await prisma.user.findMany({
+async function getAllUsers(query = {}) {
+  const { search, workspaceId, isActive, page = 1, limit = 10 } = query;
+
+  const where = {};
+
+  if (search) {
+    where.OR = [
+      { username: { contains: search } },
+      { email: { contains: search } },
+      { firstName: { contains: search } },
+      { lastName: { contains: search } },
+    ];
+  }
+
+  if (isActive !== undefined) {
+    where.isActive = isActive === "true";
+  }
+
+  if (workspaceId) {
+    where.workspaceMembers = {
+      some: { workspaceId },
+    };
+  }
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: parseInt(limit),
+      include: {
+        avatarFile: true,
+        workspaceMembers: {
+          include: {
+            workspace: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return {
+    users,
+    total,
+    page: parseInt(page),
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+async function getUserById(id) {
+  return await prisma.user.findUnique({
+    where: { id },
     include: {
-      roleMaps: {
+      avatarFile: true,
+      preferences: true,
+      workspaceMembers: {
         include: {
-          role: true,
+          workspace: {
+            select: { id: true, name: true, logoUrl: true },
+          },
+        },
+      },
+      projectMembers: {
+        include: {
+          project: {
+            select: { id: true, name: true, projectKey: true },
+          },
         },
       },
     },
   });
 }
 
-async function getUserById(id) {
-  return await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
-  });
-}
-
-async function getUserByEmail(email) {
-  return await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
-}
-
-async function createRole(data) {
-  return await prisma.userRole.create({
+async function updateUser(id, data) {
+  return await prisma.user.update({
+    where: { id },
     data: {
-      roleName: data.roleName,
-      description: data.description,
+      username: data.username,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      avatarUrl: data.avatarUrl,
+      avatarFileId: data.avatarFileId,
     },
   });
 }
 
-async function updateRole(id, data) {
-  return await prisma.userRole.update({
-    where: {
-      id: id,
-    },
-    data: {
-      roleName: data.roleName,
-      description: data.description,
-    },
+async function updatePassword(id, data) {
+  const bcrypt = await import("bcrypt");
+  const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+
+  return await prisma.user.update({
+    where: { id },
+    data: { passwordHash: hashedPassword },
+  });
+}
+
+async function deactivateUser(id) {
+  return await prisma.user.update({
+    where: { id },
+    data: { isActive: false },
   });
 }
 
 async function deleteUser(id) {
   return await prisma.user.delete({
-    where: {
-      id: id,
-    },
+    where: { id },
   });
 }
 
 export default {
   getAllUsers,
   getUserById,
-  createRole,
-  updateRole,
+  updateUser,
+  updatePassword,
+  deactivateUser,
   deleteUser,
 };
