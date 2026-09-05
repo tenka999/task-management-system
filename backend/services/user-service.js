@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma.js";
 
 async function getAllUsers(query = {}) {
+  console.log("getAllUsers query:", query);
   const { search, workspaceId, isActive, page = 1, limit = 10 } = query;
 
   const where = {};
@@ -29,8 +30,8 @@ async function getAllUsers(query = {}) {
       where,
       skip: (page - 1) * limit,
       take: parseInt(limit),
+      // HAPUS avatarUrl dari include
       include: {
-        avatarFile: true,
         workspaceMembers: {
           include: {
             workspace: {
@@ -38,6 +39,8 @@ async function getAllUsers(query = {}) {
             },
           },
         },
+        // Tambahkan relation lain jika perlu, misal:
+        // preferences: true,
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -45,23 +48,29 @@ async function getAllUsers(query = {}) {
   ]);
 
   return {
-    users,
+    users, // avatarUrl otomatis terambil karena scalar field
     total,
     page: parseInt(page),
     totalPages: Math.ceil(total / limit),
   };
 }
-
 async function getUserById(id) {
   return await prisma.user.findUnique({
     where: { id },
     include: {
-      avatarFile: true,
+      // avatarUrl: true,
       preferences: true,
       workspaceMembers: {
         include: {
           workspace: {
-            select: { id: true, name: true, logoUrl: true },
+            select: {
+              id: true,
+              name: true,
+              logoUrl: true,
+              type: true,
+              slug: true,
+              icon: true,
+            },
           },
         },
       },
@@ -84,7 +93,7 @@ async function updateUser(id, data) {
       firstName: data.firstName,
       lastName: data.lastName,
       avatarUrl: data.avatarUrl,
-      avatarFileId: data.avatarFileId,
+      // avatarFileId: data.avatarFileId,
     },
   });
 }

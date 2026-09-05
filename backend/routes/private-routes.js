@@ -10,22 +10,24 @@ import labelController from "../controllers/label-controller.js";
 import sprintController from "../controllers/sprint-controller.js";
 import notificationController from "../controllers/notification-controller.js";
 import documentController from "../controllers/document-controller.js";
+import attachmentController from "../controllers/attachment-controller.js";
 import timeLogController from "../controllers/time-log-controller.js";
 import activityController from "../controllers/activity-controller.js";
 import dependencyController from "../controllers/depedency-controller.js";
 import { upload } from "../middlewares/upload.js";
+import { uploadWorkspaceLogo } from "../middlewares/upload-workspace-logo.js";
 
 const privateRouter = Router();
 
 privateRouter.use(authMiddleWare);
 
-//#region user
-privateRouter.get("/user", userController.getAllUsers);
-privateRouter.get("/user/:id", userController.getAllUserById);
-privateRouter.post("/user", userController.creaateRole);
-privateRouter.put("/user/:id", userController.updateRole);
-privateRouter.delete("/user/:id", userController.deleteUser);
-//#endregion user
+// //#region user
+// privateRouter.get("/user", userController.getAllUsers);
+// privateRouter.get("/user/:id", userController.getAllUserById);
+// privateRouter.post("/user", userController.creaateRole);
+// privateRouter.put("/user/:id", userController.updateRole);
+// privateRouter.delete("/user/:id", userController.deleteUser);
+// //#endregion user
 
 //#region role
 privateRouter.get("/role", userRoleController.getAllRole);
@@ -35,24 +37,31 @@ privateRouter.put("/role/:id", userRoleController.updateRole);
 privateRouter.delete("/role/:id", userRoleController.deleteRole);
 //#endregion role
 
-//#region users
+// #region users
 privateRouter.get("/user", userController.getAllUsers);
 privateRouter.get("/user/:id", userController.getUserById);
 privateRouter.put("/user/:id", userController.updateUser);
 privateRouter.put("/user/:id/password", userController.updatePassword);
-privateRouter.delete(
-  "/user/:id",
-
-  authorize(["SUPER_ADMIN", "ADMIN"]),
-  userController.deleteUser,
-);
+privateRouter.delete("/user/:id", userController.deleteUser);
 //#endregion users
 
 //#region workspaces
 privateRouter.get("/workspaces", workspaceController.getAllWorkspaces);
 privateRouter.get("/workspace/:id", workspaceController.getWorkspaceById);
-privateRouter.post("/workspace", workspaceController.createWorkspace);
-privateRouter.put("/workspace/:id", workspaceController.updateWorkspace);
+privateRouter.get(
+  "/workspace/check-slug/:slug",
+  workspaceController.getWorkspaceBySlug,
+);
+privateRouter.post(
+  "/workspace",
+  uploadWorkspaceLogo.single("logo"),
+  workspaceController.createWorkspace,
+);
+privateRouter.put(
+  "/workspace/:id",
+  uploadWorkspaceLogo.single("logo"),
+  workspaceController.updateWorkspace,
+);
 privateRouter.delete("/workspace/:id", workspaceController.deleteWorkspace);
 
 // Workspace members

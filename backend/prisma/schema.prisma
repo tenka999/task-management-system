@@ -112,6 +112,7 @@ model Workspace {
   slug        String          @unique
   description String?
   logoUrl     String?         @map("logo_url")
+  icon        String?
   type        WorkspaceType   @default(TEAM)
   status      WorkspaceStatus @default(ACTIVE)
   ownerId     String          @map("owner_id")

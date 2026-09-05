@@ -1,4 +1,4 @@
-import dependencyService from "../services/dependency-service.js";
+import dependencyService from "../services/depedency-service.js";
 import { responseFormat } from "../utils/helper.js";
 
 const dependencyController = {

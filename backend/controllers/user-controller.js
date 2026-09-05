@@ -4,6 +4,7 @@ import { responseFormat } from "../utils/helper.js";
 const userController = {
   // GET /users
   async getAllUsers(req, res) {
+    console.log("userController loaded");
     try {
       const users = await userService.getAllUsers(req.query);
       res

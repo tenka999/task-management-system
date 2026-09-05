@@ -8,6 +8,7 @@ async function getAllWorkspaces(userId, query = {}) {
       some: { userId },
     },
   };
+  console.log("wo", userId, query);
 
   if (type) where.type = type;
   if (status) where.status = status;
@@ -18,7 +19,6 @@ async function getAllWorkspaces(userId, query = {}) {
       skip: (page - 1) * limit,
       take: parseInt(limit),
       include: {
-        logoFile: true,
         _count: {
           select: {
             members: true,
@@ -44,7 +44,6 @@ async function getWorkspaceById(id) {
   return await prisma.workspace.findUnique({
     where: { id },
     include: {
-      logoFile: true,
       owner: {
         select: {
           id: true,
@@ -80,14 +79,39 @@ async function getWorkspaceById(id) {
   });
 }
 
-async function createWorkspace(data, userId) {
+async function getWorkspaceBySlug(slug) {
+  const checkSlug = await prisma.workspace.findUnique({ where: { slug } });
+  if (checkSlug) return true;
+  return false;
+}
+
+async function createWorkspace(data, userId, logoUrl) {
+  let slug = data.slug || data.name.toLowerCase().replace(/\s+/g, "-");
+  let finalSlug = slug;
+  let counter = 1;
+
+  // Cek apakah slug sudah ada
+  while (true) {
+    const existing = await prisma.workspace.findUnique({
+      where: { slug: finalSlug },
+    });
+
+    if (!existing) break;
+
+    // Tambahkan angka increment
+    finalSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
   return await prisma.workspace.create({
     data: {
       name: data.name,
-      slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
+      slug: finalSlug,
       description: data.description,
       type: data.type || "TEAM",
       ownerId: userId,
+      icon: data.icon,
+      logoUrl: logoUrl,
       members: {
         create: {
           userId,
@@ -105,14 +129,15 @@ async function createWorkspace(data, userId) {
   });
 }
 
-async function updateWorkspace(id, data) {
+async function updateWorkspace(id, data, logoUrl) {
+  console.log("update", id, data);
   return await prisma.workspace.update({
     where: { id },
     data: {
       name: data.name,
       description: data.description,
-      logoUrl: data.logoUrl,
-      logoFileId: data.logoFileId,
+      logoUrl: logoUrl,
+      icon: data.icon,
       status: data.status,
       type: data.type,
     },
@@ -189,6 +214,7 @@ async function inviteMember(workspaceId, data, invitedById) {
 export default {
   getAllWorkspaces,
   getWorkspaceById,
+  getWorkspaceBySlug,
   createWorkspace,
   updateWorkspace,
   deleteWorkspace,

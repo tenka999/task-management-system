@@ -28,6 +28,19 @@ const workspaceController = {
       res.status(500).json({ success: false, message: error.message });
     }
   },
+  // GET /workspaces/:slug
+  async getWorkspaceBySlug(req, res) {
+    try {
+      const workspace = await workspaceService.getWorkspaceBySlug(
+        req.params.slug,
+      );
+      res
+        .status(200)
+        .json(responseFormat("success", workspace, "Workspace fetched"));
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
 
   // POST /workspaces
   async createWorkspace(req, res) {
@@ -46,10 +59,13 @@ const workspaceController = {
 
   // PUT /workspaces/:id
   async updateWorkspace(req, res) {
+    console.log(req.body);
+    console.log(req.file);
     try {
       const workspace = await workspaceService.updateWorkspace(
         req.params.id,
         req.body,
+        req.file?.filename,
       );
       res
         .status(200)
