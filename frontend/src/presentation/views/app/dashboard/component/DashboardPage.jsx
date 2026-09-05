@@ -14,7 +14,7 @@ import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useUserApi } from "@/presentation/logics/app/user";
+import { useUserApi } from "@/presentation/logics/app/useUser";
 import "@/styles/dashboard.css";
 import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react";
 import { SectionCardsTask } from "@/components/section-cards-task";
@@ -23,7 +23,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export default function DahsboardPage() {
   const { useAllUsers } = useUserApi();
   const { data } = useAllUsers();
-  console.log(data);
   return (
     <ScrollArea className="w-full h-[calc(100vh-60px)]">
       <div className="dashboard-page">

@@ -66,7 +66,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { WorkspaceForm } from "./workspace-form";
 import { workspaceService } from "@/services/workspace.service";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "./ui/toast";
 
 const statusConfig = {
   ACTIVE: { label: "Active", variant: "success" },
@@ -101,8 +101,6 @@ export function WorkspaceTable() {
   const [selectedWorkspace, setSelectedWorkspace] = React.useState(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const { toast } = useToast();
-
   // Fetch data
   const fetchData = React.useCallback(async () => {
     setLoading(true);
@@ -110,7 +108,7 @@ export function WorkspaceTable() {
       const response = await workspaceService.getAll();
       setData(response);
     } catch (error) {
-      toast({
+      toast.add({
         title: "Error",
         description: "Failed to fetch workspaces",
         variant: "destructive",
@@ -128,15 +126,15 @@ export function WorkspaceTable() {
   const handleCreate = async (values) => {
     setIsSubmitting(true);
     try {
-      await workspaceService.create(values);
-      toast({
+      // await workspaceService.create(values);
+      toast.add({
         title: "Success",
         description: "Workspace created successfully",
       });
       setCreateModalOpen(false);
       fetchData();
     } catch (error) {
-      toast({
+      toast.add({
         title: "Error",
         description: "Failed to create workspace",
         variant: "destructive",
@@ -150,7 +148,7 @@ export function WorkspaceTable() {
     setIsSubmitting(true);
     try {
       await workspaceService.update(selectedWorkspace.id, values);
-      toast({
+      toast.add({
         title: "Success",
         description: "Workspace updated successfully",
       });
@@ -158,7 +156,7 @@ export function WorkspaceTable() {
       setSelectedWorkspace(null);
       fetchData();
     } catch (error) {
-      toast({
+      toast.add({
         title: "Error",
         description: "Failed to update workspace",
         variant: "destructive",
@@ -171,7 +169,7 @@ export function WorkspaceTable() {
   const handleDelete = async () => {
     try {
       await workspaceService.delete(selectedWorkspace.id);
-      toast({
+      toast.add({
         title: "Success",
         description: "Workspace deleted successfully",
       });
@@ -179,7 +177,7 @@ export function WorkspaceTable() {
       setSelectedWorkspace(null);
       fetchData();
     } catch (error) {
-      toast({
+      toast.add({
         title: "Error",
         description: "Failed to delete workspace",
         variant: "destructive",

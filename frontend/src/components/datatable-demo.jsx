@@ -760,7 +760,7 @@ export function DataTableDemo({
       selectedRows.length > 0 ? selectedRows : table.getFilteredRowModel().rows;
 
     if (exportRows.length === 0) {
-      toast({
+      toast.add({
         title: "No data to export",
         description: "There are no rows to export.",
         variant: "destructive",
@@ -791,7 +791,7 @@ export function DataTableDemo({
     a.click();
     window.URL.revokeObjectURL(url);
 
-    toast({
+    toast.add({
       title: "Export Successful",
       description: `${exportRows.length} rows exported to CSV.`,
     });
@@ -805,7 +805,7 @@ export function DataTableDemo({
     setStatusFilter("all");
     setRoleFilter("all-users");
     table.resetColumnFilters();
-    toast({
+    toast.add({
       title: "Filters Cleared",
       description: "All filters have been reset.",
     });

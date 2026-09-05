@@ -35,132 +35,142 @@ import { Tools } from "tabler-icons-react";
 import { NavTeams } from "./nav-team";
 import { Button } from "./ui/button";
 import { ButtonGroup } from "./ui/button-group";
-
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  workspaces: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/app",
-      icon: Home,
-    },
-
-    {
-      title: "My Tasks",
-      url: "/app/tasks",
-      icon: Files,
-    },
-    {
-      title: "Calender",
-      url: "/app/",
-      icon: CalendarDays,
-    },
-    {
-      title: "Agent",
-      url: "#",
-      icon: Bot,
-    },
-    // {
-    //   title: "Agent",
-    //   url: "#",
-    //   icon: Bot,
-    //   items: [
-    //     {
-    //       title: "General",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Team",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Billing",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Limits",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-  ],
-  projects: [
-    {
-      name: "Projects",
-      url: "/app/projects",
-      icon: Frame,
-    },
-    {
-      name: "Sprint",
-      url: "/app/sprint",
-      icon: Calendar,
-    },
-    {
-      name: "Teams",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Members",
-      url: "#",
-      icon: Map,
-    },
-  ],
-  teams: [
-    {
-      title: "LNDev Core",
-      url: "#",
-      icon: Tools,
-      isActive: true,
-      items: [
-        {
-          title: "Home",
-          url: "#",
-        },
-        {
-          title: "Task",
-          url: "#",
-        },
-        {
-          title: "Sprint",
-          url: "#",
-        },
-        {
-          title: "Project",
-          url: "#",
-        },
-        {
-          title: "Members",
-          url: "#",
-        },
-      ],
-    },
-  ],
-};
+import { useUserApi } from "@/presentation/logics/app/useUser";
+import SecureStorage from "@/helpers/SecureStorage";
 
 export function AppSidebar({ ...props }) {
+  const user = SecureStorage.getStorage("user");
+  // console.log("User from SecureStorage:", user);
+  const { useUserById } = useUserApi();
+  const { data: userData, isLoading: userLoading } = useUserById(user.id);
+  const workspaces =
+    userData?.workspaceMembers?.map((workspace) => workspace.workspace) || [];
+  // console.log("wk", workspaces);
+
+  // This is sample data.
+  const data = {
+    user: {
+      name: userData?.username,
+      email: userData?.email,
+      avatar: userData?.avatarUrl,
+    },
+    workspaces: [
+      {
+        name: "Acme Inc",
+        logo: GalleryVerticalEnd,
+        plan: "Enterprise",
+      },
+      {
+        name: "Acme Corp.",
+        logo: AudioWaveform,
+        plan: "Startup",
+      },
+      {
+        name: "Evil Corp.",
+        logo: Command,
+        plan: "Free",
+      },
+    ],
+    navMain: [
+      {
+        title: "Dashboard",
+        url: "/app",
+        icon: Home,
+      },
+
+      {
+        title: "My Tasks",
+        url: "/app/tasks",
+        icon: Files,
+      },
+      {
+        title: "Calender",
+        url: "/app/",
+        icon: CalendarDays,
+      },
+      {
+        title: "Agent",
+        url: "#",
+        icon: Bot,
+      },
+      // {
+      //   title: "Agent",
+      //   url: "#",
+      //   icon: Bot,
+      //   items: [
+      //     {
+      //       title: "General",
+      //       url: "#",
+      //     },
+      //     {
+      //       title: "Team",
+      //       url: "#",
+      //     },
+      //     {
+      //       title: "Billing",
+      //       url: "#",
+      //     },
+      //     {
+      //       title: "Limits",
+      //       url: "#",
+      //     },
+      //   ],
+      // },
+    ],
+    projects: [
+      {
+        name: "Projects",
+        url: "/app/projects",
+        icon: Frame,
+      },
+      {
+        name: "Sprint",
+        url: "/app/sprint",
+        icon: Calendar,
+      },
+      {
+        name: "Teams",
+        url: "#",
+        icon: PieChart,
+      },
+      {
+        name: "Members",
+        url: "#",
+        icon: Map,
+      },
+    ],
+    teams: [
+      {
+        title: "LNDev Core",
+        url: "#",
+        icon: Tools,
+        isActive: true,
+        items: [
+          {
+            title: "Home",
+            url: "#",
+          },
+          {
+            title: "Task",
+            url: "#",
+          },
+          {
+            title: "Sprint",
+            url: "#",
+          },
+          {
+            title: "Project",
+            url: "#",
+          },
+          {
+            title: "Members",
+            url: "#",
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
@@ -168,7 +178,7 @@ export function AppSidebar({ ...props }) {
       {...props}
     >
       <SidebarHeader>
-        <TeamSwitcher teams={data.workspaces} />
+        <TeamSwitcher teams={workspaces} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
@@ -176,7 +186,7 @@ export function AppSidebar({ ...props }) {
         <NavTeams items={data.teams} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

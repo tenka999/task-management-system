@@ -446,10 +446,10 @@ export const columns = [
       const handleCopyId = () => {
         console.log(payment.id);
         navigator.clipboard.writeText(payment.id);
-        // toast.add({
-        //   type: "Copied!",
-        //   description: "Event has been created.",
-        // });
+        toast.add({
+          type: "Copied!",
+          description: "Event has been created.",
+        });
         toast.add({
           title: "Copied!",
           description: `Payment ID ${payment.id} copied to clipboard.`,

@@ -96,9 +96,7 @@ const LogoUploader = ({ field }) => {
                   <ImagePlus className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">
-                    Tarik & letakkan file di sini atau klik untuk memilih
-                  </p>
+                  <p className="text-sm font-medium">Drag & Drop Logo</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     PNG, JPG, SVG, WebP (Max 5MB)
                   </p>

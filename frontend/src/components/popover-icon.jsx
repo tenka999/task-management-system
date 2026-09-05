@@ -69,6 +69,7 @@ const icons = [
 ];
 
 export function PopoverIcon({
+  field,
   variant = "outline",
   item,
   showLabel = false,
@@ -102,6 +103,7 @@ export function PopoverIcon({
         />
         <PopoverContent align="center" className="w-full p-0 " side="bottom">
           <CommandIcon
+            field={field}
             icons={icons}
             setIcon={setIcon}
             open={open}

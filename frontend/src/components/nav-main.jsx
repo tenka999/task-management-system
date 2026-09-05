@@ -32,10 +32,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useNavigate } from "react-router";
 
 export function NavMain({ items }) {
   const { isMobile } = useSidebar();
-
+  const navigate = useNavigate();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Task Management</SidebarGroupLabel>
@@ -44,7 +45,10 @@ export function NavMain({ items }) {
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
               render={
-                <a href={item.url} className="flex items-center gap-2">
+                <a
+                  className="flex items-center gap-2"
+                  onClick={() => navigate(item.url)}
+                >
                   <item.icon />
                   <span>{item.title}</span>
                 </a>

@@ -1,103 +1,68 @@
+// services/api/User.js
+
 import baseApi from "@/core/api/baseApi";
 
-export const usersApi = {
-  // GET /users
-  findAll: async () => {
-    console.log("Fetching all users");
+export const userApi = {
+  // GET /user
+  findAll: async (params) => {
     const response = await baseApi.get("/user", {
+      params,
       headers: { "require-auth": true },
     });
+
     if (response.status !== 200) throw new Error("Failed to fetch users");
     return response.data.data;
   },
 
-  // GET /users/:id
+  // GET /user/:id
   findOne: async (id) => {
     const response = await baseApi.get(`/user/${id}`, {
       headers: { "require-auth": true },
     });
+
     if (response.status !== 200) throw new Error("Failed to fetch user");
     return response.data.data;
   },
 
-  // GET /users/email/:email
-  findByEmail: async (email) => {
-    const response = await baseApi.get(`/users/email/${email}`, {
-      headers: { "require-auth": true },
-    });
-    if (response.status !== 200)
-      throw new Error("Failed to fetch user by email");
-    return response.data.data;
-  },
-
-  // POST /users
+  // POST /user
   create: async (payload) => {
-    const formData = new FormData();
-    Object.keys(payload).forEach((key) => {
-      formData.append(key, payload[key]);
-    });
-
-    const response = await baseApi.post("/users", formData, {
+    const response = await baseApi.post("/user", payload, {
       headers: { "require-auth": true },
     });
 
     if (response.status !== 201) throw new Error("Failed to create user");
-    return response.data;
+    return response.data.data;
   },
 
-  // PUT /users/:id
+  // PUT /user/:id
   update: async (id, payload) => {
-    const formData = new FormData();
-    Object.keys(payload).forEach((key) => {
-      formData.append(key, payload[key]);
-    });
-
-    const response = await baseApi.put(`/users/${id}`, formData, {
+    const response = await baseApi.put(`/user/${id}`, payload, {
       headers: { "require-auth": true },
     });
 
     if (response.status !== 200) throw new Error("Failed to update user");
-    return response.data;
+    return response.data.data;
   },
 
-  // DELETE /users/:id
-  remove: async ({ id }) => {
-    console.log("id", id);
-    const response = await baseApi.delete(`/users/${id}`, {
+  // PUT /user/:id/password
+  updatePassword: async (id, payload) => {
+    const response = await baseApi.put(`/user/${id}/password`, payload, {
       headers: { "require-auth": true },
     });
-    if (response.status !== 200) throw new Error("Failed to delete user");
-    return response.data;
-  },
-  removeSelected: async ({ ids }) => {
-    console.log("ids", ids);
-    const response = await baseApi.post(
-      `/users/multiple-delete`,
-      {
-        ids: ids,
-      },
-      {
-        headers: { "require-auth": true },
-      },
-    );
-    // if (response.status !== 201) throw new Error("Failed to delete user");
-    return response.data;
+
+    if (response.status !== 200) throw new Error("Failed to update password");
+    return response.data.data;
   },
 
-  restoreSelected: async ({ ids }) => {
-    console.log("ids", ids);
-    const response = await baseApi.post(
-      `/users/multiple-restore`,
-      {
-        ids: ids,
-      },
-      {
-        headers: { "require-auth": true },
-      },
-    );
-    // if (response.status !== 201) throw new Error("Failed to delete user");
-    return response.data;
+  // DELETE /user/:id
+  remove: async (id) => {
+    const response = await baseApi.delete(`/user/${id}`, {
+      headers: { "require-auth": true },
+    });
+
+    if (response.status !== 200) throw new Error("Failed to delete user");
+    return response.data.data;
   },
 };
 
-export default usersApi;
+export default userApi;

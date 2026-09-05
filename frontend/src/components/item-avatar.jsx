@@ -110,7 +110,6 @@ const frontendMember = [
 ];
 
 export function ItemAvatar({ tabMember = true, tabTeamMember }) {
-  console.log(tabTeamMember);
   const [variant, setVariant] = React.useState(null);
   const teamMember =
     tabTeamMember === "design"

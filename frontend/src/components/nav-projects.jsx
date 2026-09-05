@@ -18,10 +18,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useNavigate } from "react-router";
 
 export function NavProjects({ projects }) {
   const { isMobile } = useSidebar();
-
+  const navigate = useNavigate();
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Workspace</SidebarGroupLabel>
@@ -30,7 +31,10 @@ export function NavProjects({ projects }) {
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton
               render={
-                <a href={item.url} className="flex items-center gap-2">
+                <a
+                  onClick={() => navigate(item.url)}
+                  className="flex items-center gap-2"
+                >
                   <item.icon />
                   <span>{item.name}</span>
                 </a>

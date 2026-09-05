@@ -20,7 +20,7 @@ import {
   IconAntennaBars5,
 } from "@tabler/icons-react";
 
-export function CommandIcon({ setIcon, setOpen, icons }) {
+export function CommandIcon({ setIcon, setOpen, icons, field }) {
   const handleSelect = (id, icon, label) => {
     setOpen(false);
     setIcon({ id, icon, label });
@@ -30,10 +30,13 @@ export function CommandIcon({ setIcon, setOpen, icons }) {
       <CommandInput placeholder="Set Icon" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup>
+        <CommandGroup onValueChange={field.onChange} defaultValue={field.value}>
           {icons.map((item) => (
             <CommandItem
-              onSelect={() => handleSelect(item.id, item.icon, item.label)}
+              onSelect={() => {
+                field.onChange(item.id);
+                handleSelect(item.id, item.icon, item.label);
+              }}
               key={item.id}
               value={item.id}
               className="gap-2 text-sm"
