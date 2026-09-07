@@ -8,6 +8,19 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
+import useConfig from "@/hooks/config/useConfig";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,9 +38,28 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+
+import { useState } from "react";
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
+  const { Logout } = useConfig();
+  const [openAlert, setOpenAlert] = useState(false);
+
+  const handleLogout = () => {
+    // toast.add({
+    //   type: "Copied!",
+    //   description: "Event has been created.",
+    // });
+    setOpenAlert(false);
+    Logout();
+    const id = toast.add({
+      variant: "destructive",
+      title: "Logged out",
+      description: `You have been logged out.`,
+    });
+  };
 
   return (
     <SidebarMenu>
@@ -96,10 +128,38 @@ export function NavUser({ user }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+
+            <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
+              <AlertDialogTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-red-600 w-full justify-start"
+                  >
+                    <LogOut />
+                    Logout
+                  </Button>
+                }
+              ></AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to logout?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleLogout}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Logout
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

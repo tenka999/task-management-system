@@ -90,6 +90,8 @@ import {
 
 import { IconPalette, Icon123, IconCircleFilled } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useUserApi } from "@/presentation/logics/app/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 const icons = [
   {
@@ -130,21 +132,21 @@ const icons = [
 ];
 
 export function TeamSwitcher({ teams }) {
-  const { isMobile } = useSidebar();
-  const [activeTeam, setActiveTeam] = React.useState(null);
-  const [showModal, setShowModal] = React.useState(false);
+  const { activeWorkspace, workspaces, switchWorkspace, isSwitching } =
+    useWorkspace();
 
+  const { isMobile } = useSidebar();
+  const [activeTeam, setActiveTeam] = React.useState(activeWorkspace);
+  const [showModal, setShowModal] = React.useState(false);
   const [createModalOpen, setCreateModalOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  console.log("active", activeTeam);
   const ActiveTeamLogo =
     activeTeam?.logoUrl &&
     `http://localhost:5000/api/workspace-logo/${activeTeam?.logoUrl}`;
   const ActiveTeamIcon = icons.find(
     (item) => item.id === activeTeam?.icon,
   )?.icon;
-
   const {
     useAllWorkspace,
     createWorkspace,
@@ -152,6 +154,8 @@ export function TeamSwitcher({ teams }) {
     deleteWorkspace,
     deleteWorkspaces,
   } = useWorkspaceApi();
+
+  const {} = useUserApi();
 
   const handleCreateWorkspace = async (values) => {
     setIsSubmitting(true);
@@ -173,6 +177,23 @@ export function TeamSwitcher({ teams }) {
       setShowModal(false);
     }
   };
+
+  const handleSwitchWorkspace = async (team) => {
+    setActiveTeam(team);
+    if (team.id === activeWorkspace?.id) {
+      setShowModal(false);
+
+      return;
+    }
+
+    try {
+      await switchWorkspace(team.id);
+      setShowModal(false);
+    } catch (error) {
+      console.error("Failed to switch workspace:", error);
+    }
+  };
+
   function DropdownWorkspace() {
     {
       teams.map((team, index) => {
@@ -202,10 +223,10 @@ export function TeamSwitcher({ teams }) {
   }
 
   React.useEffect(() => {
-    if (teams.length > 0 && !activeTeam) {
-      setActiveTeam(teams[0]);
+    if (!activeTeam) {
+      setActiveTeam(activeWorkspace);
     }
-  }, [teams, activeTeam]);
+  }, [activeWorkspace, activeTeam]);
   return (
     <>
       <SidebarMenu className="">
@@ -223,18 +244,15 @@ export function TeamSwitcher({ teams }) {
                         src={`http://localhost:5000/api/workspace-logo/${activeTeam.logoUrl}`}
                         alt="@shadcn"
                       />
-                      <AvatarFallback>CN</AvatarFallback>
+                      <AvatarFallback>
+                        {activeTeam?.name.slice(0, 2)}
+                      </AvatarFallback>
                     </Avatar>
                   ) : (
-                    <div className="flex size-6 items-center justify-center rounded-md border">
-                      {ActiveTeamLogo && (
-                        <ActiveTeamLogo className="size-3.5 shrink-0" />
-                      )}
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                      {ActiveTeamIcon && <ActiveTeamIcon className="size-4" />}
                     </div>
                   )}
-                  {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <ActiveTeamIcon className="size-4" />
-                  </div> */}
 
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">
@@ -272,9 +290,21 @@ export function TeamSwitcher({ teams }) {
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent className="rounded-lg">
                       <DropdownMenuItem className="rounded-lg">
-                        {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                          <ActiveTeamIcon className="size-4" />
-                        </div> */}
+                        {activeTeam?.logoUrl ? (
+                          <Avatar size="lg">
+                            <AvatarImage
+                              src={`http://localhost:5000/api/workspace-logo/${activeTeam.logoUrl}`}
+                              alt="@shadcn"
+                            />
+                            <AvatarFallback>CN</AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                            {ActiveTeamIcon && (
+                              <ActiveTeamIcon className="size-4" />
+                            )}
+                          </div>
+                        )}
                         <div className="grid flex-1 text-left text-sm leading-tight">
                           <span className="truncate font-medium">
                             {activeTeam?.name}
@@ -311,19 +341,21 @@ export function TeamSwitcher({ teams }) {
                         return (
                           <DropdownMenuItem
                             key={team.id}
-                            onClick={() => setActiveTeam(team)}
+                            onClick={() => handleSwitchWorkspace(team)}
                             className="gap-2 p-2"
                           >
                             {team?.logoUrl ? (
-                              <Avatar size="sm">
+                              <Avatar size="">
                                 <AvatarImage
                                   src={`http://localhost:5000/api/workspace-logo/${team.logoUrl}`}
                                   alt="@shadcn"
                                 />
-                                <AvatarFallback>CN</AvatarFallback>
+                                <AvatarFallback>
+                                  {team.name.slice(0, 1)}
+                                </AvatarFallback>
                               </Avatar>
                             ) : (
-                              <div className="flex size-6 items-center justify-center rounded-md border">
+                              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                                 {Icon && <Icon className="size-3.5 shrink-0" />}
                               </div>
                             )}

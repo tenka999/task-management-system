@@ -96,7 +96,7 @@ export function PopoverAvatar({
               onClick={() => setOpen(!open)}
               variant={variant}
               size={size}
-              className="    gap-2 text-xs "
+              className="gap-2 text-xs "
             >
               <Avatar size={sizeAvatar}>
                 <AvatarImage

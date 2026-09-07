@@ -56,6 +56,10 @@ const TaskPage = React.lazy(
 const WorkspacePage = React.lazy(
   () => import("@/presentation/views/app/dashboard/component/WorkspacePage"),
 );
+const WorkspaceSettingsPage = React.lazy(
+  () =>
+    import("@/presentation/views/app/dashboard/component/WorkspaceSettingsPage"),
+);
 const Orders = React.lazy(
   () => import("@/presentation/views/dashboard/Pages/Orders"),
 );
@@ -153,6 +157,10 @@ const routes = createBrowserRouter(
         {
           path: "/app/settings/profile",
           Component: ProfileUserPage,
+        },
+        {
+          path: "/app/settings/workspace",
+          Component: WorkspaceSettingsPage,
         },
       ],
     },

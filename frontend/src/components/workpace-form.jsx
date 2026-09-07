@@ -247,7 +247,8 @@ export function WorkspaceForm({ initialData, onSubmit, isLoading }) {
                         <Select
                           className="w-full"
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          // defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">

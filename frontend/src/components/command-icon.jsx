@@ -30,11 +30,14 @@ export function CommandIcon({ setIcon, setOpen, icons, field }) {
       <CommandInput placeholder="Set Icon" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup onValueChange={field.onChange} defaultValue={field.value}>
+        <CommandGroup
+          // onValueChange={field?.onChange}
+          defaultValue={field?.value}
+        >
           {icons.map((item) => (
             <CommandItem
               onSelect={() => {
-                field.onChange(item.id);
+                field?.onChange(item.id);
                 handleSelect(item.id, item.icon, item.label);
               }}
               key={item.id}

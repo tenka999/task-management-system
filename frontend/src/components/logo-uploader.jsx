@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const LogoUploader = ({ field }) => {
+const LogoUploader = ({ field, title = true }) => {
   const [preview, setPreview] = useState(field.value || "");
   const [isDragging, setIsDragging] = useState(false);
 
@@ -53,7 +53,8 @@ const LogoUploader = ({ field }) => {
 
   return (
     <FormItem>
-      <FormLabel>Logo</FormLabel>
+      {title && <FormLabel>Logo</FormLabel>}
+      {/* <FormLabel>Logo</FormLabel> */}
       <FormControl>
         <div className="space-y-4">
           {/* URL Input */}
@@ -86,7 +87,7 @@ const LogoUploader = ({ field }) => {
                     }}
                   >
                     <X className="mr-2 h-4 w-4" />
-                    Hapus
+                    Remove
                   </Button>
                 </div>
               </div>

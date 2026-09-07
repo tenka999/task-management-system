@@ -8,6 +8,7 @@ import queryClient from "./config/queryClient";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "@/components/ui/toast";
+import { WorkspaceProvider } from "./context/WorkspaceProvider.jsx";
 const config = {
   ripple: true,
 };
@@ -17,8 +18,10 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <App />
-        <Toaster />
+        <WorkspaceProvider>
+          <App />
+          <Toaster />
+        </WorkspaceProvider>
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,

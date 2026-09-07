@@ -6,3 +6,4 @@ export const ToastContext = createContext({});
 export const ThemeContext = createContext({});
 export const HealthFilterContext = createContext({});
 export const MemberFilterContext = createContext({});
+export const WorkspaceContext = createContext(null);
