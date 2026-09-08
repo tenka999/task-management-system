@@ -34,7 +34,23 @@ export const workspaceApi = {
 
   // POST /workspace
   create: async (payload) => {
-    const response = await baseApi.post("/workspace", payload, {
+    const formData = new FormData();
+
+    formData.append("name", payload.name);
+    formData.append("description", payload.description || "");
+    formData.append("slug", payload.slug);
+    formData.append("type", payload.type);
+    formData.append("icon", payload.icon || "");
+
+    if (payload.settings) {
+      formData.append("settings", JSON.stringify(payload.settings));
+    }
+
+    // Hanya upload jika user memilih file baru
+    if (payload.logo instanceof File) {
+      formData.append("logo", payload.logo);
+    }
+    const response = await baseApi.post("/workspace", formData, {
       headers: { "require-auth": true },
     });
 
@@ -44,7 +60,41 @@ export const workspaceApi = {
 
   // PUT /workspace/:id
   update: async (id, payload) => {
-    const response = await baseApi.put(`/workspace/${id}`, payload, {
+    console.log("payload", payload);
+
+    const formData = new FormData();
+
+    formData.append("name", payload.name);
+    formData.append("description", payload.description || "");
+    formData.append("slug", payload.slug);
+    formData.append("type", payload.type);
+    formData.append("icon", payload.icon || "");
+    formData.append("status", payload.status || "");
+
+    if (payload.settings) {
+      formData.append("settings", JSON.stringify(payload.settings));
+    }
+
+    // Hanya upload jika user memilih file baru
+    if (payload.logo instanceof File) {
+      formData.append("logo", payload.logo);
+    }
+
+    const response = await baseApi.put(`/workspace/${id}`, formData, {
+      headers: {
+        "require-auth": true,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to update workspace");
+    }
+
+    return response.data.data;
+  },
+
+  deactive: async (id) => {
+    const response = await baseApi.put(`/workspace/${id}/deactive`, payload, {
       headers: { "require-auth": true },
     });
 

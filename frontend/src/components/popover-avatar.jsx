@@ -89,9 +89,6 @@ export function PopoverAvatar({
 
   const { useAllUsers } = useUserApi();
   const { data } = useAllUsers();
-  console.log(data?.users);
-
-  console.log(activeWorkspace);
 
   const avatars = data?.users.filter((member) => {
     return member.workspaceMembers.find(
@@ -100,9 +97,6 @@ export function PopoverAvatar({
         workspace.role !== "OWNER",
     );
   });
-
-  console.log(avatars);
-  console.log("id", activeWorkspace?.id);
 
   const [avatar, setAvatar] = useState({
     id: null,
@@ -119,10 +113,6 @@ export function PopoverAvatar({
         setAvatar(
           data?.users.find((avatar) => avatar.id === activeWorkspace.ownerId) ||
             {},
-        );
-        console.log(
-          "find",
-          data?.users.find((avatar) => avatar.id === activeWorkspace.ownerId),
         );
       }
     }

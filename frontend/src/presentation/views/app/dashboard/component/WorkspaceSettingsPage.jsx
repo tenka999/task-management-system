@@ -55,6 +55,8 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 
+import { toast } from "@/components/ui/toast";
+
 import { MemberFilterProvider } from "@/context/MemberFilterProvider";
 import { PopoverMembers } from "@/components/popover-members";
 import { PopoverIcon } from "@/components/popover-icon";
@@ -66,6 +68,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 // Schema validasi
 const workspaceSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
+
   slug: z
     .string()
     .min(2, "Slug must be at least 2 characters.")
@@ -73,15 +76,22 @@ const workspaceSchema = z.object({
       message:
         "Slug must contain only lowercase letters, numbers, and hyphens.",
     }),
+
   description: z.string().optional(),
-  logoUrl: z.string().url().optional().or(z.literal("")),
+
+  logo: z
+    .union([z.instanceof(File), z.string()])
+    .nullable()
+    .optional(),
+
   icon: z.string().optional().or(z.literal("")),
+
   type: z.enum(["PERSONAL", "TEAM", "ENTERPRISE"]),
+
   settings: z.object({
     allowGuest: z.boolean().optional(),
   }),
 });
-
 // Component Utama
 export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
   const { activeWorkspace, workspaces, switchWorkspace, isSwitching } =
@@ -90,8 +100,12 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
   // const [activeWorkspace, setactiveWorkspace] = useState(activeWorkspace);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isActive, setIsActive] = useState(activeWorkspace?.status ?? true);
+  const [isActive, setIsActive] = useState("ACTIVE");
   const [owner, setOwner] = useState(activeWorkspace?.owner || "jane.doe");
+  const settings =
+    typeof activeWorkspace?.settings === "string"
+      ? JSON.parse(activeWorkspace?.settings)
+      : activeWorkspace?.settings;
 
   const {
     useAllWorkspace,
@@ -108,7 +122,7 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
       name: "",
       slug: "",
       description: "",
-      logoUrl: "",
+      logo: null,
       icon: "",
       type: "TEAM",
       settings: {
@@ -118,79 +132,49 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
   });
 
   const handleSubmit = async (values) => {
+    setLoading(true);
     try {
-      await updateWorkspace.mutateAsync(values);
+      await updateWorkspace.mutateAsync({
+        id: activeWorkspace?.id,
+        payload: values,
+      });
       toast.add({
         title: "Success",
-        description: "Workspace created successfully",
+        description: "Workspace update successfully",
       });
       // fetchData();
     } catch (error) {
       toast.add({
         title: "Error",
-        description: "Failed to create workspace",
+        description: "Failed to update workspace",
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
-      setShowModal(false);
+      setLoading(false);
+      // setShowModal(false);
     }
-    // try {
-    //   setLoading(true);
-
-    //   const payload = {
-    //     ...values,
-    //     workspaceId,
-    //     isActive,
-    //   };
-
-    //   if (activeWorkspace?.id) {
-    //     // Update existing workspace
-    //     const response = await fetch(`/api/workspaces/${activeWorkspace.id}`, {
-    //       method: "PUT",
-    //       headers: { "Content-Type": "application/json" },
-    //       body: JSON.stringify(payload),
-    //     });
-
-    //     if (!response.ok) throw new Error("Failed to update workspace");
-    //     console.log("Workspace updated successfully");
-    //   } else {
-    //     // Create new workspace
-    //     const response = await fetch("/api/workspaces", {
-    //       method: "POST",
-    //       headers: { "Content-Type": "application/json" },
-    //       body: JSON.stringify(payload),
-    //     });
-
-    //     if (!response.ok) throw new Error("Failed to create workspace");
-    //     console.log("Workspace created successfully");
-    //   }
-
-    //   setOpen(false);
-    //   form.reset();
-    //   onSuccess?.();
-    // } catch (error) {
-    //   console.error("Error:", error);
-    // } finally {
-    //   setLoading(false);
-    // }
   };
 
   const handleDeactivate = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/workspaces/${activeWorkspace?.id}/deactivate`,
-        {
-          method: "POST",
-        },
-      );
-
-      if (!response.ok) throw new Error("Failed to deactivate workspace");
-
-      setIsActive(false);
+      await updateWorkspace.mutateAsync({
+        id: activeWorkspace?.id,
+        payload: { ...activeWorkspace, status: "SUSPENDED" },
+      });
+      setIsActive("SUSPENDED");
+      toast.add({
+        title: "Success",
+        description: "Workspace deactivated successfully",
+      });
+      setOpen(false);
     } catch (error) {
       console.error("Error:", error);
+      toast.add({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -199,20 +183,39 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
   const handleReactivate = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/workspaces/${activeWorkspace?.id}/reactivate`,
-        {
-          method: "POST",
-        },
-      );
-
-      if (!response.ok) throw new Error("Failed to reactivate workspace");
-
-      setIsActive(true);
+      await updateWorkspace.mutateAsync({
+        id: activeWorkspace?.id,
+        payload: { ...activeWorkspace, status: "ACTIVE" },
+      });
+      setIsActive("ACTIVE");
+      toast.add({
+        title: "Success",
+        description: "Workspace reactivated successfully",
+      });
+      setOpen(false);
     } catch (error) {
       console.error("Error:", error);
+      toast.add({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    try {
+      if (isActive) {
+        await handleDeactivate();
+      } else {
+        await handleReactivate();
+      }
+
+      setOpen(false);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -226,15 +229,21 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
 
   useEffect(() => {
     if (activeWorkspace) {
+      setIsActive(activeWorkspace.status);
       form.reset({
         name: activeWorkspace?.name || "",
         slug: activeWorkspace?.slug || "",
         description: activeWorkspace?.description || "",
-        logoUrl: activeWorkspace?.logoUrl || "",
+
+        // URL lama dari server
+        logo: activeWorkspace?.logoUrl || "",
+
         icon: activeWorkspace?.icon || "",
+
         type: activeWorkspace?.type || "TEAM",
+
         settings: {
-          allowGuest: activeWorkspace?.settings?.allowGuest || false,
+          allowGuest: settings.allowGuest || false,
         },
       });
     }
@@ -327,20 +336,19 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
                       {/* Logo */}
                       <FormField
                         control={form.control}
-                        name="logoUrl"
+                        name="logo"
                         render={({ field }) => (
                           <FormItem className="flex-1 flex flex-row items-center p-5 border-b">
                             <FormLabel className="w-1/3">Logo</FormLabel>
+
                             <FormControl className="w-2/3">
-                              <div className="flex items-center justify-end gap-4  ">
-                                <div className="flex flex-col gap-2 ">
+                              <div className="flex items-center justify-end gap-4">
+                                <div className="flex flex-col gap-2">
                                   <LogoUploader title={false} field={field} />
-                                  {/* <Button className="self-end" type="button">
-                                    Use Icon
-                                  </Button> */}
                                 </div>
                               </div>
                             </FormControl>
+
                             <FormMessage />
                           </FormItem>
                         )}
@@ -483,39 +491,45 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
                             htmlFor="workspace-status"
                             className="text-destructive"
                           >
-                            {isActive
+                            {isActive === "ACTIVE"
                               ? "Deactivate Workspace"
                               : "Reactivate Workspace"}
                           </Label>
                           <p className="text-sm text-muted-foreground">
-                            {isActive
+                            {isActive === "ACTIVE"
                               ? "Deactivating will prevent all members from accessing the workspace."
                               : "Reactivate to restore access for all members."}
                           </p>
                         </div>
-                        <AlertDialog>
+                        <AlertDialog open={open} onOpenChange={setOpen}>
                           <AlertDialogTrigger
                             render={
                               <Button
-                                variant={isActive ? "destructive" : "default"}
+                                variant={
+                                  isActive === "ACTIVE"
+                                    ? "destructive"
+                                    : "default"
+                                }
                                 size="sm"
                                 disabled={loading}
                                 type="button"
                               >
                                 <IconAlertTriangle className="w-4 h-4 mr-2" />
-                                {isActive ? "Deactivate" : "Reactivate"}
+                                {isActive === "ACTIVE"
+                                  ? "Deactivate"
+                                  : "Reactivate"}
                               </Button>
                             }
                           ></AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                {isActive
+                                {isActive === "ACTIVE"
                                   ? "Deactivate Workspace?"
                                   : "Reactivate Workspace?"}
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                {isActive
+                                {isActive === "ACTIVE"
                                   ? "This action will temporarily disable all workspace access. You can reactivate at any time."
                                   : "This will restore access to all workspace members."}
                               </AlertDialogDescription>
@@ -524,16 +538,20 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={
-                                  isActive ? handleDeactivate : handleReactivate
+                                  isActive === "ACTIVE"
+                                    ? handleDeactivate
+                                    : handleReactivate
                                 }
                                 className={
-                                  isActive
+                                  isActive === "ACTIVE"
                                     ? "bg-destructive hover:bg-destructive/90"
                                     : ""
                                 }
                                 disabled={loading}
                               >
-                                {isActive ? "Deactivate" : "Reactivate"}
+                                {isActive === "ACTIVE"
+                                  ? "Deactivate"
+                                  : "Reactivate"}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

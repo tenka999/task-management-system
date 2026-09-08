@@ -62,7 +62,10 @@ export function WorkspaceForm({ initialData, onSubmit, isLoading }) {
         message: "Slug already exists.",
       }),
     description: z.string().optional(),
-    logoUrl: z.string().url().optional().or(z.literal("")),
+    logo: z
+      .union([z.instanceof(File), z.string()])
+      .nullable()
+      .optional(),
     icon: z.string().optional().or(z.literal("")),
     type: z.enum(["PERSONAL", "TEAM", "ENTERPRISE"]),
     settings: z.object({
@@ -76,7 +79,7 @@ export function WorkspaceForm({ initialData, onSubmit, isLoading }) {
       name: initialData?.name || "",
       slug: initialData?.slug || "",
       description: initialData?.description || "",
-      logoUrl: initialData?.logoUrl || "",
+      logo: null,
       icon: initialData?.icon || "",
       type: initialData?.type || "TEAM",
       settings: {
@@ -90,11 +93,11 @@ export function WorkspaceForm({ initialData, onSubmit, isLoading }) {
   );
 
   const handleSubmit = async (values) => {
-    console.log(values);
-    // if (!data) {
-    //   return await onSubmit(values);
-    // }
-    // return;
+    // console.log(values);
+    if (!data) {
+      return await onSubmit(values);
+    }
+    return;
   };
 
   // Auto-generate slug from name
@@ -218,7 +221,7 @@ export function WorkspaceForm({ initialData, onSubmit, isLoading }) {
                   <div className="">
                     <FormField
                       control={form.control}
-                      name="logoUrl"
+                      name="logo"
                       render={({ field }) => (
                         <div className="flex flex-col gap-2 ">
                           <LogoUploader field={field} />

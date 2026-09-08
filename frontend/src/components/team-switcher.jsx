@@ -219,9 +219,9 @@ export function TeamSwitcher({ teams }) {
   }
 
   React.useEffect(() => {
-    if (!activeTeam) {
-      setActiveTeam(activeWorkspace);
-    }
+    // if (!activeTeam) {
+    setActiveTeam(activeWorkspace);
+    // }
   }, [activeWorkspace, activeTeam]);
   return (
     <>
