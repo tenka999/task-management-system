@@ -16,6 +16,7 @@ import activityController from "../controllers/activity-controller.js";
 import dependencyController from "../controllers/depedency-controller.js";
 import { upload } from "../middlewares/upload.js";
 import { uploadWorkspaceLogo } from "../middlewares/upload-workspace-logo.js";
+import userPreferenceController from "../controllers/user-preference-controller.js";
 
 const privateRouter = Router();
 
@@ -253,5 +254,20 @@ privateRouter.delete(
   dependencyController.removeDependency,
 );
 //#endregion dependency
+
+//#region user-preference
+privateRouter.get(
+  "/user-preference",
+  userPreferenceController.getUserPreferences,
+);
+privateRouter.get(
+  "/user-preference/active-workspace",
+  userPreferenceController.getActiveWorkspace,
+);
+privateRouter.put(
+  "/user-preference/active-workspace",
+  userPreferenceController.setActiveWorkspace,
+);
+//#endregion user-preference
 
 export default privateRouter;

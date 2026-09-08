@@ -45,9 +45,12 @@ const workspaceController = {
   // POST /workspaces
   async createWorkspace(req, res) {
     try {
+      console.log("BODY:", req.body);
+      console.log("FILE:", req.file);
       const workspace = await workspaceService.createWorkspace(
         req.body,
         req.user.id,
+        req.file,
       );
       res
         .status(201)
@@ -59,19 +62,26 @@ const workspaceController = {
 
   // PUT /workspaces/:id
   async updateWorkspace(req, res) {
-    console.log(req.body);
-    console.log(req.file);
     try {
+      console.log("BODY:", req.body);
+      console.log("FILE:", req.file);
+
       const workspace = await workspaceService.updateWorkspace(
         req.params.id,
         req.body,
-        req.file?.filename,
+        req.file,
       );
+
       res
         .status(200)
         .json(responseFormat("success", workspace, "Workspace updated"));
     } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+      console.error("Update workspace error:", error);
+
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
     }
   },
 

@@ -85,7 +85,7 @@ async function getWorkspaceBySlug(slug) {
   return false;
 }
 
-async function createWorkspace(data, userId, logoUrl) {
+async function createWorkspace(data, userId, file) {
   let slug = data.slug || data.name.toLowerCase().replace(/\s+/g, "-");
   let finalSlug = slug;
   let counter = 1;
@@ -111,7 +111,9 @@ async function createWorkspace(data, userId, logoUrl) {
       type: data.type || "TEAM",
       ownerId: userId,
       icon: data.icon,
-      logoUrl: logoUrl,
+      logoUrl: file
+        ? `http://localhost:5000/api/workspace-logo/${file.filename}`
+        : null,
       members: {
         create: {
           userId,
@@ -128,19 +130,30 @@ async function createWorkspace(data, userId, logoUrl) {
     },
   });
 }
+async function updateWorkspace(id, data, file) {
+  console.log("UPDATE ID:", id);
+  console.log("UPDATE DATA:", data);
+  console.log("UPDATE FILE:", file);
 
-async function updateWorkspace(id, data, logoUrl) {
-  console.log("update", id, data);
+  const updateData = {
+    name: data.name,
+    description: data.description,
+    slug: data.slug,
+    icon: data.icon,
+    status: data.status,
+    type: data.type,
+    settings: data.settings,
+  };
+
+  // Hanya update logo jika user mengupload
+  // file baru
+  if (file) {
+    updateData.logoUrl = `http://localhost:5000/api/workspace-logo/${file.filename}`;
+  }
+
   return await prisma.workspace.update({
     where: { id },
-    data: {
-      name: data.name,
-      description: data.description,
-      logoUrl: logoUrl,
-      icon: data.icon,
-      status: data.status,
-      type: data.type,
-    },
+    data: updateData,
   });
 }
 
