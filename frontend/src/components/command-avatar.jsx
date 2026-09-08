@@ -22,7 +22,7 @@ import {
 } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
-export function CommandAvatar({ setAvatar, setOpen, avatars }) {
+export function CommandAvatar({ unassigned, setAvatar, setOpen, avatars }) {
   const handleSelect = (id, username, avatar, initial) => {
     setOpen(false);
     setAvatar({ id, username, avatar, initial });
@@ -33,19 +33,21 @@ export function CommandAvatar({ setAvatar, setOpen, avatars }) {
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup className="">
-          <CommandItem
-            onSelect={() => handleSelect(null, "unassigned", null, null)}
-            key={"unassigned"}
-            value={"unassigned"}
-            className="gap-2 mb-2 p-0 text-sm"
-          >
-            <Avatar>
-              <AvatarFallback>
-                <IconUser className="grayscale" />
-              </AvatarFallback>
-            </Avatar>
-            <span>{"Unassigned"}</span>
-          </CommandItem>
+          {unassigned && (
+            <CommandItem
+              onSelect={() => handleSelect(null, "unassigned", null, null)}
+              key={"unassigned"}
+              value={"unassigned"}
+              className="gap-2 mb-2 p-0 text-sm"
+            >
+              <Avatar>
+                <AvatarFallback>
+                  <IconUser className="grayscale" />
+                </AvatarFallback>
+              </Avatar>
+              <span>{"Unassigned"}</span>
+            </CommandItem>
+          )}
           {avatars.map((item) => (
             <CommandItem
               onSelect={() =>
@@ -57,11 +59,13 @@ export function CommandAvatar({ setAvatar, setOpen, avatars }) {
             >
               <Avatar>
                 <AvatarImage
-                  src={item.avatar}
+                  src={item.avatarUrl}
                   alt="@shadcn"
                   className="grayscale"
                 />
-                <AvatarFallback>{item.initial}</AvatarFallback>
+                <AvatarFallback>
+                  {item.username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <span>{item.username}</span>
             </CommandItem>

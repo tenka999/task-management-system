@@ -141,9 +141,7 @@ export function TeamSwitcher({ teams }) {
   const [createModalOpen, setCreateModalOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const ActiveTeamLogo =
-    activeTeam?.logoUrl &&
-    `http://localhost:5000/api/workspace-logo/${activeTeam?.logoUrl}`;
+  const ActiveTeamLogo = activeTeam?.logoUrl && `${activeTeam?.logoUrl}`;
   const ActiveTeamIcon = icons.find(
     (item) => item.id === activeTeam?.icon,
   )?.icon;
@@ -189,9 +187,7 @@ export function TeamSwitcher({ teams }) {
     try {
       await switchWorkspace(team.id);
       setShowModal(false);
-    } catch (error) {
-      console.error("Failed to switch workspace:", error);
-    }
+    } catch (error) {}
   };
 
   function DropdownWorkspace() {
@@ -241,7 +237,7 @@ export function TeamSwitcher({ teams }) {
                   {activeTeam?.logoUrl ? (
                     <Avatar size="lg">
                       <AvatarImage
-                        src={`http://localhost:5000/api/workspace-logo/${activeTeam.logoUrl}`}
+                        src={`${activeTeam.logoUrl}`}
                         alt="@shadcn"
                       />
                       <AvatarFallback>
@@ -293,7 +289,7 @@ export function TeamSwitcher({ teams }) {
                         {activeTeam?.logoUrl ? (
                           <Avatar size="lg">
                             <AvatarImage
-                              src={`http://localhost:5000/api/workspace-logo/${activeTeam.logoUrl}`}
+                              src={`${activeTeam.logoUrl}`}
                               alt="@shadcn"
                             />
                             <AvatarFallback>CN</AvatarFallback>
@@ -347,7 +343,7 @@ export function TeamSwitcher({ teams }) {
                             {team?.logoUrl ? (
                               <Avatar size="">
                                 <AvatarImage
-                                  src={`http://localhost:5000/api/workspace-logo/${team.logoUrl}`}
+                                  src={`${team.logoUrl}`}
                                   alt="@shadcn"
                                 />
                                 <AvatarFallback>

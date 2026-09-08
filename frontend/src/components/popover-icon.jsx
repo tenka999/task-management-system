@@ -25,10 +25,11 @@ import { Separator } from "./ui/separator";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { IconAlertSquareFilled } from "@tabler/icons-react";
 import { CommandBasic } from "./command-basic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StatusIcon } from "./status-icon";
 import { CommandStatus } from "./command-status";
 import { CommandIcon } from "./command-icon";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 const icons = [
   {
@@ -82,6 +83,18 @@ export function PopoverIcon({
   });
 
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (field.value) {
+      setIcon(icons.find((icon) => icon.id === field.value) || {});
+    } else {
+      setIcon({
+        id: "box",
+        icon: Box,
+        label: "Box",
+      });
+    }
+  }, [field.value]);
 
   return (
     <>

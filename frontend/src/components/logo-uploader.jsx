@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { ImagePlus, X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,14 @@ const LogoUploader = ({ field, title = true }) => {
     setPreview("");
     field.onChange("");
   };
+
+  useEffect(() => {
+    if (field.value) {
+      setPreview(field.value);
+    } else {
+      setPreview("");
+    }
+  }, [field.value]);
 
   return (
     <FormItem>

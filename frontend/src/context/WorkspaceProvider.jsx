@@ -33,43 +33,73 @@ export const WorkspaceProvider = ({ children }) => {
     useActiveWorkspace();
 
   // Initialize active workspace
+  // useEffect(() => {
+  //   const initializeWorkspace = async () => {
+  //     setIsLoading(true);
+
+  //     try {
+  //       // Try to get from backend first
+  //       if (activeWorkspaceData) {
+  //         const workspace = activeWorkspaceData.defaultWorkspace;
+
+  //         setActiveWorkspace(workspace);
+  //         workspaceStorage.setActiveWorkspaceId(workspace.id);
+
+  //         console.log("active workspace:", workspace);
+  //       }
+  //       // Fallback to local storage
+  //       else {
+  //         const storedWorkspaceId = workspaceStorage.getActiveWorkspaceId();
+
+  //         if (storedWorkspaceId && workspacesData?.workspaces) {
+  //           const storedWorkspace = workspacesData.workspaces.find(
+  //             (w) => w.id === storedWorkspaceId,
+  //           );
+  //           if (storedWorkspace) {
+  //             setActiveWorkspace(storedWorkspace);
+  //           }
+  //         }
+  //         // Fallback to first workspace
+  //         else if (workspacesData?.workspaces?.length > 0) {
+  //           const firstWorkspace = workspacesData.workspaces[0];
+  //           setActiveWorkspace(firstWorkspace);
+  //           workspaceStorage.setActiveWorkspaceId(firstWorkspace.id);
+  //         }
+  //       }
+  //     } catch (err) {
+  //       setError(err.message);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   initializeWorkspace();
+  // }, [activeWorkspaceData, workspacesData]);
+
   useEffect(() => {
-    const initializeWorkspace = async () => {
-      setIsLoading(true);
+    if (activeWorkspaceData?.defaultWorkspace) {
+      const workspace = activeWorkspaceData.defaultWorkspace;
 
-      try {
-        // Try to get from backend first
-        if (activeWorkspaceData) {
-          setActiveWorkspace(activeWorkspaceData);
-          workspaceStorage.setActiveWorkspaceId(activeWorkspaceData.id);
-        }
-        // Fallback to local storage
-        else {
-          const storedWorkspaceId = workspaceStorage.getActiveWorkspaceId();
+      setActiveWorkspace(workspace);
+      workspaceStorage.setActiveWorkspaceId(workspace.id);
+      setIsLoading(false);
 
-          if (storedWorkspaceId && workspacesData?.workspaces) {
-            const storedWorkspace = workspacesData.workspaces.find(
-              (w) => w.id === storedWorkspaceId,
-            );
-            if (storedWorkspace) {
-              setActiveWorkspace(storedWorkspace);
-            }
-          }
-          // Fallback to first workspace
-          else if (workspacesData?.workspaces?.length > 0) {
-            const firstWorkspace = workspacesData.workspaces[0];
-            setActiveWorkspace(firstWorkspace);
-            workspaceStorage.setActiveWorkspaceId(firstWorkspace.id);
-          }
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      return;
+    }
 
-    initializeWorkspace();
+    if (workspacesData?.workspaces?.length > 0) {
+      const storedWorkspaceId = workspaceStorage.getActiveWorkspaceId();
+
+      const storedWorkspace = workspacesData.workspaces.find(
+        (w) => w.id === storedWorkspaceId,
+      );
+
+      const workspace = storedWorkspace ?? workspacesData.workspaces[0];
+
+      setActiveWorkspace(workspace);
+      workspaceStorage.setActiveWorkspaceId(workspace.id);
+      setIsLoading(false);
+    }
   }, [activeWorkspaceData, workspacesData]);
 
   // Switch workspace

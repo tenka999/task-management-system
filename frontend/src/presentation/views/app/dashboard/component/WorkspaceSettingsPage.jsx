@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -61,6 +61,7 @@ import { PopoverIcon } from "@/components/popover-icon";
 import LogoUploader from "@/components/logo-uploader";
 import { PopoverAvatar } from "@/components/popover-avatar";
 import { useWorkspaceApi } from "@/presentation/logics/app/useWorkspaceApi";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 // Schema validasi
 const workspaceSchema = z.object({
@@ -82,15 +83,15 @@ const workspaceSchema = z.object({
 });
 
 // Component Utama
-export default function WorkspaceSettingsPage({
-  initialData,
-  workspaceId,
-  onSuccess,
-}) {
+export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
+  const { activeWorkspace, workspaces, switchWorkspace, isSwitching } =
+    useWorkspace();
+
+  // const [activeWorkspace, setactiveWorkspace] = useState(activeWorkspace);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
-  const [owner, setOwner] = useState(initialData?.owner || "jane.doe");
+  const [isActive, setIsActive] = useState(activeWorkspace?.status ?? true);
+  const [owner, setOwner] = useState(activeWorkspace?.owner || "jane.doe");
 
   const {
     useAllWorkspace,
@@ -104,20 +105,19 @@ export default function WorkspaceSettingsPage({
   const form = useForm({
     resolver: zodResolver(workspaceSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      slug: initialData?.slug || "",
-      description: initialData?.description || "",
-      logoUrl: initialData?.logoUrl || "",
-      icon: initialData?.icon || "",
-      type: initialData?.type || "TEAM",
+      name: "",
+      slug: "",
+      description: "",
+      logoUrl: "",
+      icon: "",
+      type: "TEAM",
       settings: {
-        allowGuest: initialData?.settings?.allowGuest || false,
+        allowGuest: false,
       },
     },
   });
 
   const handleSubmit = async (values) => {
-    console.log(values);
     try {
       await updateWorkspace.mutateAsync(values);
       toast.add({
@@ -144,9 +144,9 @@ export default function WorkspaceSettingsPage({
     //     isActive,
     //   };
 
-    //   if (initialData?.id) {
+    //   if (activeWorkspace?.id) {
     //     // Update existing workspace
-    //     const response = await fetch(`/api/workspaces/${initialData.id}`, {
+    //     const response = await fetch(`/api/workspaces/${activeWorkspace.id}`, {
     //       method: "PUT",
     //       headers: { "Content-Type": "application/json" },
     //       body: JSON.stringify(payload),
@@ -180,7 +180,7 @@ export default function WorkspaceSettingsPage({
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/workspaces/${initialData?.id}/deactivate`,
+        `/api/workspaces/${activeWorkspace?.id}/deactivate`,
         {
           method: "POST",
         },
@@ -189,7 +189,6 @@ export default function WorkspaceSettingsPage({
       if (!response.ok) throw new Error("Failed to deactivate workspace");
 
       setIsActive(false);
-      console.log("Workspace deactivated");
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -201,7 +200,7 @@ export default function WorkspaceSettingsPage({
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/workspaces/${initialData?.id}/reactivate`,
+        `/api/workspaces/${activeWorkspace?.id}/reactivate`,
         {
           method: "POST",
         },
@@ -210,7 +209,6 @@ export default function WorkspaceSettingsPage({
       if (!response.ok) throw new Error("Failed to reactivate workspace");
 
       setIsActive(true);
-      console.log("Workspace reactivated");
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -226,6 +224,21 @@ export default function WorkspaceSettingsPage({
     console.log("Deleting workspace...");
   };
 
+  useEffect(() => {
+    if (activeWorkspace) {
+      form.reset({
+        name: activeWorkspace?.name || "",
+        slug: activeWorkspace?.slug || "",
+        description: activeWorkspace?.description || "",
+        logoUrl: activeWorkspace?.logoUrl || "",
+        icon: activeWorkspace?.icon || "",
+        type: activeWorkspace?.type || "TEAM",
+        settings: {
+          allowGuest: activeWorkspace?.settings?.allowGuest || false,
+        },
+      });
+    }
+  }, [activeWorkspace]);
   return (
     <MemberFilterProvider>
       <ScrollArea className="w-full h-[calc(100vh-60px)]">
@@ -371,7 +384,9 @@ export default function WorkspaceSettingsPage({
                                     onValueChange={field.onChange}
                                   >
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select workspace type" />
+                                      {field.value.slice(0, 1).toUpperCase() +
+                                        field.value.slice(1).toLowerCase()}
+                                      {/* <SelectValue placeholder="Select workspace type" /> */}
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="PERSONAL">
@@ -437,7 +452,12 @@ export default function WorkspaceSettingsPage({
                         </div>
                         <div className="w-2/3 flex items-center gap-4">
                           <div className="flex items-center justify-end gap-2 flex-1">
-                            <PopoverAvatar variant={"ghost"} />
+                            <PopoverAvatar
+                              create={false}
+                              unassigned={false}
+                              variant={"ghost"}
+                              useCommandOwnerWorkspace={true}
+                            />
                           </div>
                           {/* <Button variant="outline" size="sm">
                               Transfer Ownership
