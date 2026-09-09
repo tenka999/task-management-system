@@ -23,10 +23,43 @@ import { PopoverMembers } from "@/components/popover-members";
 // import { DataTableDemo } from "@/components/datatable-demo";
 import { SimpleDataTable } from "@/components/simple-datatable";
 import { DataTableDemo } from "@/components/datatable-demo";
+import { useWorkspaceApi } from "@/presentation/logics/app/useWorkspaceApi";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useInvitationApi } from "@/presentation/logics/app/useInvitation";
+import InvitationList from "@/components/invitation-list";
+import AcceptInvitation from "@/components/accept-invitation";
 
 export default function WorkspacePage() {
   const inputRef = React.useRef(null);
-
+  // const [inputMember, setInputMember] = React.useState("");
+  const {
+    useAllWorkspace,
+    useWorkspaceMembers,
+    createWorkspace,
+    updateWorkspace,
+    useWorkspaceBySlug,
+    deleteWorkspace,
+    deleteWorkspaces,
+    inviteWorkspaceMember,
+  } = useWorkspaceApi();
+  const { activeWorkspace, workspaces, switchWorkspace, isSwitching } =
+    useWorkspace();
+  // console.log(activeWorkspace);
+  const { data: initialData } = useWorkspaceMembers(activeWorkspace?.id);
+  // const { data } = inviteWorkspaceMember({
+  //   id: activeWorkspace?.id,
+  //   payload: {},
+  // });
+  // console.log(data);
+  const {
+    useAllInvitations,
+    usePendingInvitations,
+    resendInvitation,
+    cancelInvitation,
+  } = useInvitationApi();
+  const { data: invitation } = useAllInvitations();
+  console.log(invitation);
+  // console.log(workspaceMembers);
   const [inputMember, setInputMember] = useState("");
 
   function handleInputMember(event) {
@@ -48,7 +81,7 @@ export default function WorkspacePage() {
 
             <div className="">
               {/* <SimpleDataTable /> */}
-              <DataTableDemo inputMember={inputMember} />
+              <DataTableDemo inputMember={inputMember} data={initialData} />
               {/* <DataTable columns={columns} data={projects} /> */}
             </div>
             <div className="dashboard-top-actions">

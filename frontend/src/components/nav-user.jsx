@@ -6,6 +6,8 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Mail,
+  MailCheck,
   Sparkles,
 } from "lucide-react";
 import useConfig from "@/hooks/config/useConfig";
@@ -108,8 +110,8 @@ export function NavUser({ user }) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+                <Mail />
+                Invitation
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

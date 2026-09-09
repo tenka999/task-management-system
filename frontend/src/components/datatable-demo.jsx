@@ -97,6 +97,8 @@ import {
   ItemMedia,
   ItemTitle,
 } from "./ui/item";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaceApi } from "@/presentation/logics/app/useWorkspaceApi";
 
 /**
  * @typedef {Object} Payment
@@ -385,11 +387,7 @@ const formatDate = (dateString) => {
  * @returns {string} Initials
  */
 const getInitials = (name) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+  return name.slice(0, 2).toUpperCase();
 };
 
 /** @type {import("@tanstack/react-table").ColumnDef<Payment>[]} */
@@ -427,22 +425,22 @@ export const columns = [
   //     },
   //   },
   {
-    accessorKey: "name",
+    id: "name",
+    accessorFn: (row) => row.user?.username ?? "",
     header: ({ column }) => (
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         className="flex items-center gap-2 hover:bg-muted -ml-3"
       >
-        Customer
+        Member
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => {
       const name = row.getValue("name");
-      const email = row.original.email;
-
-      const avatar = row.original.avatar;
+      const email = row.original.user?.email;
+      const avatar = row.original.user?.avatar;
 
       return (
         <div className="flex items-center gap-3">
@@ -466,12 +464,16 @@ export const columns = [
     cell: ({ row }) => {
       const status = row.getValue("status");
       const config = statusConfig[status] || statusConfig.pending;
-
+      const role = row.getValue("role");
       return (
-        <Badge variant={config.variant} className="flex items-center">
-          {config.icon}
-          {config.label}
-        </Badge>
+        <>
+          {role !== "OWNER" && (
+            <Badge variant={config.variant} className="flex items-center">
+              {config.icon}
+              {config.label}
+            </Badge>
+          )}
+        </>
       );
     },
     filterFn: (row, id, value) => {
@@ -484,9 +486,9 @@ export const columns = [
     cell: ({ row }) => {
       const role = row.getValue("role");
       const config = roleConfig[role] || roleConfig.low;
-      const [EditRole, setEditRole] = useState("member");
+      const [EditRole, setEditRole] = useState(role);
       const EditRoleMember = items.find((item) => item.value === EditRole);
-
+      console.log(role);
       return (
         // <Badge variant={config.badgeVariant} className={config.className}>
         //   {config.label}
@@ -497,20 +499,27 @@ export const columns = [
           defaultValue={items[0].value}
           items={items}
         >
-          <SelectTrigger className="bg-transparent w-full h-full! ">
-            <SelectValue className="">
-              <Item size="xs" className="p-0  ">
-                <ItemContent>
-                  <ItemTitle className="whitespace-nowrap">
-                    {EditRoleMember.label}
-                  </ItemTitle>
-                </ItemContent>
-              </Item>
-            </SelectValue>
-          </SelectTrigger>
+          {role === "OWNER" ? (
+            "Owner"
+          ) : (
+            <>
+              <SelectTrigger className="bg-transparent w-full h-full! ">
+                <SelectValue className="">
+                  <Item size="xs" className="p-0  ">
+                    <ItemContent>
+                      <ItemTitle className="whitespace-nowrap">
+                        {EditRoleMember?.label}
+                      </ItemTitle>
+                    </ItemContent>
+                  </Item>
+                </SelectValue>
+              </SelectTrigger>
+            </>
+          )}
           <SelectContent className="w-[350px]" alignItemWithTrigger={false}>
             <SelectGroup>
               {/* <SelectLabel>Fruits</SelectLabel> */}
+              {/* {console.log(items)} */}
               {items.map((item) => (
                 <SelectItem key={item.value} value={item.value}>
                   <Item size="xs" className="p-0 ">
@@ -683,6 +692,7 @@ export function DataTableDemo({
   showPagination = true,
   defaultPageSize = 5,
 }) {
+  console.log(data);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
@@ -690,7 +700,7 @@ export function DataTableDemo({
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [roleFilter, setRoleFilter] = React.useState("all-users");
-  // const [inputMember, setInputMember] = React.useState("");
+
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: defaultPageSize,

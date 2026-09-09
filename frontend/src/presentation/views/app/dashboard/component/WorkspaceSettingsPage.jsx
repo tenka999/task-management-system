@@ -243,7 +243,7 @@ export default function WorkspaceSettingsPage({ workspaceId, onSuccess }) {
         type: activeWorkspace?.type || "TEAM",
 
         settings: {
-          allowGuest: settings.allowGuest || false,
+          allowGuest: settings?.allowGuest || false,
         },
       });
     }

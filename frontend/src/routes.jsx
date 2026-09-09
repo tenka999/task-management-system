@@ -60,6 +60,16 @@ const WorkspaceSettingsPage = React.lazy(
   () =>
     import("@/presentation/views/app/dashboard/component/WorkspaceSettingsPage"),
 );
+const InvitationPage = React.lazy(
+  () => import("@/presentation/views/app/dashboard/component/InvitationPage"),
+);
+const AcceptInvitationPage = React.lazy(
+  () =>
+    import("@/presentation/views/app/dashboard/component/AcceptInvitationPage"),
+);
+const InboxPage = React.lazy(
+  () => import("@/presentation/views/app/dashboard/component/InboxPage"),
+);
 const Orders = React.lazy(
   () => import("@/presentation/views/dashboard/Pages/Orders"),
 );
@@ -161,6 +171,18 @@ const routes = createBrowserRouter(
         {
           path: "/app/settings/workspace",
           Component: WorkspaceSettingsPage,
+        },
+        {
+          path: "/app/user/invitation",
+          Component: InvitationPage,
+        },
+        {
+          path: "/app/user/accept-invitation",
+          Component: AcceptInvitationPage,
+        },
+        {
+          path: "/app/user/inbox",
+          Component: InboxPage,
         },
       ],
     },
