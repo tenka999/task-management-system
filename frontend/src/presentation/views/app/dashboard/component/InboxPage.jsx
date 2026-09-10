@@ -26,9 +26,18 @@ import {
   IconAdjustmentsHorizontal,
   IconChecks,
   IconCircleFilled,
+  IconInbox,
+  IconPaperclip,
+  IconPlus,
+  IconSend,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { StatusIcon } from "@/components/status-icon";
+import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Marker, MarkerContent } from "@/components/ui/marker";
+import { Bubble, BubbleContent, BubbleReactions } from "@/components/ui/bubble";
+import BubbleChat from "@/components/bubble-char";
 
 const inboxItems = [
   {
@@ -158,12 +167,14 @@ const statusLabels = {
 const done = "done";
 
 export default function InboxPage() {
+  const [notificationDetails, setNotificationDetails] = useState([]);
+  const [textMessage, setTextMessage] = useState("");
   return (
     <ResizablePanelGroup
       orientation="horizontal"
       className="mx-h-[10px]  rounded-lg border"
     >
-      <ResizablePanel defaultSize="50%" className="mx-h-[10px]">
+      <ResizablePanel defaultSize="50%" className="mx-h-[10px] ">
         {/* <div className="flex h-full items-center justify-center "> */}
         {/* <InboxPageList /> */}
         <ScrollArea className="h-[calc(100vh-var(--header-height))]">
@@ -189,7 +200,7 @@ export default function InboxPage() {
               return (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4  px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer group"
+                  className="flex  items-center gap-4  px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer group"
                 >
                   {/* Avatar / Icon */}
                   <div className="shrink-0 pt-0.5">
@@ -201,41 +212,43 @@ export default function InboxPage() {
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-row items-center  gap-2  ">
-                      {!item.isRead && (
-                        <IconCircleFilled size={14} className="" />
-                      )}
-                      <span
-                        className={`${item.isRead ? "opacity-50" : "opacity-100"} text-sm  text-muted-foreground shrink-0`}
+                  <div className="flex justify-between w-full">
+                    <div className=" min-w-0 ">
+                      <div className="relative flex flex-row items-center  gap-2  ">
+                        {!item.isRead && (
+                          <IconCircleFilled size={14} className="shrink-0" />
+                        )}
+                        <span
+                          className={`${item.isRead ? "opacity-50" : "opacity-100"} text-sm  text-muted-foreground shrink-0`}
+                        >
+                          {item.id}
+                        </span>
+                        <h3
+                          className={`${item.isRead ? "opacity-50" : "opacity-100"} font-semibold text-sm relative  group-hover:text-primary transition-colors truncate`}
+                        >
+                          {item.title}
+                        </h3>
+                      </div>
+
+                      <p
+                        className={`${item.isRead ? "opacity-50" : "opacity-100"} text-xs text-muted-foreground mt-0.5 truncate`}
                       >
-                        {item.id}
-                      </span>
-                      <h3
-                        className={`${item.isRead ? "opacity-50" : "opacity-100"} font-semibold text-sm  group-hover:text-primary transition-colors truncate`}
-                      >
-                        {item.title}
-                      </h3>
+                        {item.description}
+                      </p>
+
+                      {/* Footer tags */}
                     </div>
 
-                    <p
-                      className={`${item.isRead ? "opacity-50" : "opacity-100"} text-xs text-muted-foreground mt-0.5 line-clamp-1`}
-                    >
-                      {item.description}
-                    </p>
-
-                    {/* Footer tags */}
-                  </div>
-
-                  {/* Action indicator */}
-                  <div className="shrink-0 flex flex-col items-center gap-2">
-                    <StatusIcon status={"inProgress"} size={16} />
-                    <p
-                      className={`${item.isRead ? "opacity-50" : "opacity-100"} text-xs text-muted-foreground`}
-                    >
-                      2h
-                    </p>
-                    {/* <MoveRight className="h-4 w-4 text-muted-foreground" /> */}
+                    {/* Action indicator */}
+                    <div className="shrink-0 flex flex-col   items-center gap-2">
+                      <StatusIcon status={"inProgress"} size={16} />
+                      <p
+                        className={`${item.isRead ? "opacity-50" : "opacity-100"} text-xs text-muted-foreground`}
+                      >
+                        2h
+                      </p>
+                      {/* <MoveRight className="h-4 w-4 text-muted-foreground" /> */}
+                    </div>
                   </div>
                 </div>
               );
@@ -247,9 +260,80 @@ export default function InboxPage() {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="50%">
-        <div className="flex h-full items-center justify-center p-6">
-          <span className="font-semibold">Content</span>
-        </div>
+        {notificationDetails ? (
+          <div className="h-full flex flex-col  ">
+            <ScrollArea className=" flex-2 pb-5  ">
+              <BubbleChat notificationDetails={notificationDetails} />
+            </ScrollArea>
+
+            <div className=" flex p-3 pt-0">
+              <Card className="  border p-3 rounded-xl  flex min-w-0 w-full flex-col gap-4">
+                <CardContent className="p-0 min-w-0">
+                  {/* <div className="opacity-50">Leave a comment...</div> */}
+                  <Textarea
+                    value={textMessage}
+                    onChange={(event) => setTextMessage(event.target.value)}
+                    placeholder="say something..."
+                    className="
+                    w-full
+                    bg-transparent
+                    min-w-0
+                    max-h-[200px]
+                    max-w-full
+                    overflow-y-auto
+                    whitespace-normal
+                    break-all
+                    p-0
+                    pl-2
+                    rounded-none
+                    border-none
+                    focus:outline-none
+                    focus-visible:ring-0
+                    text-base!
+                "
+                  />
+
+                  <div className="flex justify-end items-center mt-2 gap-0 ">
+                    {/* <Button
+                      variant="outline"
+                      size="ss"
+                      className=" flex  p-1  mr-2 "
+                    > */}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="mr-2 rounded-lg "
+                      // disabled
+                    >
+                      <IconPaperclip size={26} className=" " />
+                    </Button>
+                    {/* </Button> */}
+                    <Button
+                      size="icon"
+                      onClick={() => setNotificationDetails(textMessage)}
+                      className="mr-2 rounded-lg "
+                      disabled={!textMessage}
+                    >
+                      {/* Comment */}
+                      <IconSend size={20} />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col h-full items-center justify-center p-6">
+            <IconInbox size={80} stroke={1} className="text-muted-foreground" />
+            <span className="font-semibold text-3xl opacity-70 text-center">
+              5 unread notifications
+            </span>
+            <p className="font-light text-muted-foreground opacity-70 text-center">
+              Select a notification from the list to view its details and take
+              action.
+            </p>
+          </div>
+        )}
       </ResizablePanel>
     </ResizablePanelGroup>
   );
