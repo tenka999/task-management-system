@@ -202,6 +202,18 @@ async function createInvitation(workspaceId, data, invitedById) {
       },
     });
 
+    const inbox = await tx.inbox.create({
+      data: {
+        recipientId: user?.id,
+        senderId: invitedById,
+        workspaceId,
+        type: "WORKSPACE_INVITE",
+        priority: "NORMAL",
+        subject: "Workspace Invitation",
+        content: `You have been invited to join ${data.workspaceName}. Please click the link below to accept the invitation. If you did not request this invitation, you can ignore this email.`,
+      },
+    });
+
     const invitation = await tx.workspaceInvitation.create({
       data: {
         workspaceId,
@@ -233,6 +245,7 @@ async function createInvitation(workspaceId, data, invitedById) {
 
     return {
       notification,
+      inbox,
       invitation,
     };
   });

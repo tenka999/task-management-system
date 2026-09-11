@@ -34,7 +34,7 @@ async function getUserInbox(userId, query = {}) {
           select: { id: true, name: true, logoUrl: true },
         },
         project: {
-          select: { id: true, name: true, projectKey: true, color: true },
+          select: { id: true, name: true, projectKey: true },
         },
         task: {
           select: { id: true, title: true, taskNumber: true },

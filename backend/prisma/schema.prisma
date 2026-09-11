@@ -56,30 +56,33 @@ model User {
   // Relations
   workspaces              Workspace[]
   workspaceMembers        WorkspaceMember[]
-  invitedWorkspaceMembers WorkspaceMember[]     @relation("InvitedBy")
+  invitedWorkspaceMembers WorkspaceMember[]         @relation("InvitedBy")
   invitations             WorkspaceInvitation[]
   preferences             UserPreference?
   roleMaps                UserRoleMap[]
-  ownedWorkspaces         Workspace[]           @relation("WorkspaceOwner")
+  ownedWorkspaces         Workspace[]               @relation("WorkspaceOwner")
   projects                Project[]
   projectMembers          ProjectMember[]
-  invitedProjectMembers   ProjectMember[]       @relation("ProjectInvitedBy")
+  invitedProjectMembers   ProjectMember[]           @relation("ProjectInvitedBy")
   sprints                 Sprint[]
-  tasksAssignee           Task[]                @relation("Assignee")
-  tasksReporter           Task[]                @relation("Reporter")
+  tasksAssignee           Task[]                    @relation("Assignee")
+  tasksReporter           Task[]                    @relation("Reporter")
   taskComments            TaskComment[]
   taskAttachments         TaskAttachment[]
   taskWatchers            TaskWatcher[]
   taskDependencies        TaskDependency[]
   taskTimeLogs            TaskTimeLog[]
-  documentsCreatedBy      Document[]            @relation("DocumentCreatedBy")
-  documentsUpdateBy       Document[]            @relation("DocumentUpdatedBy")
+  documentsCreatedBy      Document[]                @relation("DocumentCreatedBy")
+  documentsUpdateBy       Document[]                @relation("DocumentUpdatedBy")
   activityLogs            ActivityLog[]
   notifications           Notification[]
-  receivedMessages        Inbox[]               @relation("InboxRecipient")
-  sentMessages            Inbox[]               @relation("InboxSender")
+  receivedMessages        Inbox[]                   @relation("InboxRecipient")
+  sentMessages            Inbox[]                   @relation("InboxSender")
   inboxAttachments        InboxAttachment[]
   inboxes                 Inbox[]
+  conversationsCreated    Conversation[]            @relation("ConversationCreator")
+  conversationParts       ConversationParticipant[]
+  conversationsInvited    ConversationParticipant[] @relation("ConversationInviter")
 
   @@index([email])
   @@index([username])
@@ -139,6 +142,7 @@ model Workspace {
   userId            String?
   userPreferences   UserPreference[]
   inboxes           Inbox[]
+  conversations     Conversation[]
 
   @@index([slug])
   @@index([ownerId])
@@ -270,6 +274,7 @@ model Project {
   activityLogs  ActivityLog[]
   notifications Notification[]
   inboxes       Inbox[]
+  conversations Conversation[]
 
   @@index([projectKey])
   @@index([status])
@@ -412,6 +417,7 @@ model Task {
   activityLogs   ActivityLog[]
   notifications  Notification[]
   inboxes        Inbox[]
+  conversations  Conversation[]
 
   @@unique([projectId, taskNumber])
   @@index([projectId, statusId])
@@ -685,6 +691,7 @@ enum InboxStatus {
 }
 
 enum InboxPriority {
+  NO_PRIORITY
   LOW
   NORMAL
   HIGH
@@ -737,9 +744,12 @@ model Inbox {
   replies Inbox[] @relation("InboxReplies")
 
   // Attachments
-  attachments InboxAttachment[]
-  user        User?             @relation(fields: [userId], references: [id])
-  userId      String?
+  attachments    InboxAttachment[]
+  user           User?             @relation(fields: [userId], references: [id])
+  userId         String?
+  conversationId String?           @map("conversation_id")
+  conversation   Conversation?     @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  lastMessageOf  Conversation?     @relation("LastMessage")
 
   @@index([recipientId, status])
   @@index([recipientId, type])
@@ -768,6 +778,116 @@ model InboxAttachment {
 
   @@index([inboxId])
   @@map("inbox_attachments")
+}
+
+// ============================
+// ENUMS
+// ============================
+enum ConversationType {
+  DIRECT // 1-on-1 chat
+  GROUP // Group chat
+  TASK_THREAD // Discussion di task
+  PROJECT_THREAD // Discussion di project
+  SUPPORT // Support ticket
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  CLOSED
+  MUTED
+}
+
+enum ParticipantRole {
+  OWNER
+  ADMIN
+  MEMBER
+  OBSERVER
+}
+
+// ============================
+// MODELS
+// ============================
+model Conversation {
+  id          String  @id @default(cuid())
+  workspaceId String? @map("workspace_id")
+  projectId   String? @map("project_id")
+  taskId      String? @map("task_id")
+
+  type   ConversationType   @default(DIRECT)
+  status ConversationStatus @default(ACTIVE)
+
+  title       String?
+  description String?
+  avatarUrl   String? @map("avatar_url")
+
+  // Last message info (denormalized untuk performance)
+  lastMessageId      String?   @unique @map("last_message_id")
+  lastMessageAt      DateTime? @map("last_message_at")
+  lastMessagePreview String?   @map("last_message_preview") @db.Text
+  messageCount       Int       @default(0) @map("message_count")
+
+  // Settings
+  isPinned Boolean @default(false) @map("is_pinned")
+  isMuted  Boolean @default(false) @map("is_muted")
+  metadata Json?
+
+  // Soft delete
+  archivedAt DateTime? @map("archived_at")
+  closedAt   DateTime? @map("closed_at")
+
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspace    Workspace?                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project      Project?                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task         Task?                     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdBy    User                      @relation("ConversationCreator", fields: [createdById], references: [id])
+  participants ConversationParticipant[]
+  messages     Inbox[]                   @relation("ConversationMessages")
+  lastMessage  Inbox?                    @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, status])
+  @@index([projectId])
+  @@index([taskId])
+  @@index([createdById])
+  @@index([type, status])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String          @id @default(cuid())
+  conversationId String          @map("conversation_id")
+  userId         String          @map("user_id")
+  role           ParticipantRole @default(MEMBER)
+
+  // Participant settings
+  isMuted           Boolean   @default(false) @map("is_muted")
+  isPinned          Boolean   @default(false) @map("is_pinned")
+  lastReadAt        DateTime? @map("last_read_at")
+  lastReadMessageId String?   @map("last_read_message_id")
+  unreadCount       Int       @default(0) @map("unread_count")
+
+  // Status
+  isActive    Boolean   @default(true) @map("is_active")
+  joinedAt    DateTime  @default(now()) @map("joined_at")
+  leftAt      DateTime? @map("left_at")
+  invitedById String?   @map("invited_by_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy    User?        @relation("ConversationInviter", fields: [invitedById], references: [id])
+
+  @@unique([conversationId, userId])
+  @@index([userId, isActive])
+  @@index([conversationId])
+  @@map("conversation_participants")
 }
 
 // Phase 1: Core Foundation

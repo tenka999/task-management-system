@@ -19,6 +19,7 @@ import { uploadWorkspaceLogo } from "../middlewares/upload-workspace-logo.js";
 import userPreferenceController from "../controllers/user-preference-controller.js";
 import invitationController from "../controllers/workspace-invitation-controller.js";
 import inboxController from "../controllers/inbox-controller.js";
+import conversationController from "../controllers/conversation-controller.js";
 
 const privateRouter = Router();
 
@@ -333,5 +334,59 @@ privateRouter.delete(
 privateRouter.delete("/inbox/:id", inboxController.deleteInbox);
 privateRouter.delete("/inbox/:id/permanent", inboxController.permanentDelete);
 //#endregion inbox
+
+//#region conversation
+privateRouter.get("/conversation", conversationController.getUserConversations);
+privateRouter.get(
+  "/conversation/unread-count",
+  conversationController.getConversationUnreadCount,
+);
+privateRouter.get(
+  "/conversation/:id",
+  conversationController.getConversationById,
+);
+privateRouter.get(
+  "/conversation/:id/messages",
+  conversationController.getConversationMessages,
+);
+privateRouter.post("/conversation", conversationController.createConversation);
+privateRouter.post(
+  "/conversation/direct/:userId",
+  conversationController.getOrCreateDirectConversation,
+);
+privateRouter.put(
+  "/conversation/:id",
+  conversationController.updateConversation,
+);
+privateRouter.post(
+  "/conversation/:id/participants",
+  conversationController.addParticipant,
+);
+privateRouter.delete(
+  "/conversation/:id/participants/:userId",
+  conversationController.removeParticipant,
+);
+privateRouter.patch(
+  "/conversation/:id/read",
+  conversationController.markAsRead,
+);
+privateRouter.patch("/conversation/:id/pin", conversationController.togglePin);
+privateRouter.patch(
+  "/conversation/:id/mute",
+  conversationController.toggleMute,
+);
+privateRouter.patch(
+  "/conversation/:id/archive",
+  conversationController.archiveConversation,
+);
+privateRouter.patch(
+  "/conversation/:id/close",
+  conversationController.closeConversation,
+);
+privateRouter.delete(
+  "/conversation/:id",
+  conversationController.deleteConversation,
+);
+//#endregion conversation
 
 export default privateRouter;
