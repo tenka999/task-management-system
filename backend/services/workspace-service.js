@@ -171,6 +171,7 @@ async function getWorkspaceMembers(workspaceId) {
         select: {
           id: true,
           username: true,
+          email: true,
           firstName: true,
           lastName: true,
           avatarUrl: true,

@@ -17,6 +17,8 @@ import dependencyController from "../controllers/depedency-controller.js";
 import { upload } from "../middlewares/upload.js";
 import { uploadWorkspaceLogo } from "../middlewares/upload-workspace-logo.js";
 import userPreferenceController from "../controllers/user-preference-controller.js";
+import invitationController from "../controllers/workspace-invitation-controller.js";
+import inboxController from "../controllers/inbox-controller.js";
 
 const privateRouter = Router();
 
@@ -67,7 +69,7 @@ privateRouter.delete("/workspace/:id", workspaceController.deleteWorkspace);
 
 // Workspace members
 privateRouter.get(
-  "/workspaces/:id/members",
+  "/workspace/:id/members",
 
   workspaceController.getWorkspaceMembers,
 );
@@ -269,5 +271,67 @@ privateRouter.put(
   userPreferenceController.setActiveWorkspace,
 );
 //#endregion user-preference
+
+//#region invitation
+privateRouter.get("/invitation", invitationController.getAllInvitations);
+privateRouter.get("/invitation/:id", invitationController.getInvitationById);
+privateRouter.get(
+  "/invitation/token/:token",
+  invitationController.getInvitationByToken,
+);
+privateRouter.get(
+  "/invitation/pending/:workspaceId",
+  invitationController.getPendingInvitations,
+);
+privateRouter.get(
+  "/invitation/email/:email",
+  invitationController.getInvitationsByEmail,
+);
+privateRouter.post("/invitation", invitationController.createInvitation);
+privateRouter.post(
+  "/invitation/:id/resend",
+  invitationController.resendInvitation,
+);
+privateRouter.post(
+  "/invitation/accept/:token",
+  invitationController.acceptInvitation,
+);
+privateRouter.post(
+  "/invitation/decline/:token",
+  invitationController.declineInvitation,
+);
+privateRouter.delete("/invitation/:id", invitationController.cancelInvitation);
+privateRouter.delete(
+  "/invitation/:id/delete",
+  invitationController.deleteInvitation,
+);
+//#endregion invitation
+
+//#region inbox
+privateRouter.get("/inbox", inboxController.getUserInbox);
+privateRouter.get("/inbox/unread-count", inboxController.getUnreadCount);
+privateRouter.get(
+  "/inbox/unread-count-by-type",
+  inboxController.getUnreadCountByType,
+);
+privateRouter.get("/inbox/starred", inboxController.getStarredInbox);
+privateRouter.get("/inbox/archived", inboxController.getArchivedInbox);
+privateRouter.get("/inbox/thread/:threadId", inboxController.getThread);
+privateRouter.get("/inbox/:id", inboxController.getInboxById);
+privateRouter.post("/inbox", inboxController.createInbox);
+privateRouter.post("/inbox/send-message", inboxController.sendDirectMessage);
+privateRouter.post("/inbox/:id/reply", inboxController.replyToInbox);
+privateRouter.patch("/inbox/read-all", inboxController.markAllAsRead);
+privateRouter.patch("/inbox/:id/read", inboxController.markAsRead);
+privateRouter.patch("/inbox/:id/star", inboxController.toggleStar);
+privateRouter.patch("/inbox/:id/archive", inboxController.archiveInbox);
+privateRouter.patch("/inbox/:id/unarchive", inboxController.unarchiveInbox);
+privateRouter.delete(
+  "/inbox/multiple-delete",
+  inboxController.deleteMultipleInbox,
+);
+privateRouter.delete("/inbox/:id", inboxController.deleteInbox);
+privateRouter.delete("/inbox/:id/permanent", inboxController.permanentDelete);
+//#endregion inbox
 
 export default privateRouter;
