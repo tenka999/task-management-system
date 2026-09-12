@@ -17,28 +17,18 @@ export default function BubbleChat({ notificationDetails }) {
           </Avatar>
         </div>
 
-        <div className="w-full mt-1 pr-6 pb- ">
+        <div className="w-full mt-1 pr-6 pb-0 ">
           <h3 className="flex gap-2 font-semibold text-sm ">
             DANIGAZZZ{" "}
             <span className=" font-normal text-xs text-muted-foreground">
               09/06/2026 9:00 AM
             </span>
           </h3>
-          <div>
-            <p
-              className="
-                  text-md 
-                  opacity-80
-                  w-full
-                  min-w-0
-                  h-[1px]
-                  max-w-full
-                  whitespace-normal
-                  break-all
-                "
-            >
+          <div className="flex flex-col gap-3">
+            <p className="text-md leading-relaxed h-full break-all">
               {notificationDetails}
             </p>
+
             {/* see more */}
           </div>
         </div>

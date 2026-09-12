@@ -53,6 +53,17 @@ export const invitationApi = {
     if (response.status !== 200) throw new Error("Failed to fetch invitations");
     return response.data.data;
   },
+  findByInvitedById: async (invitedById) => {
+    const response = await baseApi.get(
+      `/invitation/invitedById/${invitedById}`,
+      {
+        headers: { "require-auth": true },
+      },
+    );
+
+    if (response.status !== 200) throw new Error("Failed to fetch invitations");
+    return response.data.data;
+  },
 
   // POST /invitation
   create: async (payload) => {

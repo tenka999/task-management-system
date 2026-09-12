@@ -52,6 +52,7 @@ const priorities = [
 
 export function PopoverPriority({
   variant = "outline",
+  noCommand = false,
   item,
   showLabel = false,
   size = "sm",
@@ -68,10 +69,11 @@ export function PopoverPriority({
 
   return (
     <>
-      <Popover open={open} onOpenChange={setOpen} className=" ">
+      <Popover open={open} onOpenChange={setOpen} className="">
         <PopoverTrigger
           render={
             <Button
+              className=""
               onClick={() => setOpen(!open)}
               variant={variant}
               size={size}
@@ -81,13 +83,15 @@ export function PopoverPriority({
             </Button>
           }
         />
-        <PopoverContent align="center" className="w-max p-0 " side="bottom">
-          <CommandBasic
-            setPriority={setPriority}
-            priorities={priorities}
-            setOpen={setOpen}
-          />
-        </PopoverContent>
+        {!noCommand && (
+          <PopoverContent align="center" className="w-max p-0 " side="bottom">
+            <CommandBasic
+              setPriority={setPriority}
+              priorities={priorities}
+              setOpen={setOpen}
+            />
+          </PopoverContent>
+        )}
       </Popover>
     </>
   );

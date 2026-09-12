@@ -99,6 +99,7 @@ import {
 } from "./ui/item";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useWorkspaceApi } from "@/presentation/logics/app/useWorkspaceApi";
+import { useInvitationApi } from "@/presentation/logics/app/useInvitation";
 
 /**
  * @typedef {Object} Payment
@@ -700,11 +701,14 @@ export function DataTableDemo({
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [roleFilter, setRoleFilter] = React.useState("all-users");
-
+  const { createInvitation } = useInvitationApi();
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: defaultPageSize,
   });
+  const [showModal, setShowModal] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
   //   const { toast } = useToast();
 
   const table = useReactTable({
@@ -831,6 +835,28 @@ export function DataTableDemo({
     inputRef.current?.focus();
   };
 
+  const handleCreateInvite = async (values) => {
+    console.log("values", values);
+    setIsSubmitting(true);
+    try {
+      await createInvitation.mutateAsync(values);
+      toast.add({
+        title: "Success",
+        description: "Invitation created successfully",
+      });
+      // fetchData();
+    } catch (error) {
+      toast.add({
+        title: "Error",
+        description: "Failed to create invitation",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+      setShowModal(false);
+    }
+  };
+
   return (
     <div className="w-full space-y-4">
       {showToolbar && (
@@ -855,7 +881,12 @@ export function DataTableDemo({
                 >
                   <IconX />
                 </InputGroupButton>
-                <DialogInviteMember />
+                <DialogInviteMember
+                  onSubmit={handleCreateInvite}
+                  isLoading={isSubmitting}
+                  setShowModal={setShowModal}
+                  showModal={showModal}
+                />
               </div>
             </InputGroup>
           </div>

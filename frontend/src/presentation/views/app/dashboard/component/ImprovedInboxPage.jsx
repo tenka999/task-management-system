@@ -20,15 +20,12 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { StatusIcon } from "@/components/status-icon";
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { InvitationMessageCard } from "@/components/invitation-message";
 import { useInboxApi } from "@/presentation/logics/app/useInbox";
 import { PopoverPriority } from "@/components/popover-priority";
-import { useInvitationApi } from "@/presentation/logics/app/useInvitation";
-import SecureStorage from "@/helpers/SecureStorage";
-import { useConversationApi } from "@/presentation/logics/app/useConversation";
 
 const inboxItems = [
   {
@@ -251,26 +248,15 @@ export default function InboxPage() {
   const [messages, setMessages] = useState([]);
   const [textMessage, setTextMessage] = useState("");
   const { useAllInbox } = useInboxApi();
-  const { useAllConversations } = useConversationApi();
-  const { data: inbox } = useAllInbox();
-  const { data } = useAllConversations();
+  const { data } = useAllInbox();
   console.log(data);
-  console.log("inbox", inbox);
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
-  const { useInvitationsByInvitedById } = useInvitationApi();
-  const user = SecureStorage.getStorage("user");
-  console.log(user);
-  const participantId = data?.conversations;
-  console.log(participantId);
 
   const selected = useMemo(
     () => items?.find((i) => i.id === selectedId) ?? null,
     [items, selectedId],
   );
-  const { data: invitation, isLoading: invitationLoading } =
-    useInvitationsByInvitedById(selected?.participants[0].userId);
-  console.log("sel", selected);
 
   const unreadCount = items?.filter((i) => !i.isRead).length;
 
@@ -280,17 +266,7 @@ export default function InboxPage() {
     setItems((prev) =>
       prev.map((it) => (it.id === id ? { ...it, isRead: true } : it)),
     );
-    console.log(id);
-    console.log(inbox);
-    setMessages(inbox.filter((i) => i.conversationId === id));
-  };
-
-  const isSelf = (id) => {
-    if (id === user.id) {
-      return true;
-    } else {
-      return false;
-    }
+    setMessages(conversations[id] ?? []);
   };
 
   const closeConversation = () => {
@@ -299,7 +275,7 @@ export default function InboxPage() {
   };
 
   useEffect(() => {
-    setItems(data?.conversations);
+    setItems(data);
   }, [data]);
 
   /* ---------- auto-scroll to latest message ---------- */
@@ -329,7 +305,7 @@ export default function InboxPage() {
         author: "You",
         initials: "CN",
         content: text,
-        createdAt: new Date(),
+        timestamp: new Date(),
         isSelf: true,
       },
     ]);
@@ -346,14 +322,11 @@ export default function InboxPage() {
   /* ---------- render messages grouped by day ---------- */
   const renderMessages = () => {
     let lastDay = null;
+    console.log("messages", messages);
     return messages?.map((msg) => {
-      console.log("messages", isSelf(msg.sender.id));
-      const day = dayLabel(msg.createdAt);
+      const day = dayLabel(msg.timestamp);
       const showSeparator = day !== lastDay;
       lastDay = day;
-      const invitationByMsg = invitation?.find(
-        (i) => i.workspaceId === msg.workspaceId,
-      );
       return (
         <div key={msg.id} className="flex min-w-0 flex-col">
           {showSeparator && (
@@ -367,44 +340,36 @@ export default function InboxPage() {
           <div
             className={cn(
               "flex min-w-0 gap-3",
-              isSelf(msg.sender.id) && "flex-row-reverse",
+              msg.isSelf && "flex-row-reverse",
             )}
           >
             <Avatar size="lg" className="shrink-0">
               <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                {msg.sender.username.slice(0, 2).toUpperCase()}
+                {msg.initials}
               </AvatarFallback>
             </Avatar>
 
             <div
               className={cn(
                 "min-w-0 pt-0.5",
-                msg.type === "WORKSPACE_INVITATION"
-                  ? "max-w-[90%]"
-                  : "max-w-[75%]",
-                isSelf(msg.sender.id) && "flex flex-col items-end",
+                msg.type === "invitation" ? "max-w-[90%]" : "max-w-[75%]",
+                msg.isSelf && "flex flex-col items-end",
               )}
             >
               <div
                 className={cn(
                   "flex flex-wrap items-baseline gap-x-2",
-                  isSelf(msg.sender.id) && "flex-row-reverse",
+                  msg.isSelf && "flex-row-reverse",
                 )}
               >
-                <h3 className="text-sm font-semibold">{msg.sender.username}</h3>
+                <h3 className="text-sm font-semibold">{msg.author}</h3>
                 <span className="text-xs text-muted-foreground">
-                  {format(msg.createdAt, "MMM d, yyyy h:mm a")}
+                  {format(msg.timestamp, "MMM d, yyyy h:mm a")}
                 </span>
               </div>
 
-              {msg.type === "WORKSPACE_INVITE" ? (
-                invitationLoading ? (
-                  <div>Loading invitation...</div>
-                ) : invitation?.[0] ? (
-                  <InvitationMessageCard invitation={invitationByMsg} />
-                ) : (
-                  <MessageContent msg={msg} />
-                )
+              {msg.type === "invitation" && msg.invitation ? (
+                <InvitationMessageCard invitation={msg.invitation} />
               ) : (
                 <MessageContent msg={msg} />
               )}
@@ -414,61 +379,6 @@ export default function InboxPage() {
       );
     });
   };
-  // const renderInvitation = () => {
-  //   let lastDay = null;
-  //   console.log("messages", selected);
-  //   const day = dayLabel(selected.createdAt);
-  //   const showSeparator = day !== lastDay;
-  //   lastDay = day;
-  //   return (
-  //     <div key={selected.id} className="flex min-w-0 flex-col">
-  //       {showSeparator && (
-  //         <div className="my-4 flex items-center gap-3">
-  //           <div className="h-px flex-1 bg-border" />
-  //           <span className="text-xs text-muted-foreground">{day}</span>
-  //           <div className="h-px flex-1 bg-border" />
-  //         </div>
-  //       )}
-
-  //       <div
-  //         className={cn(
-  //           "flex min-w-0 gap-3",
-  //           isSelf(selected.sender.id) && "flex-row-reverse",
-  //         )}
-  //       >
-  //         <Avatar size="lg" className="shrink-0">
-  //           <AvatarFallback className="bg-primary/10 text-xs text-primary">
-  //             {selected.sender.username.slice(0, 2).toUpperCase()}
-  //           </AvatarFallback>
-  //         </Avatar>
-
-  //         <div
-  //           className={cn(
-  //             "min-w-0 pt-0.5",
-  //             "max-w-[90%]",
-  //             isSelf(selected.sender.id) && "flex flex-col items-end",
-  //           )}
-  //         >
-  //           <div
-  //             className={cn(
-  //               "flex flex-wrap items-baseline gap-x-2",
-  //               isSelf(selected.sender.id) && "flex-row-reverse",
-  //             )}
-  //           >
-  //             <h3 className="text-sm font-semibold">
-  //               {selected.sender.username}
-  //             </h3>
-  //             <span className="text-xs text-muted-foreground">
-  //               {format(selected.createdAt, "MMM d, yyyy h:mm a")}
-  //             </span>
-  //           </div>
-
-  //           <InvitationMessageCard invitation={invitation[0]} />
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // };
 
   return (
     <ResizablePanelGroup
@@ -519,9 +429,7 @@ export default function InboxPage() {
                   <div className="shrink-0 pt-0.5">
                     <Avatar size="lg">
                       <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                        {item.participants[0].user.username
-                          .slice(0, 2)
-                          .toUpperCase()}
+                        {item.sender.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -541,7 +449,7 @@ export default function InboxPage() {
                             item.isRead && "opacity-50",
                           )}
                         >
-                          {item.participants[0].user.username}
+                          {item.sender.username}
                         </div>
                         <h3
                           className={cn(
@@ -559,7 +467,7 @@ export default function InboxPage() {
                           item.isRead && "opacity-50",
                         )}
                       >
-                        {item.lastMessagePreview}
+                        {item.content}
                       </p>
                     </div>
 
@@ -595,25 +503,20 @@ export default function InboxPage() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="shrink-0 text-sm text-muted-foreground">
-                    {selected.participants[0].user.username}
+                    {selected.sender.username}
                   </span>
                   <h2 className="truncate text-sm font-semibold">
                     {selected.subject}
                   </h2>
                 </div>
-                <div className="flex gap-2 mt-1">
-                  <Badge variant="outline" className="gap-1">
-                    <span className="text-xs">{selected.type}</span>
-                  </Badge>
-                  <Badge variant="outline" className=" ">
-                    <PopoverPriority
-                      showLabel={true}
-                      noCommand={true}
-                      variant="ghost"
-                      size="x"
-                    />
-                  </Badge>
-                </div>
+                <Badge variant="outline" className="mt-1.5">
+                  <PopoverPriority
+                    showLabel={true}
+                    noCommand={true}
+                    variant="ghost"
+                    size="x"
+                  />
+                </Badge>
               </div>
               <Button
                 variant="ghost"
@@ -631,7 +534,6 @@ export default function InboxPage() {
               className="min-h-0 min-w-0 flex-1 overflow-hidden"
             >
               <div className="flex min-w-0 flex-col gap-5 p-4">
-                {/* {renderInvitation()} */}
                 {renderMessages()}
               </div>
             </ScrollArea>
@@ -645,7 +547,7 @@ export default function InboxPage() {
                     value={textMessage}
                     onChange={(e) => setTextMessage(e.target.value)}
                     onKeyDown={onKeyDown}
-                    placeholder={`Reply to ${selected.participants[0].user.username}...`}
+                    placeholder={`Reply to ${selected.sender.username}...`}
                     rows={1}
                     className="max-h-[200px] min-h-0 w-full min-w-0 resize-none overflow-y-auto whitespace-pre-wrap [overflow-wrap:anywhere] rounded-none border-none bg-transparent p-0 pl-2 text-base! focus-visible:ring-0"
                   />

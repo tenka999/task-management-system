@@ -40,6 +40,12 @@ export const useInvitationApi = () => {
       queryFn: () => invitationApi.findByEmail(email),
       enabled: !!email,
     });
+  const useInvitationsByInvitedById = (invitedById) =>
+    useQuery({
+      queryKey: ["invitations-invitedById", invitedById],
+      queryFn: () => invitationApi.findByInvitedById(invitedById),
+      enabled: !!invitedById,
+    });
 
   // ===== MUTATIONS =====
 
@@ -101,6 +107,7 @@ export const useInvitationApi = () => {
     useInvitationByToken,
     usePendingInvitations,
     useInvitationsByEmail,
+    useInvitationsByInvitedById,
     createInvitation,
     resendInvitation,
     acceptInvitation,

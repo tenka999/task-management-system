@@ -92,6 +92,7 @@ import { IconPalette, Icon123, IconCircleFilled } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useUserApi } from "@/presentation/logics/app/useUser";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useNavigate } from "react-router";
 
 const icons = [
   {
@@ -134,7 +135,7 @@ const icons = [
 export function TeamSwitcher({ teams }) {
   const { activeWorkspace, workspaces, switchWorkspace, isSwitching } =
     useWorkspace();
-
+  const navigate = useNavigate();
   const { isMobile } = useSidebar();
   const [activeTeam, setActiveTeam] = React.useState(activeWorkspace);
   const [showModal, setShowModal] = React.useState(false);
@@ -384,7 +385,7 @@ export function TeamSwitcher({ teams }) {
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-secondary-foreground opacity-20" />
 
-              <DropdownMenuGroup>
+              <DropdownMenuGroup onClick={() => navigate("workspace/members")}>
                 <DropdownMenuItem className="rounded-lg">
                   Invite and manage members
                 </DropdownMenuItem>
