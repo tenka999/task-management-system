@@ -185,6 +185,7 @@ model WorkspaceInvitation {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   invitedBy User      @relation(fields: [invitedById], references: [id])
+  inbox     Inbox?    @relation("WorkspaceInvitation")
 
   @@index([workspaceId, email])
   @@index([token])
@@ -744,12 +745,14 @@ model Inbox {
   replies Inbox[] @relation("InboxReplies")
 
   // Attachments
-  attachments    InboxAttachment[]
-  user           User?             @relation(fields: [userId], references: [id])
-  userId         String?
-  conversationId String?           @map("conversation_id")
-  conversation   Conversation?     @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
-  lastMessageOf  Conversation?     @relation("LastMessage")
+  attachments           InboxAttachment[]
+  user                  User?                @relation(fields: [userId], references: [id])
+  userId                String?
+  conversationId        String?              @map("conversation_id")
+  conversation          Conversation?        @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  lastMessageOf         Conversation?        @relation("LastMessage")
+  workspaceInvitationId Int?                 @unique @map("workspace_invitation_id")
+  workspaceInvitation   WorkspaceInvitation? @relation("WorkspaceInvitation", fields: [workspaceInvitationId], references: [id], onDelete: Cascade)
 
   @@index([recipientId, status])
   @@index([recipientId, type])

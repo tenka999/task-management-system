@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import crypto from "crypto";
+import conversationService from "../services/conversation-service.js";
 
 async function getAllInvitations(workspaceId, query = {}) {
   const { status, email, page = 1, limit = 10 } = query;
@@ -141,6 +142,41 @@ async function getInvitationsByEmail(email) {
           name: true,
           logoUrl: true,
           description: true,
+          _count: {
+            select: {
+              members: true,
+            },
+          },
+        },
+      },
+      invitedBy: {
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+async function getInvitationsByInvitedById(invitedById) {
+  return await prisma.workspaceInvitation.findMany({
+    where: { invitedById },
+    include: {
+      workspace: {
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true,
+          description: true,
+          _count: {
+            select: {
+              members: true,
+            },
+          },
         },
       },
       invitedBy: {
@@ -157,8 +193,162 @@ async function getInvitationsByEmail(email) {
   });
 }
 
+// async function createInvitation(workspaceId, data, invitedById) {
+//   // Check if invitation already exists
+//   const existingInvitation = await prisma.workspaceInvitation.findFirst({
+//     where: {
+//       workspaceId,
+//       email: data.email,
+//       status: "PENDING",
+//     },
+//   });
+
+//   if (existingInvitation) {
+//     throw new Error("Invitation already sent to this email");
+//   }
+
+//   // Check if user is already a member
+//   const user = await prisma.user.findUnique({
+//     where: { email: data.email },
+//   });
+
+//   const workspace = await prisma.workspace.findUnique({
+//     where: { id: workspaceId },
+//   });
+
+//   if (user) {
+//     const existingMember = await prisma.workspaceMember.findUnique({
+//       where: {
+//         workspaceId_userId: {
+//           workspaceId,
+//           userId: user.id,
+//         },
+//       },
+//     });
+
+//     if (existingMember) {
+//       throw new Error("User is already a member of this workspace");
+//     }
+//   }
+
+//   const result = await prisma.$transaction(async (tx) => {
+//     const existing = await tx.conversation.findFirst({
+//       where: {
+//         type: "DIRECT",
+//         AND: [
+//           { participants: { some: { userId: invitedById, isActive: true } } },
+//           { participants: { some: { userId: user?.id, isActive: true } } },
+//         ],
+//       },
+//       include: {
+//         participants: {
+//           include: { user: true },
+//         },
+//       },
+//     });
+
+//     if (existing && existing.participants.length === 2) {
+//       return existing;
+//     }
+
+//     const conversation = await conversationService.createConversation(
+//       { type: "DIRECT", participantIds: [invitedById], workspaceId },
+//       user?.id,
+//     );
+
+//     const notification = await tx.notification.create({
+//       data: {
+//         workspaceId,
+//         type: "WORKSPACE_INVITE",
+//         title: "Workspace Invitation",
+//         message: `You have been invited to join ${workspace.name}`,
+//         userId: user?.id,
+//       },
+//     });
+
+//     const inbox = await tx.inbox.create({
+//       data: {
+//         recipientId: user?.id,
+//         senderId: invitedById,
+//         workspaceId,
+//         type: "WORKSPACE_INVITE",
+//         priority: "NORMAL",
+//         content: `You have been invited to join ${workspace.name}`,
+//         conversationId: conversation.id,
+//       },
+//       include: {
+//         sender: {
+//           select: {
+//             id: true,
+//             username: true,
+//             firstName: true,
+//             lastName: true,
+//             avatarUrl: true,
+//           },
+//         },
+//         recipient: {
+//           select: {
+//             id: true,
+//             username: true,
+//             firstName: true,
+//             lastName: true,
+//             avatarUrl: true,
+//           },
+//         },
+//       },
+//     });
+
+//     const invitation = await tx.workspaceInvitation.create({
+//       data: {
+//         workspaceId,
+//         email: data.email,
+//         role: data.role || "MEMBER",
+//         invitedById,
+//         token: crypto.randomUUID(),
+//         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+//       },
+//       include: {
+//         workspace: {
+//           select: {
+//             id: true,
+//             name: true,
+//             logoUrl: true,
+//           },
+//         },
+//         invitedBy: {
+//           select: {
+//             id: true,
+//             username: true,
+//             firstName: true,
+//             lastName: true,
+//             avatarUrl: true,
+//           },
+//         },
+//       },
+//     });
+
+//     return {
+//       notification,
+//       inbox,
+//       conversation,
+
+//       invitation,
+//     };
+//   });
+
+//   return result;
+// }
 async function createInvitation(workspaceId, data, invitedById) {
-  // Check if invitation already exists
+  // ===== VALIDATION (di luar transaction) =====
+  console.log(
+    "createInvitation data",
+    data,
+    "workspaceId",
+    workspaceId,
+    "invitedById",
+    invitedById,
+  );
+  // 1. Check existing pending invitation
   const existingInvitation = await prisma.workspaceInvitation.findFirst({
     where: {
       workspaceId,
@@ -171,10 +361,20 @@ async function createInvitation(workspaceId, data, invitedById) {
     throw new Error("Invitation already sent to this email");
   }
 
-  // Check if user is already a member
+  // 2. Check workspace exists
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+  });
+
+  if (!workspace) {
+    throw new Error("Workspace not found");
+  }
+
+  // 3. Check if user exists & already a member
   const user = await prisma.user.findUnique({
     where: { email: data.email },
   });
+  console.log("user", user);
 
   if (user) {
     const existingMember = await prisma.workspaceMember.findUnique({
@@ -191,29 +391,73 @@ async function createInvitation(workspaceId, data, invitedById) {
     }
   }
 
+  // ===== TRANSACTION =====
   const result = await prisma.$transaction(async (tx) => {
-    const notification = await tx.notification.create({
-      data: {
-        workspaceId,
-        type: "WORKSPACE_INVITE",
-        title: "Workspace Invitation",
-        message: `You have been invited to join ${data.workspaceName}`,
-        userId: user?.id,
-      },
-    });
+    let conversation = null;
+    let notification = null;
+    let inbox = null;
 
-    const inbox = await tx.inbox.create({
-      data: {
-        recipientId: user?.id,
-        senderId: invitedById,
-        workspaceId,
-        type: "WORKSPACE_INVITE",
-        priority: "NORMAL",
-        subject: "Workspace Invitation",
-        content: `You have been invited to join ${data.workspaceName}. Please click the link below to accept the invitation. If you did not request this invitation, you can ignore this email.`,
-      },
-    });
+    // Hanya buat conversation & notif jika user TERDAFTAR
+    if (user) {
+      // Check existing direct conversation (pakai tx, bukan prisma)
+      const existingConversation = await tx.conversation.findFirst({
+        where: {
+          type: "DIRECT",
+          AND: [
+            { participants: { some: { userId: invitedById, isActive: true } } },
+            { participants: { some: { userId: user.id, isActive: true } } },
+          ],
+        },
+        include: {
+          participants: { include: { user: true } },
+        },
+      });
 
+      if (
+        existingConversation &&
+        existingConversation.participants.length === 2
+      ) {
+        conversation = existingConversation;
+      } else {
+        // ✅ FIX: participantIds = [user.id], creator = invitedById
+        conversation = await conversationService.createConversation(
+          {
+            type: "DIRECT",
+            participantIds: [user.id], // ← User yang di-invite jadi participant
+            workspaceId,
+          },
+          invitedById, // ← Inviter jadi creator
+        );
+      }
+
+      // ✅ Create notification (pakai tx)
+      notification = await tx.notification.create({
+        data: {
+          workspaceId,
+          type: "WORKSPACE_INVITE",
+          title: "Workspace Invitation",
+          message: `You have been invited to join ${workspace.name}`,
+          userId: user.id, // ← Sudah pasti ada user
+        },
+      });
+
+      // ✅ Create inbox message (pakai tx)
+
+      // ✅ Update conversation last message
+
+      // ✅ Increment unread count
+      await tx.conversationParticipant.update({
+        where: {
+          conversationId_userId: {
+            conversationId: conversation.id,
+            userId: user.id,
+          },
+        },
+        data: { unreadCount: { increment: 1 } },
+      });
+    }
+
+    // ✅ Create invitation (selalu dibuat, terlepas dari user terdaftar atau tidak)
     const invitation = await tx.workspaceInvitation.create({
       data: {
         workspaceId,
@@ -242,11 +486,57 @@ async function createInvitation(workspaceId, data, invitedById) {
         },
       },
     });
+    console.log("inv", invitation);
+    inbox = await tx.inbox.create({
+      data: {
+        recipientId: user.id,
+        senderId: invitedById,
+        workspaceId,
+        type: "WORKSPACE_INVITE",
+        priority: "NORMAL",
+        content: `You have been invited to join ${workspace.name}`,
+        conversationId: conversation.id,
+        workspaceInvitationId: invitation.id,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+        recipient: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
 
+    await tx.conversation.update({
+      where: { id: conversation.id },
+      data: {
+        lastMessageId: inbox.id,
+        lastMessageAt: new Date(),
+        lastMessagePreview: `You have been invited to join ${workspace.name}`,
+        messageCount: { increment: 1 },
+      },
+    });
+
+    // ✅ Return consistent structure
     return {
+      invitation,
+      conversation,
       notification,
       inbox,
-      invitation,
+      isExistingUser: !!user,
     };
   });
 
@@ -388,6 +678,7 @@ export default {
   getInvitationByToken,
   getPendingInvitations,
   getInvitationsByEmail,
+  getInvitationsByInvitedById,
   createInvitation,
   resendInvitation,
   acceptInvitation,

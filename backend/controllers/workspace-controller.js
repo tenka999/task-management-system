@@ -142,6 +142,7 @@ const workspaceController = {
       const result = await workspaceService.removeWorkspaceMember(
         req.params.id,
         req.params.userId,
+        req.user.id,
       );
       res.status(200).json(responseFormat("success", result, "Member removed"));
     } catch (error) {

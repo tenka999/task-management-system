@@ -44,7 +44,7 @@ async function getUserInbox(userId, query = {}) {
           select: { replies: true },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     }),
     prisma.inbox.count({ where }),
   ]);

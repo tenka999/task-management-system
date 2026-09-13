@@ -288,6 +288,10 @@ privateRouter.get(
   "/invitation/email/:email",
   invitationController.getInvitationsByEmail,
 );
+privateRouter.get(
+  "/invitation/invitedById/:invitedById",
+  invitationController.getInvitationsByInvitedById,
+);
 privateRouter.post("/invitation", invitationController.createInvitation);
 privateRouter.post(
   "/invitation/:id/resend",

@@ -61,7 +61,9 @@ async function loginUser(email, password) {
       email: true,
       username: true,
       passwordHash: true,
+      workspaceMembers: true,
       roleMaps: true,
+      job: true,
     },
   });
 

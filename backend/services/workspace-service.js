@@ -204,7 +204,27 @@ async function updateWorkspaceMember(workspaceId, userId, data) {
   });
 }
 
-async function removeWorkspaceMember(workspaceId, userId) {
+async function removeWorkspaceMember(workspaceId, userId, userIdRemover) {
+  console.log(
+    "workspaceId:",
+    workspaceId,
+    "userId:",
+    userId,
+    "userIdRemover:",
+    userIdRemover,
+  );
+  const userRemove = await prisma.workspaceMember.findUnique({
+    where: { workspaceId_userId: { workspaceId, userId } },
+  });
+  const userRemover = await prisma.workspaceMember.findUnique({
+    where: { workspaceId_userId: { workspaceId, userId: userIdRemover } },
+  });
+  console.log(userRemove, userRemover);
+  if (userRemover.role !== "OWNER" && userRemover.role !== "ADMIN")
+    throw new Error("Unauthorized to remove this member");
+  if (userRemove.role === "OWNER") throw new Error("Cannot remove owner");
+  if (userRemove.role === "ADMIN" && userRemover.role === "ADMIN")
+    throw new Error("Cannot remove admin if you are admin");
   return await prisma.workspaceMember.delete({
     where: {
       workspaceId_userId: { workspaceId, userId },

@@ -84,9 +84,28 @@ const invitationController = {
       res.status(500).json({ success: false, message: error.message });
     }
   },
+  async getInvitationsByInvitedById(req, res) {
+    try {
+      const invitations = await invitationService.getInvitationsByInvitedById(
+        req.params.invitedById,
+      );
+      res
+        .status(200)
+        .json(
+          responseFormat(
+            "success",
+            invitations,
+            "Invitations by invited by id fetched",
+          ),
+        );
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
 
   // POST /invitation
   async createInvitation(req, res) {
+    console.log("body", req.body);
     try {
       const invitation = await invitationService.createInvitation(
         req.body.workspaceId,
