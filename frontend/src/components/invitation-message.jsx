@@ -9,10 +9,12 @@ import { cn } from "@/lib/utils";
 import {
   IconCircleCheck,
   IconCircleX,
+  IconSendOff,
   IconUserPlus,
 } from "@tabler/icons-react";
 import { useInvitationApi } from "@/presentation/logics/app/useInvitation";
 import { toast } from "@/components/ui/toast";
+import SecureStorage from "@/helpers/SecureStorage";
 
 /**
  * Payload shape (built server-side from the WorkspaceInvitation model +
@@ -43,11 +45,13 @@ function roleBadgeVariant(role) {
 }
 
 export function InvitationMessageCard({ invitation }) {
+  console.log("invitationnnn", invitation);
   // "idle" | "accepting" | "declining" | "accepted" | "declined" | "error"
   const [action, setAction] = useState("idle");
   const expiresAt = new Date(invitation.expiresAt);
   const expired = invitation.status === "PENDING" && isPast(expiresAt);
   const { declineInvitation, acceptInvitation } = useInvitationApi();
+  const user = SecureStorage.getStorage("user");
   const resolved =
     invitation.status === "ACCEPTED" ||
     invitation.status === "DECLINED" ||
@@ -71,11 +75,19 @@ export function InvitationMessageCard({ invitation }) {
     }
   };
 
+  const isSelf = (id) => {
+    if (id === user.id) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   return (
     <Card
       className={cn(
-        "mt-1.5 w-[320px] max-w-full overflow-hidden rounded-2xl rounded-tl-sm",
+        "mt-1.5 w-[320px] max-w-full  overflow-hidden rounded-2xl ",
         resolved && "opacity-80",
+        isSelf(invitation.invitedById) ? "rounded-tr-sm" : "rounded-tl-sm",
       )}
     >
       <CardContent className="flex min-w-0 flex-col gap-3 p-4">
@@ -134,6 +146,18 @@ export function InvitationMessageCard({ invitation }) {
             action={action}
             expired={expired}
           />
+        ) : isSelf(invitation.invitedById) ? (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              className="flex-2"
+              disabled={action === "revoking"}
+              // onClick={() => respond(revokedInvitation, "revoked")}
+            >
+              <IconSendOff size={16} />
+              {action === "revoking" ? "Revoking" : "Revoke"}
+            </Button>
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <Button

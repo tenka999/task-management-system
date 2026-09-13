@@ -252,25 +252,27 @@ export default function InboxPage() {
   const [textMessage, setTextMessage] = useState("");
   const { useAllInbox } = useInboxApi();
   const { useAllConversations } = useConversationApi();
-  const { data: inbox } = useAllInbox();
+  const { data: inbox, isLoading: invitationLoading } = useAllInbox();
   const { data } = useAllConversations();
-  console.log(data);
-  console.log("inbox", inbox);
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
-  const { useInvitationsByInvitedById } = useInvitationApi();
+  const { useInvitationsByInvitedById, useInvitationById } = useInvitationApi();
   const user = SecureStorage.getStorage("user");
-  console.log(user);
   const participantId = data?.conversations;
-  console.log(participantId);
 
   const selected = useMemo(
     () => items?.find((i) => i.id === selectedId) ?? null,
     [items, selectedId],
   );
-  const { data: invitation, isLoading: invitationLoading } =
-    useInvitationsByInvitedById(selected?.participants[0].userId);
-  console.log("sel", selected);
+  const participantSelect = selected?.participants.find(
+    (p) => p.user.id !== user?.id,
+  );
+
+  // const invitation = inbox.find
+  const inbok = inbox;
+  // const { data: invitation, isLoading: invitationLoading } =
+  //   useInvitationsByInvitedById(participantSelect?.user.id);
+  const [invitation, setInvitation] = useState(null);
 
   const unreadCount = items?.filter((i) => !i.isRead).length;
 
@@ -280,8 +282,6 @@ export default function InboxPage() {
     setItems((prev) =>
       prev.map((it) => (it.id === id ? { ...it, isRead: true } : it)),
     );
-    console.log(id);
-    console.log(inbox);
     setMessages(inbox.filter((i) => i.conversationId === id));
   };
 
@@ -300,8 +300,16 @@ export default function InboxPage() {
 
   useEffect(() => {
     setItems(data?.conversations);
-    console.log("data", data?.conversations);
   }, [data]);
+
+  useEffect(() => {
+    setInvitation(inbox?.filter((i) => i.type === "WORKSPACE_INVITE"));
+    console.log(
+      "invitation",
+      inbox?.filter((i) => i.type === "WORKSPACE_INVITE")[0]
+        .workspaceInvitation,
+    );
+  }, [inbox]);
 
   /* ---------- auto-scroll to latest message ---------- */
   useEffect(() => {
@@ -348,15 +356,13 @@ export default function InboxPage() {
   const renderMessages = () => {
     let lastDay = null;
     return messages?.map((msg) => {
-      console.log("messages", isSelf(msg.sender.id));
       const day = dayLabel(msg.createdAt);
       const showSeparator = day !== lastDay;
       lastDay = day;
       const invitationByMsg = invitation?.find(
-        (i) => i.id === msg.workspaceInvitationId,
+        (i) => i.workspaceInvitation.id === msg.workspaceInvitationId,
       );
-      console.log("bymsg", invitationByMsg);
-      console.log("msg", msg);
+      console.log("msg", invitationByMsg);
       return (
         <div key={msg.id} className="flex min-w-0 flex-col">
           {showSeparator && (
@@ -403,10 +409,13 @@ export default function InboxPage() {
               {msg.type === "WORKSPACE_INVITE" ? (
                 invitationLoading ? (
                   <div>Loading invitation...</div>
-                ) : invitation?.[0] ? (
-                  <InvitationMessageCard invitation={invitationByMsg} />
+                ) : invitation ? (
+                  <InvitationMessageCard
+                    invitation={invitationByMsg.workspaceInvitation}
+                  />
                 ) : (
-                  <MessageContent msg={msg} />
+                  (console.log("invitation", invitation),
+                  (<MessageContent msg={msg} />))
                 )
               ) : (
                 <MessageContent msg={msg} />
@@ -472,7 +481,7 @@ export default function InboxPage() {
   //     </div>
   //   );
   // };
-  console.log("items", items);
+
   return (
     <ResizablePanelGroup
       orientation="horizontal"
@@ -509,7 +518,10 @@ export default function InboxPage() {
             </div>
 
             {items?.map((item) => {
-              console.log("item", item);
+              const participantOpp = item.participants.find(
+                (p) => p.user.id !== user?.id,
+              );
+
               // const PriorityIcon = priorityIcons[item.priority];
               return (
                 <div
@@ -523,9 +535,10 @@ export default function InboxPage() {
                   <div className="shrink-0 pt-0.5">
                     <Avatar size="lg">
                       <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                        {item.participants[0].user.username
+                        {/* {item.participants[0].user.username
                           .slice(0, 2)
-                          .toUpperCase()}
+                          .toUpperCase()} */}
+                        {participantOpp.user.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -545,7 +558,8 @@ export default function InboxPage() {
                             item.isRead && "opacity-50",
                           )}
                         >
-                          {item.participants[0].user.username}
+                          {/* {item.participants[0].user.username} */}
+                          {participantOpp.user.username}
                         </div>
                         <h3
                           className={cn(
@@ -599,7 +613,7 @@ export default function InboxPage() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="shrink-0 text-sm text-muted-foreground">
-                    {selected.participants[0].user.username}
+                    {participantSelect.user.username}
                   </span>
                   <h2 className="truncate text-sm font-semibold">
                     {selected.subject}
@@ -649,7 +663,7 @@ export default function InboxPage() {
                     value={textMessage}
                     onChange={(e) => setTextMessage(e.target.value)}
                     onKeyDown={onKeyDown}
-                    placeholder={`Reply to ${selected.participants[0].user.username}...`}
+                    placeholder={`Reply to ${participantSelect.user.username}...`}
                     rows={1}
                     className="max-h-[200px] min-h-0 w-full min-w-0 resize-none overflow-y-auto whitespace-pre-wrap [overflow-wrap:anywhere] rounded-none border-none bg-transparent p-0 pl-2 text-base! focus-visible:ring-0"
                   />
