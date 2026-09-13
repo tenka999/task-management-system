@@ -300,6 +300,7 @@ export default function InboxPage() {
 
   useEffect(() => {
     setItems(data?.conversations);
+    console.log("data", data?.conversations);
   }, [data]);
 
   /* ---------- auto-scroll to latest message ---------- */
@@ -352,8 +353,10 @@ export default function InboxPage() {
       const showSeparator = day !== lastDay;
       lastDay = day;
       const invitationByMsg = invitation?.find(
-        (i) => i.workspaceId === msg.workspaceId,
+        (i) => i.id === msg.workspaceInvitationId,
       );
+      console.log("bymsg", invitationByMsg);
+      console.log("msg", msg);
       return (
         <div key={msg.id} className="flex min-w-0 flex-col">
           {showSeparator && (
@@ -469,7 +472,7 @@ export default function InboxPage() {
   //     </div>
   //   );
   // };
-
+  console.log("items", items);
   return (
     <ResizablePanelGroup
       orientation="horizontal"
@@ -506,6 +509,7 @@ export default function InboxPage() {
             </div>
 
             {items?.map((item) => {
+              console.log("item", item);
               // const PriorityIcon = priorityIcons[item.priority];
               return (
                 <div

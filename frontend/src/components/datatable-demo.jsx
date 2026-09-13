@@ -193,7 +193,6 @@ function RoleCell({ row }) {
 
   const { updateWorkspaceMember } = useWorkspaceApi();
   const queryClient = useQueryClient();
-  console.log("orugin", row.original);
   const user = SecureStorage.getStorage("user");
   const { useUserById } = useUserApi();
   const { data: userData } = useUserById(user.id);
@@ -484,38 +483,6 @@ const initialData = [
   },
 ];
 
-const roleCount = initialData.reduce((acc, user) => {
-  if (user.role === "owner") {
-    acc["admin"] = (acc["admin"] || 0) + 1;
-  } else {
-    acc[user.role] = (acc[user.role] || 0) + 1;
-  }
-  return acc;
-}, {});
-
-const memberStatus = [
-  {
-    id: "all-users",
-    label: "All User",
-    count: initialData.length,
-  },
-  {
-    id: "admin",
-    label: "Admins",
-    count: roleCount.admin || 0,
-  },
-  {
-    id: "member",
-    label: "Members",
-    count: roleCount.member || 0,
-  },
-  {
-    id: "guest",
-    label: "Guests",
-    count: roleCount.guest || 0,
-  },
-];
-
 const items = [
   {
     label: "Member",
@@ -713,7 +680,6 @@ export const columns = [
     enableHiding: false,
     cell: ({ row }) => {
       const member = row.original;
-      console.log("mem", member);
       //   const { toast } = useToast();
       const { removeWorkspaceMember } = useWorkspaceApi();
 
@@ -836,7 +802,6 @@ export function DataTableDemo({
   showPagination = true,
   defaultPageSize = 5,
 }) {
-  console.log(data);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
@@ -898,8 +863,8 @@ export function DataTableDemo({
   // Apply role filter
   React.useEffect(() => {
     if (roleFilter !== "all-users") {
-      if (roleFilter === "admin") {
-        table.getColumn("role")?.setFilterValue(["admin", "owner"]);
+      if (roleFilter === "ADMIN") {
+        table.getColumn("role")?.setFilterValue(["ADMIN", "OWNER"]);
       } else {
         table.getColumn("role")?.setFilterValue([roleFilter]);
       }
@@ -979,7 +944,6 @@ export function DataTableDemo({
   };
 
   const handleCreateInvite = async (values) => {
-    console.log("values", values);
     setIsSubmitting(true);
     try {
       await createInvitation.mutateAsync(values);
@@ -999,7 +963,48 @@ export function DataTableDemo({
       setShowModal(false);
     }
   };
+  const user = SecureStorage.getStorage("user");
+  const { useUserById } = useUserApi();
+  const { data: userData } = useUserById(user.id);
+  const { activeWorkspace } = useWorkspace();
 
+  const { useWorkspaceMembers } = useWorkspaceApi();
+  const { data: workspaceMember } = useWorkspaceMembers(activeWorkspace?.id);
+  const roleCount = workspaceMember?.reduce((acc, user) => {
+    if (user.role === "OWNER") {
+      acc["ADMIN"] = (acc["ADMIN"] || 0) + 1;
+    } else {
+      acc[user.role] = (acc[user.role] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  const memberStatus = [
+    {
+      id: "all-users",
+      label: "All User",
+      count: data.length,
+    },
+    {
+      id: "ADMIN",
+      label: "Admins",
+      count: roleCount?.ADMIN || 0,
+    },
+    {
+      id: "MEMBER",
+      label: "Members",
+      count: roleCount?.MEMBER || 0,
+    },
+    {
+      id: "GUEST",
+      label: "Guests",
+      count: roleCount?.GUEST || 0,
+    },
+  ];
+
+  const userRole = userData?.workspaceMembers.find(
+    (item) => item.workspaceId === activeWorkspace?.id,
+  )?.role;
   return (
     <div className="w-full space-y-4">
       {showToolbar && (
@@ -1024,12 +1029,15 @@ export function DataTableDemo({
                 >
                   <IconX />
                 </InputGroupButton>
-                <DialogInviteMember
-                  onSubmit={handleCreateInvite}
-                  isLoading={isSubmitting}
-                  setShowModal={setShowModal}
-                  showModal={showModal}
-                />
+                {userRole === "ADMIN" ||
+                  (userRole === "OWNER" && (
+                    <DialogInviteMember
+                      onSubmit={handleCreateInvite}
+                      isLoading={isSubmitting}
+                      setShowModal={setShowModal}
+                      showModal={showModal}
+                    />
+                  ))}
               </div>
             </InputGroup>
           </div>
