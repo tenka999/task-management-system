@@ -147,16 +147,37 @@ export const workspaceApi = {
   },
 
   // DELETE /workspace/:id/members/:userId
-  removeMember: async (id, userId) => {
-    const response = await baseApi.delete(
-      `/workspace/${id}/members/${userId}`,
-      {
-        headers: { "require-auth": true },
-      },
-    );
+  // removeMember: async (id, userId) => {
+  //   const response = await baseApi.delete(
+  //     `/workspace/${id}/members/${userId}`,
+  //     {
+  //       headers: { "require-auth": true },
+  //     },
+  //   );
 
-    if (response.status !== 200) throw new Error("Failed to remove member");
-    return response.data.data;
+  //   if (response.status !== 200) throw new Error("Failed to remove member");
+  //   return response.data.data;
+  // },
+  removeMember: async (id, userId) => {
+    try {
+      const response = await baseApi.delete(
+        `/workspace/${id}/members/${userId}`,
+        {
+          headers: { "require-auth": true },
+        },
+      );
+
+      return response.data.data;
+    } catch (error) {
+      console.log("Error response:", error.response);
+
+      // Response dari backend
+      const message =
+        error.response?.data?.message || "Failed to create invitation";
+
+      // Lempar kembali error agar bisa ditangkap di component
+      throw new Error(message);
+    }
   },
 
   // POST /workspace/:id/invite

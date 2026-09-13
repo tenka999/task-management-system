@@ -57,8 +57,15 @@ export default function WorkspacePage() {
     resendInvitation,
     cancelInvitation,
   } = useInvitationApi();
-  const { data: invitation } = useAllInvitations();
-  console.log(invitation);
+  const { data: invitation } = useAllInvitations({
+    workspaceId: activeWorkspace?.id,
+  });
+  console.log("inv", invitation);
+  const workspaceMembers = initialData?.map((i) => {
+    const inv = invitation?.find((inv) => inv.email === i.user.email);
+
+    return inv ? { ...i, invitation: inv } : i;
+  });
   // console.log(workspaceMembers);
   const [inputMember, setInputMember] = useState("");
 
@@ -81,7 +88,10 @@ export default function WorkspacePage() {
 
             <div className="">
               {/* <SimpleDataTable /> */}
-              <DataTableDemo inputMember={inputMember} data={initialData} />
+              <DataTableDemo
+                inputMember={inputMember}
+                data={workspaceMembers}
+              />
               {/* <DataTable columns={columns} data={projects} /> */}
             </div>
             <div className="dashboard-top-actions">

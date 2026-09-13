@@ -26,6 +26,7 @@ import {
   Loader2,
   SearchIcon,
   PlusIcon,
+  MailWarning,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -85,7 +86,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { IconX } from "@tabler/icons-react";
+import { IconCalendarExclamation, IconX } from "@tabler/icons-react";
 import { PopoverMembers } from "./popover-members";
 import DialogInviteMember from "./dialog-invite-member";
 import { IconUserCog, IconUserEdit, IconUserSearch } from "@tabler/icons-react";
@@ -100,6 +101,9 @@ import {
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useWorkspaceApi } from "@/presentation/logics/app/useWorkspaceApi";
 import { useInvitationApi } from "@/presentation/logics/app/useInvitation";
+import SecureStorage from "@/helpers/SecureStorage";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUserApi } from "@/presentation/logics/app/useUser";
 
 /**
  * @typedef {Object} Payment
@@ -130,25 +134,25 @@ import { useInvitationApi } from "@/presentation/logics/app/useInvitation";
 // Status configuration with icons
 /** @type {Record<string, StatusConfig>} */
 const statusConfig = {
-  pending: {
+  PENDING: {
     label: "Pending",
     variant: "secondary",
     icon: <Clock className="h-3 w-3 mr-1" />,
   },
-  processing: {
-    label: "Processing",
-    variant: "warning",
-    icon: <Loader2 className="h-3 w-3 mr-1 animate-spin" />,
-  },
-  success: {
-    label: "Success",
+  ACCEPTED: {
+    label: "Accepted",
     variant: "success",
     icon: <CheckCircle2 className="h-3 w-3 mr-1" />,
   },
-  failed: {
-    label: "Failed",
+  DECLINED: {
+    label: "Declined",
     variant: "destructive",
     icon: <XCircle className="h-3 w-3 mr-1" />,
+  },
+  EXPIRED: {
+    label: "Expired",
+    variant: "warning",
+    icon: <IconCalendarExclamation className="h-3 w-3 mr-1 animate-spin" />,
   },
 };
 
@@ -179,6 +183,185 @@ const roleConfig = {
 
 // Sample data
 /** @type {Payment[]} */
+
+function RoleCell({ row }) {
+  const role = row.getValue("role"); // langsung dari data, tanpa state lokal
+
+  const [pendingRole, setPendingRole] = React.useState(role); // hanya untuk dialog konfirmasi
+  const [openAlert, setOpenAlert] = React.useState(false);
+  const [selectOpen, setSelectOpen] = React.useState(false);
+
+  const { updateWorkspaceMember } = useWorkspaceApi();
+  const queryClient = useQueryClient();
+  console.log("orugin", row.original);
+  const user = SecureStorage.getStorage("user");
+  const { useUserById } = useUserApi();
+  const { data: userData } = useUserById(user.id);
+  const userRole = userData?.workspaceMembers.find(
+    (item) => item.workspaceId === row.original?.workspaceId,
+  )?.role;
+
+  const currentRoleMember = items.find((item) => item.value === role);
+  const pendingRoleMember = items.find((item) => item.value === pendingRole);
+
+  const handleSelectRole = (value) => {
+    setPendingRole(value);
+    setSelectOpen(false);
+    setOpenAlert(true);
+  };
+
+  const handleChangeRole = async () => {
+    const previousRole = row.getValue("role");
+
+    try {
+      await updateWorkspaceMember.mutateAsync({
+        id: row.original.workspaceId,
+        userId: row.original.userId,
+        payload: {
+          role: pendingRole,
+          isActive: true,
+        },
+      });
+
+      // Update cache members langsung — hanya baris user ini yang berubah
+      queryClient.setQueryData(
+        ["workspaceMembers", row.original.workspaceId],
+        (old) => {
+          if (!old) return old;
+
+          return old.map((member) =>
+            member.userId === row.original.userId
+              ? { ...member, role: pendingRole }
+              : member,
+          );
+        },
+      );
+
+      toast.add({
+        title: "Role Changed",
+        description: `Member ${row.original.user.username} role has been changed.`,
+      });
+
+      setOpenAlert(false);
+    } catch (error) {
+      toast.add({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+
+      // Rollback cache kalau gagal
+      queryClient.setQueryData(
+        ["workspaceMembers", row.original.workspaceId],
+        (old) => {
+          if (!old) return old;
+
+          return old.map((member) =>
+            member.userId === row.original.userId
+              ? { ...member, role: previousRole }
+              : member,
+          );
+        },
+      );
+    }
+  };
+
+  const handleCancelChange = () => {
+    setPendingRole(role);
+    setOpenAlert(false);
+  };
+
+  return (
+    <>
+      {role === "OWNER" ? (
+        <div className="px-3">Owner</div>
+      ) : (
+        <Select
+          value={role}
+          onValueChange={handleSelectRole}
+          items={items}
+          open={selectOpen}
+          onOpenChange={setSelectOpen}
+        >
+          <SelectTrigger
+            disabled={userRole !== "OWNER" && userRole !== "ADMIN"}
+            className="bg-transparent w-full h-full!"
+          >
+            <SelectValue>
+              <Item size="xs" className="p-0">
+                <ItemContent>
+                  <ItemTitle className="whitespace-nowrap">
+                    {currentRoleMember?.label}
+                  </ItemTitle>
+                </ItemContent>
+              </Item>
+            </SelectValue>
+          </SelectTrigger>
+
+          <SelectContent className="w-[350px]" alignItemWithTrigger={false}>
+            <SelectGroup>
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  <Item size="xs" className="p-0">
+                    <ItemMedia className="border p-3 bg-secondary rounded-lg">
+                      <item.icon />
+                    </ItemMedia>
+
+                    <ItemContent>
+                      <ItemTitle className="whitespace-nowrap">
+                        {item.label}
+                      </ItemTitle>
+
+                      <ItemDescription className="whitespace-normal text-xs">
+                        {item.description}
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      )}
+
+      <AlertDialog
+        open={openAlert}
+        onOpenChange={(open) => {
+          setOpenAlert(open);
+
+          if (!open) {
+            setPendingRole(role);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change role</AlertDialogTitle>
+
+            <AlertDialogDescription>
+              Are you sure you want to change the role from{" "}
+              <strong>{currentRoleMember?.label}</strong> to{" "}
+              <strong>{pendingRoleMember?.label}</strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelChange}>
+              Cancel
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={handleChangeRole}
+              disabled={updateWorkspaceMember.isPending}
+            >
+              {updateWorkspaceMember.isPending ? "Saving..." : "Save"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
 const initialData = [
   {
     id: "m5gr84i9",
@@ -336,20 +519,20 @@ const memberStatus = [
 const items = [
   {
     label: "Member",
-    value: "member",
+    value: "MEMBER",
     description: "Can access all public item in your workspace",
     icon: IconUserEdit,
   },
   {
     label: "Guest",
-    value: "guest",
+    value: "GUEST",
     description:
       "Can't use all features or be added to Spaces. Can only access items shared with them.",
     icon: IconUserSearch,
   },
   {
     label: "Admin",
-    value: "admin",
+    value: "ADMIN",
     description:
       "Can manage Spaces, People,Billing and other Workspace settings.",
     icon: IconUserCog,
@@ -460,7 +643,8 @@ export const columns = [
     },
   },
   {
-    accessorKey: "status",
+    id: "status",
+    accessorFn: (row) => row.invitation?.status ?? "PENDING",
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status");
@@ -469,7 +653,7 @@ export const columns = [
       return (
         <>
           {role !== "OWNER" && (
-            <Badge variant={config.variant} className="flex items-center">
+            <Badge className="flex items-center">
               {config.icon}
               {config.label}
             </Badge>
@@ -484,65 +668,7 @@ export const columns = [
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => {
-      const role = row.getValue("role");
-      const config = roleConfig[role] || roleConfig.low;
-      const [EditRole, setEditRole] = useState(role);
-      const EditRoleMember = items.find((item) => item.value === EditRole);
-      console.log(role);
-      return (
-        // <Badge variant={config.badgeVariant} className={config.className}>
-        //   {config.label}
-        // </Badge>
-        <Select
-          value={EditRole}
-          onValueChange={setEditRole}
-          defaultValue={items[0].value}
-          items={items}
-        >
-          {role === "OWNER" ? (
-            "Owner"
-          ) : (
-            <>
-              <SelectTrigger className="bg-transparent w-full h-full! ">
-                <SelectValue className="">
-                  <Item size="xs" className="p-0  ">
-                    <ItemContent>
-                      <ItemTitle className="whitespace-nowrap">
-                        {EditRoleMember?.label}
-                      </ItemTitle>
-                    </ItemContent>
-                  </Item>
-                </SelectValue>
-              </SelectTrigger>
-            </>
-          )}
-          <SelectContent className="w-[350px]" alignItemWithTrigger={false}>
-            <SelectGroup>
-              {/* <SelectLabel>Fruits</SelectLabel> */}
-              {/* {console.log(items)} */}
-              {items.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  <Item size="xs" className="p-0 ">
-                    <ItemMedia className="border p-3 bg-secondary rounded-lg">
-                      <item.icon />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle className="whitespace-nowrap">
-                        {item.label}
-                      </ItemTitle>
-                      <ItemDescription className="whitespace-normal text-xs">
-                        {item.description}
-                      </ItemDescription>
-                    </ItemContent>
-                  </Item>
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      );
-    },
+    cell: ({ row }) => <RoleCell row={row} />,
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
@@ -566,7 +692,8 @@ export const columns = [
   },
 
   {
-    accessorKey: "invitedBy",
+    id: "invitedBy",
+    accessorFn: (row) => row.invitation?.invitedBy?.username ?? "",
     header: "Invited by",
     cell: ({ row }) => {
       // const status = row.getValue("status");
@@ -585,38 +712,54 @@ export const columns = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original;
+      const member = row.original;
+      console.log("mem", member);
       //   const { toast } = useToast();
+      const { removeWorkspaceMember } = useWorkspaceApi();
 
       const handleCopyId = () => {
-        navigator.clipboard.writeText(payment.id);
+        navigator.clipboard.writeText(member.id);
         // toast.add({
         //   type: "Copied!",
         //   description: "Event has been created.",
         // });
         toast.add({
           title: "Copied!",
-          description: `Payment ID ${payment.id} copied to clipboard.`,
+          description: `User ID ${member.id} copied to clipboard.`,
         });
       };
 
-      const handleDelete = () => {
+      const handleDelete = async () => {
         // toast.add({
         //   type: "Copied!",
         //   description: "Event has been created.",
-        // });
-        setOpenAlert(false);
-        const id = toast.add({
-          variant: "destructive",
-          title: "Payment Deleted",
-          description: `Payment ${payment.id} has been deleted.`,
-          actionProps: {
-            children: "Undo",
-            onClick() {
-              toast.close(id);
+        try {
+          await removeWorkspaceMember.mutateAsync({
+            id: member.workspaceId,
+            userId: member.userId,
+          });
+          const id = toast.add({
+            variant: "destructive",
+            title: "Member Removed",
+            description: `Member ${member.user.username} has been removed.`,
+            actionProps: {
+              children: "Undo",
+              onClick() {
+                toast.close(id);
+              },
             },
-          },
-        });
+          });
+          // fetchData();
+        } catch (error) {
+          toast.add({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        } finally {
+          setOpenAlert(false);
+        }
+        // });
       };
       const [openAlert, setOpenAlert] = React.useState(false);
 
@@ -634,10 +777,10 @@ export const columns = [
             <DropdownMenuGroup>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={handleCopyId}>
-                Copy payment ID
+                Copy user ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>View customer</DropdownMenuItem>
+              <DropdownMenuItem>View Member</DropdownMenuItem>
               <DropdownMenuItem>View payment details</DropdownMenuItem>
             </DropdownMenuGroup>
 
@@ -649,7 +792,7 @@ export const columns = [
                     onSelect={(e) => e.preventDefault()}
                     className="text-red-600 w-full justify-start"
                   >
-                    Delete payment
+                    Delete member
                   </Button>
                 }
               ></AlertDialogTrigger>
@@ -658,7 +801,7 @@ export const columns = [
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This action cannot be undone. This will permanently delete
-                    the payment and remove the data from our servers.
+                    the member and remove their data from our servers.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -848,7 +991,7 @@ export function DataTableDemo({
     } catch (error) {
       toast.add({
         title: "Error",
-        description: "Failed to create invitation",
+        description: error.message,
         variant: "destructive",
       });
     } finally {

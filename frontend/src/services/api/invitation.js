@@ -10,7 +10,7 @@ export const invitationApi = {
     });
 
     if (response.status !== 200) throw new Error("Failed to fetch invitations");
-    return response.data.data;
+    return response.data.data.invitations;
   },
 
   // GET /invitation/:id
@@ -67,12 +67,24 @@ export const invitationApi = {
 
   // POST /invitation
   create: async (payload) => {
-    const response = await baseApi.post("/invitation", payload, {
-      headers: { "require-auth": true },
-    });
+    try {
+      const response = await baseApi.post("/invitation", payload, {
+        headers: {
+          "require-auth": true,
+        },
+      });
 
-    if (response.status !== 201) throw new Error("Failed to create invitation");
-    return response.data.data;
+      return response.data.data;
+    } catch (error) {
+      console.log("Error response:", error.response);
+
+      // Response dari backend
+      const message =
+        error.response?.data?.message || "Failed to create invitation";
+
+      // Lempar kembali error agar bisa ditangkap di component
+      throw new Error(message);
+    }
   },
 
   // POST /invitation/:id/resend
