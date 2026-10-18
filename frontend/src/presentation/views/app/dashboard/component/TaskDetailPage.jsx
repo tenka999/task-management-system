@@ -105,6 +105,10 @@ import { PopoverPriority } from "@/components/popover-priority";
 import { PopoverAvatar } from "@/components/popover-avatar";
 import { PopoverLabelTask } from "@/components/popover-label-task";
 import { PopoverStatusTask } from "@/components/popover-status-task";
+import { useParams } from "react-router";
+import { useTaskApi } from "@/presentation/logics/app/useTask";
+import { PopoverHour } from "@/components/popover-hour";
+import TimeStart from "@/components/time-start";
 
 const summary = {
   dueToday: 12,
@@ -202,14 +206,19 @@ const taskDetail = {
   ],
 };
 const TaskDetailPage = () => {
+  const { id } = useParams();
+
+  const { useTaskById } = useTaskApi();
+  const { data } = useTaskById(id);
+
   return (
     <div className="flex  w-full h-full ">
       <div className=" flex-2 flex ">
         <ScrollArea className="w-full z-20 h-[calc(100vh-60px)]">
           <div className="flex  flex-col">
             <div className="flex flex-col gap-5 px-10 pt-10 pb-5 ">
-              <h1 className="text-5xl font-bold">{taskDetail.title}</h1>
-              <p className="text-lg">{taskDetail.description}</p>
+              <h1 className="text-5xl font-bold">{data?.title}</h1>
+              <p className="text-lg">{data?.description}</p>
               <div className="">
                 <Button variant="secondary" size="icon" className="mr-2">
                   <IconMoodPlus size={16} />
@@ -356,13 +365,14 @@ const TaskDetailPage = () => {
           <div className="mt-5 flex flex-col  gap-3  ">
             <p className=" opacity-50">Properties</p>
             <span className="flex gap-2  items-center">
-              <PopoverStatusTask
+              <PopoverStatus
                 variant="outline"
                 size="icon"
                 showLabel={false}
                 showPercent={false}
+                field={data}
               />
-              {taskDetail.status}
+              {data?.status}
             </span>
 
             <span className="flex gap-2  items-center">
@@ -371,22 +381,46 @@ const TaskDetailPage = () => {
                 variant="outline"
                 size="icon"
                 showLabel={false}
+                showPercent={false}
+                field={data}
               />
-              {taskDetail.priority}
+              {data?.priority}
             </span>
             <span className="flex   items-center gap-2">
               <PopoverAvatar
                 variant="ghost"
+                create={false}
                 showLabel={false}
                 showPercent={false}
                 size="icon"
                 sizeAvatar="default"
+                field={data}
               />
-              {taskDetail.assignedTo.name}
+              {data?.assignee.username}
             </span>
             <span className="flex  gap-3 items-center">
               <IconRunSprint size={20} className="ml-2" />
               {taskDetail.sprintId}
+            </span>
+            <span className="flex   items-center gap-2">
+              {/* <PopoverHour
+                variant="default"
+                create={false}
+                showLabel={false}
+                showPercent={false}
+                size="a"
+                sizeAvatar="default"
+                field={data}
+              />
+              {data?.actualHours !== null && (
+                <span className="flex   items-center gap-2">
+                  {data?.actualHours}h
+                </span>
+              )}
+              {data?.actualHours === null && (
+                <span className="flex   items-center gap-2">0h</span>
+              )} */}
+              <TimeStart data={data} />
             </span>
           </div>
           <div className="flex flex-col  gap-3  ">

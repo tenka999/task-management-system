@@ -37,6 +37,9 @@ import { useState } from "react";
 import { PopoverBasic } from "./popover-basic";
 import { PopoverPriority } from "./popover-priority";
 import { PopoverStatus } from "./popover-status";
+import { useProjectApi } from "@/presentation/logics/app/useProject";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useNavigate } from "react-router";
 const projects = [
   {
     id: 1,
@@ -168,12 +171,68 @@ const projects = [
   },
 ];
 
+const icons = [
+  {
+    id: "box",
+    icon: Box,
+    label: "Box",
+  },
+  {
+    id: "layout-grid",
+    icon: LayoutGrid,
+    label: "Layout Grid",
+  },
+  {
+    id: "lock",
+    icon: Lock,
+    label: "Lock",
+  },
+  {
+    id: "player-play",
+    icon: PlayerPlay,
+    label: "Player Play",
+  },
+  {
+    id: "tools",
+    icon: Tools,
+    label: "Tools",
+  },
+  {
+    id: "accessible",
+    icon: Accessible,
+    label: "Accessible",
+  },
+  {
+    id: "palette",
+    icon: IconPalette,
+    label: "Palette",
+  },
+];
+
+const PROJECT_ICONS = {
+  box: Box,
+  layoutGrid: LayoutGrid,
+  "layout-grid": LayoutGrid,
+  lock: Lock,
+  "player-play": PlayerPlay,
+  tools: Tools,
+  accessible: Accessible,
+  palette: IconPalette,
+};
+
 export function ItemLink() {
   const [variaty, setVariaty] = useState(null);
+  const { activeWorkspace } = useWorkspace();
+  const { useAllProjects } = useProjectApi();
+  const { data: projects } = useAllProjects({
+    workspaceId: activeWorkspace?.id,
+  });
+
+  const navigate = useNavigate();
 
   return (
     <div className="flex w-full flex-col ">
-      {projects.map((project) => (
+      {/* {projects.map((project) => (
         <Item className="p-0 gap-0" key={project.id}>
           <Item variant="muted" className="rounded-none">
             <ItemMedia>
@@ -185,51 +244,68 @@ export function ItemLink() {
                 <ItemDescription>{project.count}</ItemDescription>
               </ItemTitle>
             </ItemContent>
+          </Item> */}
+      {projects?.map((item) => {
+        const ProjectIcon = PROJECT_ICONS[item.icon] || Box;
+        console.log("item", item);
+        return (
+          <Item
+            key={item.id}
+            className="rounded-none"
+            size="sm"
+            variant={variaty === item.id ? "muted" : "default"}
+            onMouseEnter={() => setVariaty(item.id)}
+            onMouseLeave={() => setVariaty(null)}
+          >
+            <ItemContent>
+              <ItemTitle className="flex w-full justify-between">
+                <div className="w-[70%] flex items-center gap-2 overflow-hidden ">
+                  <Button
+                    variant="link"
+                    className="gap-2"
+                    onClick={() => navigate(`/app/project/${item.id}`)}
+                  >
+                    <ProjectIcon className="size-4" />
+                    {item.workspace.name} - {item.name}
+                  </Button>
+
+                  <div className="flex  ">
+                    {item.labels.map((label) => (
+                      <Badge
+                        className=""
+                        variant="secondary"
+                        key={label.labelId}
+                      >
+                        <IconCircleFilled color={label.label.color} />
+
+                        {label.label.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-[12%]">
+                  <PopoverBasic item={item} />
+                </div>
+
+                <div className="w-[6%] opacity-60">
+                  <PopoverPriority field={item} />
+                </div>
+
+                <div className="w-[12%]">
+                  <PopoverStatus
+                    showLabel={false}
+                    showPercent={true}
+                    field={item}
+                  />
+                </div>
+              </ItemTitle>
+            </ItemContent>
           </Item>
-          {project.items.map((item) => (
-            <Item
-              key={item.id}
-              className="rounded-none"
-              size="sm"
-              variant={variaty === item.id ? "muted" : "default"}
-              onMouseEnter={() => setVariaty(item.id)}
-              onMouseLeave={() => setVariaty(null)}
-            >
-              <ItemContent>
-                <ItemTitle className=" flex w-full justify-between">
-                  {/* <div className="flex"></div> */}
-                  <div className="  w-[70%] flex gap-2 items-center">
-                    <Button variant="link" className="gap-2">
-                      <item.icon className="size-4" />
-                      {item.workspace} - {item.name}{" "}
-                    </Button>
-                    <Badge variant="secondary">
-                      <IconCircleFilled color={item.tag.color} />
-                      {item.tag.label}
-                    </Badge>
-                  </div>
-                  <div className="w-[12%] ">
-                    <PopoverBasic item={item} />
-                  </div>
-                  <div className="w-[6%]  opacity-60">
-                    {/* <Button variant="outline" size="icon">
-                      <IconAlertSquareFilled className="size-5" />
-                    </Button> */}
-                    <PopoverPriority item={item} />
-                  </div>
-                  <div className="w-[12%]  ">
-                    <PopoverStatus
-                      showLabel={false}
-                      showPercent={true}
-                      item={item}
-                    />
-                  </div>
-                </ItemTitle>
-              </ItemContent>
-            </Item>
-          ))}
-        </Item>
-      ))}
+        );
+      })}
+      {/* </Item>
+      ))} */}
     </div>
   );
 }

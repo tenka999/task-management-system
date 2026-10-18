@@ -98,6 +98,10 @@ import {
   ItemTitle,
 } from "./ui/item";
 import DialogInviteMemberProject from "./dialog-invite-member-project";
+import { useQueryClient } from "@tanstack/react-query";
+import { useWorkspaceApi } from "@/presentation/logics/app/useWorkspaceApi";
+import SecureStorage from "@/helpers/SecureStorage";
+import { useUserApi } from "@/presentation/logics/app/useUser";
 
 /**
  * @typedef {Object} Payment
@@ -178,6 +182,183 @@ const roleConfig = {
 
 // Sample data
 /** @type {Payment[]} */
+function RoleCell({ row }) {
+  const role = row.getValue("role"); // langsung dari data, tanpa state lokal
+
+  const [pendingRole, setPendingRole] = React.useState(role); // hanya untuk dialog konfirmasi
+  const [openAlert, setOpenAlert] = React.useState(false);
+  const [selectOpen, setSelectOpen] = React.useState(false);
+
+  const { updateWorkspaceMember } = useWorkspaceApi();
+  const queryClient = useQueryClient();
+  const user = SecureStorage.getStorage("user");
+  const { useUserById } = useUserApi();
+  const { data: userData } = useUserById(user.id);
+  const userRole = userData?.workspaceMembers.find(
+    (item) => item.workspaceId === row.original?.workspaceId,
+  )?.role;
+
+  const currentRoleMember = items.find((item) => item.value === role);
+  const pendingRoleMember = items.find((item) => item.value === pendingRole);
+
+  const handleSelectRole = (value) => {
+    setPendingRole(value);
+    setSelectOpen(false);
+    setOpenAlert(true);
+  };
+
+  const handleChangeRole = async () => {
+    const previousRole = row.getValue("role");
+
+    try {
+      await updateWorkspaceMember.mutateAsync({
+        id: row.original.workspaceId,
+        userId: row.original.userId,
+        payload: {
+          role: pendingRole,
+          isActive: true,
+        },
+      });
+
+      // Update cache members langsung — hanya baris user ini yang berubah
+      queryClient.setQueryData(
+        ["workspaceMembers", row.original.workspaceId],
+        (old) => {
+          if (!old) return old;
+
+          return old.map((member) =>
+            member.userId === row.original.userId
+              ? { ...member, role: pendingRole }
+              : member,
+          );
+        },
+      );
+
+      toast.add({
+        title: "Role Changed",
+        description: `Member ${row.original.user.username} role has been changed.`,
+      });
+
+      setOpenAlert(false);
+    } catch (error) {
+      toast.add({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+
+      // Rollback cache kalau gagal
+      queryClient.setQueryData(
+        ["workspaceMembers", row.original.workspaceId],
+        (old) => {
+          if (!old) return old;
+
+          return old.map((member) =>
+            member.userId === row.original.userId
+              ? { ...member, role: previousRole }
+              : member,
+          );
+        },
+      );
+    }
+  };
+
+  const handleCancelChange = () => {
+    setPendingRole(role);
+    setOpenAlert(false);
+  };
+
+  return (
+    <>
+      {role === "OWNER" ? (
+        <div className="px-3">Owner</div>
+      ) : (
+        <Select
+          value={role}
+          onValueChange={handleSelectRole}
+          items={items}
+          open={selectOpen}
+          onOpenChange={setSelectOpen}
+        >
+          <SelectTrigger
+            disabled={userRole !== "OWNER" && userRole !== "ADMIN"}
+            className="bg-transparent w-full h-full!"
+          >
+            <SelectValue>
+              <Item size="xs" className="p-0">
+                <ItemContent>
+                  <ItemTitle className="whitespace-nowrap">
+                    {currentRoleMember?.label}
+                  </ItemTitle>
+                </ItemContent>
+              </Item>
+            </SelectValue>
+          </SelectTrigger>
+
+          <SelectContent className="w-[350px]" alignItemWithTrigger={false}>
+            <SelectGroup>
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  <Item size="xs" className="p-0">
+                    <ItemMedia className="border p-3 bg-secondary rounded-lg">
+                      <item.icon />
+                    </ItemMedia>
+
+                    <ItemContent>
+                      <ItemTitle className="whitespace-nowrap">
+                        {item.label}
+                      </ItemTitle>
+
+                      <ItemDescription className="whitespace-normal text-xs">
+                        {item.description}
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      )}
+
+      <AlertDialog
+        open={openAlert}
+        onOpenChange={(open) => {
+          setOpenAlert(open);
+
+          if (!open) {
+            setPendingRole(role);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change role</AlertDialogTitle>
+
+            <AlertDialogDescription>
+              Are you sure you want to change the role from{" "}
+              <strong>{currentRoleMember?.label}</strong> to{" "}
+              <strong>{pendingRoleMember?.label}</strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelChange}>
+              Cancel
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={handleChangeRole}
+              disabled={updateWorkspaceMember.isPending}
+            >
+              {updateWorkspaceMember.isPending ? "Saving..." : "Save"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
 const initialData = [
   {
     id: "m5gr84i9",
@@ -409,7 +590,8 @@ const getInitials = (name) => {
 /** @type {import("@tanstack/react-table").ColumnDef<Payment>[]} */
 export const columns = [
   {
-    accessorKey: "name",
+    id: "name",
+    accessorFn: (row) => row.user?.username ?? "",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -443,7 +625,8 @@ export const columns = [
     },
   },
   {
-    accessorKey: "email",
+    id: "email",
+    accessorFn: (row) => row.user?.email ?? "",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -470,58 +653,7 @@ export const columns = [
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => {
-      const role = row.getValue("role");
-      const config = roleConfig[role] || roleConfig.low;
-      const [EditRole, setEditRole] = useState("member");
-      const EditRoleMember = items.find((item) => item.value === EditRole);
-
-      return (
-        // <Badge variant={config.badgeVariant} className={config.className}>
-        //   {config.label}
-        // </Badge>
-        <Select
-          value={EditRole}
-          onValueChange={setEditRole}
-          defaultValue={items[0].value}
-          items={items}
-        >
-          <SelectTrigger className="bg-transparent w-full h-full! ">
-            <SelectValue className="">
-              <Item size="xs" className="p-0  ">
-                <ItemContent>
-                  <ItemTitle className="whitespace-nowrap">
-                    {EditRoleMember.label}
-                  </ItemTitle>
-                </ItemContent>
-              </Item>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent className="w-[350px]" alignItemWithTrigger={false}>
-            <SelectGroup>
-              {/* <SelectLabel>Fruits</SelectLabel> */}
-              {items.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  <Item size="xs" className="p-0 ">
-                    <ItemMedia className="border p-3 bg-secondary rounded-lg">
-                      <item.icon />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle className="whitespace-nowrap">
-                        {item.label}
-                      </ItemTitle>
-                      <ItemDescription className="whitespace-normal text-xs">
-                        {item.description}
-                      </ItemDescription>
-                    </ItemContent>
-                  </Item>
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      );
-    },
+    cell: ({ row }) => <RoleCell row={row} />,
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },

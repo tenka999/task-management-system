@@ -5,13 +5,13 @@ import baseApi from "@/core/api/baseApi";
 export const taskApi = {
   // GET /task
   findAll: async (params) => {
-    const response = await baseApi.get("/task", {
+    const response = await baseApi.get("/tasks", {
       params,
       headers: { "require-auth": true },
     });
 
     if (response.status !== 200) throw new Error("Failed to fetch tasks");
-    return response.data.data;
+    return response.data.data.tasks;
   },
 
   // GET /task/:id
@@ -43,6 +43,23 @@ export const taskApi = {
     if (response.status !== 200) throw new Error("Failed to update task");
     return response.data.data;
   },
+  // PUT /task/:id
+  updatePriority: async (id, payload) => {
+    const response = await baseApi.patch(`/task/${id}/priority`, payload, {
+      headers: { "require-auth": true },
+    });
+
+    if (response.status !== 200) throw new Error("Failed to update task");
+    return response.data.data;
+  },
+  updateStatus: async (id, payload) => {
+    const response = await baseApi.patch(`/task/${id}/status`, payload, {
+      headers: { "require-auth": true },
+    });
+
+    if (response.status !== 200) throw new Error("Failed to update task");
+    return response.data.data;
+  },
 
   // DELETE /task/:id
   remove: async (id) => {
@@ -55,19 +72,19 @@ export const taskApi = {
   },
 
   // PATCH /task/:id/status
-  updateStatus: async (id, statusId) => {
-    const response = await baseApi.patch(
-      `/task/${id}/status`,
-      { statusId },
-      {
-        headers: { "require-auth": true },
-      },
-    );
+  // updateStatus: async (id, statusId) => {
+  //   const response = await baseApi.patch(
+  //     `/task/${id}/status`,
+  //     { statusId },
+  //     {
+  //       headers: { "require-auth": true },
+  //     },
+  //   );
 
-    if (response.status !== 200)
-      throw new Error("Failed to update task status");
-    return response.data.data;
-  },
+  //   if (response.status !== 200)
+  //     throw new Error("Failed to update task status");
+  //   return response.data.data;
+  // },
 };
 
 export default taskApi;

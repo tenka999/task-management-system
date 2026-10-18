@@ -5,13 +5,14 @@ import baseApi from "@/core/api/baseApi";
 export const projectApi = {
   // GET /project
   findAll: async (params) => {
+    console.log("param", params);
     const response = await baseApi.get("/project", {
       params,
       headers: { "require-auth": true },
     });
 
     if (response.status !== 200) throw new Error("Failed to fetch projects");
-    return response.data.data;
+    return response.data.data.projects;
   },
 
   // GET /project/:id
@@ -37,6 +38,23 @@ export const projectApi = {
   // PUT /project/:id
   update: async (id, payload) => {
     const response = await baseApi.put(`/project/${id}`, payload, {
+      headers: { "require-auth": true },
+    });
+
+    if (response.status !== 200) throw new Error("Failed to update project");
+    return response.data.data;
+  },
+  // PUT /project/:id/priority
+  updatePriority: async (id, payload) => {
+    const response = await baseApi.put(`/project/${id}/priority`, payload, {
+      headers: { "require-auth": true },
+    });
+
+    if (response.status !== 200) throw new Error("Failed to update project");
+    return response.data.data;
+  },
+  updateStatus: async (id, payload) => {
+    const response = await baseApi.put(`/project/${id}/status`, payload, {
       headers: { "require-auth": true },
     });
 

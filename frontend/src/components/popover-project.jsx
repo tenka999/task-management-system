@@ -30,13 +30,15 @@ import { Separator } from "./ui/separator";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { IconAlertSquareFilled } from "@tabler/icons-react";
 import { CommandBasic } from "./command-basic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StatusIcon } from "./status-icon";
 import { CommandStatus } from "./command-status";
 import { CommandIcon } from "./command-icon";
 import { CommandAvatar } from "./command-avatar";
 import { CommandProject } from "./command-project";
 import { Folder } from "lucide-react";
+import { useProjectApi } from "@/presentation/logics/app/useProject";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 const projects = [
   {
@@ -69,12 +71,31 @@ const projects = [
   },
 ];
 
+const PROJECT_ICONS = {
+  box: Box,
+  layoutGrid: LayoutGrid,
+  "layout-grid": LayoutGrid,
+  lock: Lock,
+  "player-play": PlayerPlay,
+  tools: Tools,
+  accessible: Accessible,
+  palette: IconPalette,
+};
+
 export function PopoverProject({
   variant = "outline",
   item,
   showLabel = false,
   showPercent = false,
+  field,
 }) {
+  const { activeWorkspace } = useWorkspace();
+
+  const { useAllProjects } = useProjectApi();
+  const { data } = useAllProjects({ workspaceId: activeWorkspace?.id });
+
+  console.log("data", data);
+
   const [project, setProject] = useState({
     id: null,
     workspace: null,
@@ -83,7 +104,10 @@ export function PopoverProject({
     count: 0,
   });
 
+  const ProjectIcon = PROJECT_ICONS[project.icon] || Box;
   const [open, setOpen] = useState(false);
+
+  console.log("project", project, field);
 
   return (
     <>
@@ -107,7 +131,8 @@ export function PopoverProject({
                   {avatar.initial ? avatar.initial : <IconUser />}
                 </AvatarFallback>
               </Avatar> */}
-              <project.icon className="w-4 h-4" />
+              <ProjectIcon className="size-5" />
+
               {project.workspace ? `${project.workspace} - ` : null}
               {project.name}
             </Button>
@@ -115,9 +140,10 @@ export function PopoverProject({
         />
         <PopoverContent align="center" className="w-full p-0 " side="bottom">
           <CommandProject
-            projects={projects}
+            projects={data}
             setProject={setProject}
             open={open}
+            field={field}
             setOpen={setOpen}
           />
         </PopoverContent>

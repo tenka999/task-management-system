@@ -20,6 +20,9 @@ import {
   IconAntennaBars5,
 } from "@tabler/icons-react";
 import { StatusIcon } from "./status-icon";
+import { useTaskApi } from "@/presentation/logics/app/useTask";
+import { useProjectApi } from "@/presentation/logics/app/useProject";
+import { toast } from "./ui/toast";
 
 const statuses = [
   {
@@ -68,11 +71,41 @@ const statuses = [
   },
 ];
 
-export function CommandStatus({ setStatus, setOpen, open }) {
-  const handleSelect = (id, label) => {
+export function CommandStatus({ setStatus, setOpen, open, field, item }) {
+  const { updateTaskStatus } = useTaskApi();
+  const { updateProjectStatus } = useProjectApi();
+
+  const handleSelect = async (id, label) => {
     setOpen(false);
     setStatus({ id, label });
+    if (!item) field?.onChange(id);
+    if (field?.name) {
+      try {
+        await updateProjectStatus.mutateAsync({
+          id: field.id,
+          payload: { status: id },
+        });
+        toast.add({
+          title: "Success",
+          description: "Project Status updated successfully",
+        });
+      } catch (e) {
+        console.log("error", e);
+      }
+    } else if (field?.title) {
+      console.log("update", id, label);
+      await updateTaskStatus.mutateAsync({
+        id: field.id,
+        payload: { status: id },
+      });
+      toast.add({
+        title: "Success",
+        description: "Task status updated successfully",
+      });
+    }
   };
+  console.log("f", field);
+
   return (
     <Command className="px-1  py-1 pt-2  w-[210px]">
       <CommandInput placeholder="Set Priority" />
@@ -81,7 +114,9 @@ export function CommandStatus({ setStatus, setOpen, open }) {
         <CommandGroup>
           {statuses.map((status) => (
             <CommandItem
-              onSelect={() => handleSelect(status.id, status.label)}
+              onSelect={() => {
+                handleSelect(status.id, status.label);
+              }}
               key={status.id}
               value={status.id}
               className="gap-2 text-sm"

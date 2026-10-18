@@ -144,7 +144,7 @@ const routes = createBrowserRouter(
         },
 
         {
-          path: "/app/project/detail",
+          path: "/app/project/:id",
           Component: ProjectDetailPage,
         },
         {
@@ -152,7 +152,7 @@ const routes = createBrowserRouter(
           Component: SprintDetailPage,
         },
         {
-          path: "/app/task/detail",
+          path: "/app/task/:id",
           Component: TaskDetailPage,
         },
         {

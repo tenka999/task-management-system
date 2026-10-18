@@ -12,7 +12,7 @@ import { CircleCheck } from "tabler-icons-react";
 import { Separator } from "./ui/separator";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { CommandBasic } from "./command-basic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   IconAlertSquareFilled,
@@ -24,27 +24,27 @@ import {
 
 const priorities = [
   {
-    id: "noPriority",
+    id: "NO_PRIORITY",
     label: "No Priority",
     icon: IconAntennaBars1,
   },
   {
-    id: "urgent",
+    id: "URGENT",
     label: "Urgent",
     icon: IconAlertSquareFilled,
   },
   {
-    id: "high",
+    id: "HIGH",
     label: "High",
     icon: IconAntennaBars5,
   },
   {
-    id: "medium",
+    id: "MEDIUM",
     label: "Medium",
     icon: IconAntennaBars4,
   },
   {
-    id: "low",
+    id: "LOW",
     label: "Low",
     icon: IconAntennaBars3,
   },
@@ -53,19 +53,39 @@ const priorities = [
 export function PopoverPriority({
   variant = "outline",
   noCommand = false,
-  item,
   showLabel = false,
   size = "sm",
+  field,
 }) {
+  // if (!field) return;
   const [open, setOpen] = useState(false);
-
+  console.log("field.", field);
   const [priority, setPriority] = useState({
-    id: "noPriority",
+    id: "NO_PRIORITY",
     label: "No Priority",
   });
   const currentIcon = priorities.find(
     (priorities) => priorities.id === priority.id,
   );
+
+  useEffect(() => {
+    if (!field) return;
+    if (field.value) {
+      setPriority(
+        priorities.find((priority) => priority.id === field.value) || {},
+      );
+    } else if (field.priority) {
+      setPriority(
+        priorities.find((priority) => priority.id === field.priority) || {},
+      );
+    } else {
+      setPriority({
+        id: "NO_PRIORITY",
+        icon: IconAntennaBars1,
+        label: "No Priority",
+      });
+    }
+  }, [field]);
 
   return (
     <>
@@ -89,6 +109,8 @@ export function PopoverPriority({
               setPriority={setPriority}
               priorities={priorities}
               setOpen={setOpen}
+              field={field}
+              item={field?.priority}
             />
           </PopoverContent>
         )}

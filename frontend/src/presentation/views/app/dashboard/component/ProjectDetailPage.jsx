@@ -33,6 +33,8 @@ import {
 
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
+import { useParams } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -86,6 +88,7 @@ import { MemberFilterProvider } from "@/context/MemberFilterProvider";
 import DataTableMemberProject from "@/components/datatable-member-project";
 import ProjectUpdateActivity from "@/components/project-update-activity";
 import ProjectUpdates from "@/components/project-update-activity";
+import { useProjectApi } from "@/presentation/logics/app/useProject";
 
 const summary = {
   dueToday: 12,
@@ -143,6 +146,10 @@ const webMember = [
 ];
 
 const ProjectDetailPage = () => {
+  const { id } = useParams();
+
+  const { useProjectById } = useProjectApi();
+  const { data } = useProjectById(id);
   const [project, setProject] = useState(mockProject);
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -181,18 +188,6 @@ const ProjectDetailPage = () => {
     }
   };
 
-  const calculateProgress = () => {
-    if (!project.startDate || !project.endDate) return 0;
-    const start = new Date(project.startDate).getTime();
-    const end = new Date(project.endDate).getTime();
-    const now = new Date().getTime();
-
-    if (now <= start) return 0;
-    if (now >= end) return 80;
-
-    return Math.round(((now - start) / (end - start)) * 100);
-  };
-
   const handleEditSubmit = (e) => {
     e.preventDefault();
     setProject({
@@ -204,12 +199,7 @@ const ProjectDetailPage = () => {
   };
 
   const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(" ").join("").toUpperCase().slice(0, 2);
   };
 
   const [inputMember, setInputMember] = useState("");
@@ -217,6 +207,45 @@ const ProjectDetailPage = () => {
   const [variant, setVariant] = React.useState(null);
   const [toggleProject, setToggleProject] = useState("all");
   const [tabValue, setTabValue] = useState("overview");
+
+  const isDueThisWeek = (dueDate) => {
+    if (!dueDate) return false;
+
+    const date = new Date(dueDate);
+    const now = new Date();
+
+    // Ambil hari sekarang
+    const day = now.getDay();
+
+    // Jadikan Senin = 0, Selasa = 1, ... Minggu = 6
+    const diffToMonday = day === 0 ? 6 : day - 1;
+
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    // Minggu terakhir
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    return date >= startOfWeek && date <= endOfWeek;
+  };
+
+  const taskDone =
+    data?.tasks?.filter((task) => task.status === "done").length ?? 0;
+
+  console.log("taskDone", taskDone);
+
+  const calculateProgress = () => {
+    if (!data?.tasks) return 0;
+    const math = Math.round((taskDone / data.tasks.length) * 100);
+
+    return math ? math : 0;
+  };
+
+  const dueThisWeek =
+    data?.tasks?.filter((task) => isDueThisWeek(task.dueDate)).length ?? 0;
   return (
     <ScrollArea className="w-full z-20 h-[calc(100vh-60px)]">
       <div className="min-h-screen ">
@@ -232,12 +261,12 @@ const ProjectDetailPage = () => {
 
                 <div>
                   <div className="flex space-x-3 mr-5">
-                    <h1 className="text-[2.5rem]  font-bold">{project.name}</h1>
+                    <h1 className="text-[2.5rem]  font-bold">{data?.name}</h1>
                   </div>
                 </div>
                 <div className="flex gap-2 ">
                   {getStatusBadge(project.status)}
-                  {project.isPublic ? (
+                  {data?.isPublic ? (
                     <Badge
                       variant="outline"
                       className="border-blue-200  text-white"
@@ -262,18 +291,17 @@ const ProjectDetailPage = () => {
                 <div className=" flex-1 flex items-start  space-x-5 text-sm text-gray-500">
                   <span className="flex flex-1 truncate items-center">
                     <Hash className="w-4 h-4 mr-1" />
-                    {project.projectKey}
+                    {data?.projectKey}
                   </span>
                   <span>•</span>
                   <span className="flex shrink-0 flex-2 items-center">
                     <Calendar className="w-4 h-4 mr-1" />
-                    {formatDate(project.startDate)} -{" "}
-                    {formatDate(project.endDate)}
+                    {formatDate(data?.startDate)} - {formatDate(data?.endDate)}
                   </span>
                   <span>•</span>
                   <span className="flex-2 shrink-0 flex items-center">
                     <Clock className="w-4 h-4 mr-1" />
-                    Updated {formatDate(project.updatedAt)}
+                    Updated {formatDate(data?.updatedAt)}
                   </span>
                 </div>
 
@@ -381,7 +409,7 @@ const ProjectDetailPage = () => {
                         </div>
                         {/* </CardDescription> */}
                         <CardTitle className="text-4xl font-bold tabular-nums @[250px]/card:text-3xl">
-                          {summary.dueToday}
+                          {data?.tasks?.length || 0}
                         </CardTitle>
                         <CardAction>
                           <Badge variant="outline">
@@ -405,7 +433,7 @@ const ProjectDetailPage = () => {
                           Due This Week
                         </div>
                         <CardTitle className="text-4xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                          {summary.overdue}{" "}
+                          {dueThisWeek || 0}{" "}
                         </CardTitle>
                         <CardAction>
                           <Badge variant="outline">
@@ -426,10 +454,10 @@ const ProjectDetailPage = () => {
                     <Card className="@container/card bg-[linear-gradient(135deg,color-mix(in_oklch,var(--card),black_8%),var(--card),color-mix(in_oklch,var(--card),white_12%))]!">
                       <CardHeader>
                         <div className="line-clamp-1 flex gap-2 font-medium">
-                          Completed/Month
+                          Completed
                         </div>
                         <CardTitle className="text-4xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                          {summary.completedToday}
+                          {taskDone || 0}
                         </CardTitle>
                         <CardAction>
                           <Badge variant="outline">
@@ -500,7 +528,7 @@ const ProjectDetailPage = () => {
                   </CardHeader>
                   <CardContent>
                     <p className=" leading-relaxed">
-                      {project.description || "No description provided."}
+                      {data?.description || "No description provided."}
                     </p>
                   </CardContent>
                 </Card>
@@ -516,14 +544,14 @@ const ProjectDetailPage = () => {
                     <div className="flex justify-between">
                       <span className="">Project ID</span>
                       <span className="font-mono text-sm opacity-50">
-                        {project.id}
+                        {data?.id}
                       </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
                       <span className="">Workspace ID</span>
                       <span className="font-mono text-sm opacity-50">
-                        {project.workspaceId}
+                        {data?.workspaceId}
                       </span>
                     </div>
                     <Separator />
@@ -532,24 +560,30 @@ const ProjectDetailPage = () => {
                       <span className="flex items-center opacity-50">
                         <Avatar className="h-5 w-5 mr-2 ">
                           <AvatarFallback>
-                            {getInitials("John Doe")}
+                            {getInitials(
+                              data?.members?.find(
+                                (member) => member.role === "OWNER",
+                              )?.user?.username || "JD",
+                            )}
                           </AvatarFallback>
                         </Avatar>
-                        John Doe
+                        {data?.members?.find(
+                          (member) => member.role === "OWNER",
+                        )?.user?.username || "Unknown"}
                       </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
                       <span className="">Created At</span>
                       <span className="opacity-50">
-                        {formatDate(project.createdAt)}
+                        {formatDate(data?.createdAt)}
                       </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
                       <span className="">Last Updated</span>
                       <span className="opacity-50">
-                        {formatDate(project.updatedAt)}
+                        {formatDate(data?.updatedAt)}
                       </span>
                     </div>
                   </CardContent>
@@ -631,32 +665,39 @@ const ProjectDetailPage = () => {
                   <CardContent>
                     <div className="flex w-full max-w-lg flex-col gap-1">
                       <ScrollArea className="h-[220px]">
-                        {webMember.map((member) => (
+                        {data?.members?.map((member) => (
                           <Item
-                            key={member.username}
+                            key={member.user.username}
                             variant={
-                              variant === member.username ? "muted" : "default"
+                              variant === member.user.username
+                                ? "muted"
+                                : "default"
                             }
                             size="xs"
-                            onMouseEnter={() => setVariant(member.username)}
+                            onMouseEnter={() =>
+                              setVariant(member.user.username)
+                            }
                             onMouseLeave={() => setVariant(null)}
                           >
                             <ItemMedia>
                               <Avatar className="size-10">
-                                <AvatarImage src={member.imageUrl} />
+                                <AvatarImage src={member.user.avatarUrl} />
                                 <AvatarFallback>
-                                  {member.avatarFallback}
+                                  {getInitials(member.user.username)}
                                 </AvatarFallback>
                                 <AvatarBadge
-                                  className={`${member.status === "online" ? "bg-green-800" : member.status === "offline" ? "bg-gray-500" : "bg-yellow-600"} `}
+                                  className={`${member.user.status === "online" ? "bg-green-800" : member.status === "offline" ? "bg-gray-500" : "bg-yellow-600"} `}
                                 />
                               </Avatar>
                             </ItemMedia>
                             <ItemContent>
                               <ItemTitle className="flex min-w-0 items-center gap-1">
-                                <span className="shrink-0">{member.name}</span>-
-                                <span className="min-w-0 truncate">
-                                  {member.username}
+                                <span className="shrink-0">
+                                  {member.user.username}
+                                </span>
+                                -
+                                <span className="min-w-0 truncate opacity-50 text-sm">
+                                  {member.user.email}
                                 </span>
                               </ItemTitle>
                               <ItemDescription>{member.role}</ItemDescription>
@@ -689,7 +730,7 @@ const ProjectDetailPage = () => {
             <TabsContent value="tasks">
               <div className="relative ">
                 {/* <ScrollArea className="w-full h-[100vh]"> */}
-                <ItemTask />
+                <ItemTask projectId={data?.id} />
                 {/* </ScrollArea> */}
               </div>
             </TabsContent>
@@ -697,7 +738,10 @@ const ProjectDetailPage = () => {
             {/* Members Tab */}
             <TabsContent value="members">
               <MemberFilterProvider>
-                <DataTableMemberProject inputMember={inputMember} />
+                <DataTableMemberProject
+                  inputMember={inputMember}
+                  data={data?.members}
+                />
               </MemberFilterProvider>
             </TabsContent>
 

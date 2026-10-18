@@ -31,16 +31,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PopoverFilter } from "./popover-filter";
 import TaskDialog from "./task-dialog";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import SecureStorage from "@/helpers/SecureStorage";
 export function ButtonGroupTask() {
   const [label, setLabel] = React.useState("personal");
   const handleSuccess = () => {};
+  const { activeWorkspace } = useWorkspace();
+  const user = SecureStorage.getStorage("user");
   return (
     <ButtonGroup>
       <ButtonGroup className="hidden sm:flex">
         <TaskDialog
           mode="create"
-          workspaceId="workspace123"
-          createdById="user123"
+          workspaceId={activeWorkspace?.id}
+          createdById={user?.id}
           onSuccess={handleSuccess}
         />
       </ButtonGroup>

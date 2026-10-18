@@ -58,6 +58,8 @@ import { PopoverStatus } from "./popover-status";
 import { PopoverPriority } from "./popover-priority";
 import { PopoverIcon } from "./popover-icon";
 import { PopoverLabel } from "./popover-label";
+import { useProjectApi } from "@/presentation/logics/app/useProject";
+import { toast } from "./ui/toast";
 
 // Schema validasi
 const projectSchema = z.object({
@@ -71,20 +73,29 @@ const projectSchema = z.object({
     .min(2, "Project key minimal 2 karakter")
     .max(10, "Project key maksimal 10 karakter")
     .regex(/^[A-Z0-9]+$/, "Hanya huruf kapital dan angka"),
-  status: z.enum(["ACTIVE", "INACTIVE", "COMPLETED", "ARCHIVED"]),
+  status: z.string(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT", "NO_PRIORITY"]),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   isPublic: z.boolean().default(false),
   icon: z.string().optional(),
-  color: z.string().default("#808080"),
+  labels: z.optional(z.array(z.object({ labelId: z.int() }))),
+  // color: z.string().default("#808080"),
 });
 
 // Enum status
 const ProjectStatus = {
-  ACTIVE: "Active",
-  INACTIVE: "Inactive",
-  COMPLETED: "Completed",
-  ARCHIVED: "Archived",
+  inProgress: "In Progress",
+  technicalReview: "Technical Review",
+  done: "Done",
+  paused: "Paused",
+  todo: "Todo",
+  backlog: "Backlog",
+  triage: "Triage",
+  idea: "Idea",
+  "product-feedback": "Product Feedback",
+  blocked: "Blocked",
+  shipped: "Shipped",
 };
 
 // Component Dialog Utama
@@ -99,7 +110,7 @@ export function ProjectDialog({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
+  const { createProject, updateProject, deleteProject } = useProjectApi();
   const isEdit = mode === "edit";
   const isDelete = mode === "delete";
   const isView = mode === "view";
@@ -110,12 +121,14 @@ export function ProjectDialog({
       name: project?.name || "",
       description: project?.description || "",
       projectKey: project?.projectKey || "",
-      status: project?.status || "ACTIVE",
+      status: project?.status || "inProgress",
+      priority: project?.priority || "NO_PRIORITY",
       startDate: project?.startDate ? new Date(project.startDate) : undefined,
       endDate: project?.endDate ? new Date(project.endDate) : undefined,
       isPublic: project?.isPublic || false,
       icon: project?.icon || "",
-      color: project?.color || "#808080",
+      // color: project?.color || "#808080",
+      labels: project?.labels || [],
     },
   });
 
@@ -132,34 +145,37 @@ export function ProjectDialog({
       };
 
       if (isEdit) {
-        // Update existing project
-        const response = await fetch(`/api/projects/${project.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+        await updateProject.mutateAsync({
+          ...payload,
+          projectId: project.id,
         });
 
-        if (!response.ok) throw new Error("Failed to update project");
-
-        console.log("Project updated successfully");
+        toast.add({
+          title: "Success",
+          description: "Project updated successfully",
+        });
       } else {
-        // Create new project
-        const response = await fetch("/api/projects", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+        await createProject.mutateAsync({
+          ...payload,
         });
+        toast.add({
+          title: "Success",
+          description: "Project created successfully",
+        });
+        // console.log("payload", payload);
 
-        if (!response.ok) throw new Error("Failed to create project");
-
-        console.log("Project created successfully");
+        // if (!response.ok) throw new Error("Failed to create project");
       }
 
       setOpen(false);
       form.reset();
       onSuccess?.();
     } catch (error) {
-      console.error("Error:", error);
+      toast.add({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -507,18 +523,18 @@ export function ProjectDialog({
                           <PopoverStatus
                             showLabel={true}
                             showPercent={false}
-                            item={field}
+                            field={field}
                           />
                         </FormItem>
                       )}
                     />
                     <FormField
                       control={form.control}
-                      name="status"
+                      name="priority"
                       render={({ field }) => (
                         <FormItem className="flex-1">
                           <FormLabel>Priority</FormLabel>
-                          <PopoverPriority showLabel={true} item={field} />
+                          <PopoverPriority showLabel={true} field={field} />
                         </FormItem>
                       )}
                     />
@@ -533,21 +549,21 @@ export function ProjectDialog({
                           <PopoverIcon
                             showLabel={true}
                             showPercent={false}
-                            item={field}
+                            field={field}
                           />
                         </FormItem>
                       )}
                     />
                     <FormField
                       control={form.control}
-                      name="label"
+                      name="labels"
                       render={({ field }) => (
                         <FormItem className=" flex-1">
                           <FormLabel>Label</FormLabel>
                           <PopoverLabel
                             showLabel={true}
                             showPercent={false}
-                            item={field}
+                            field={field}
                           />
                         </FormItem>
                       )}

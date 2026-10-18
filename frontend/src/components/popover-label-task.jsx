@@ -109,7 +109,11 @@ export function PopoverLabelTask({
         <PopoverTrigger
           className=""
           render={
-            <div className="flex gap-2 items-center">
+            <Button
+              className="flex gap-2 items-center"
+              variant={variant}
+              size="sx"
+            >
               <IconPlus
                 onClick={() => setOpen(!open)}
                 variant={variant}
@@ -120,7 +124,7 @@ export function PopoverLabelTask({
                 
                 "
               />
-            </div>
+            </Button>
           }
         />
         <PopoverContent align="center" className="w-full p-0 " side="bottom">

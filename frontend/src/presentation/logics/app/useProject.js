@@ -51,6 +51,20 @@ export const useProjectApi = () => {
       queryClient.invalidateQueries(["project", id]);
     },
   });
+  const updateProjectPriority = useMutation({
+    mutationFn: ({ id, payload }) => projectApi.updatePriority(id, payload),
+    onSuccess: (data, { id }) => {
+      queryClient.invalidateQueries(["projects"]);
+      queryClient.invalidateQueries(["project", id]);
+    },
+  });
+  const updateProjectStatus = useMutation({
+    mutationFn: ({ id, payload }) => projectApi.updateStatus(id, payload),
+    onSuccess: (data, { id }) => {
+      queryClient.invalidateQueries(["projects"]);
+      queryClient.invalidateQueries(["project", id]);
+    },
+  });
 
   const deleteProject = useMutation({
     mutationFn: (id) => projectApi.remove(id),
@@ -87,6 +101,8 @@ export const useProjectApi = () => {
     useProjectStatuses,
     createProject,
     updateProject,
+    updateProjectPriority,
+    updateProjectStatus,
     deleteProject,
     addProjectMember,
     removeProjectMember,

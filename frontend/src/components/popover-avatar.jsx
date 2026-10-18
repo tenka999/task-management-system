@@ -39,6 +39,8 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import SecureStorage from "@/helpers/SecureStorage";
 import { useUserApi } from "@/presentation/logics/app/useUser";
 import { CommandOwnerWorkspace } from "./command-owner-workspace";
+import { useWorkspaceApi } from "@/presentation/logics/app/useWorkspaceApi";
+import { useProjectApi } from "@/presentation/logics/app/useProject";
 
 // const avatars = [
 //   // {
@@ -83,20 +85,31 @@ export function PopoverAvatar({
   unassigned = true,
   create = true,
   useCommandOwnerWorkspace = false,
+  field,
+  projectId,
 }) {
   const { activeWorkspace, workspaces, switchWorkspace, isSwitching } =
     useWorkspace();
 
+  const { useProjectById } = useProjectApi();
+  const { data: project } = useProjectById(projectId);
+  const { useWorkspaceMembers } = useWorkspaceApi();
   const { useAllUsers } = useUserApi();
-  const { data } = useAllUsers();
 
-  const avatars = data?.users.filter((member) => {
-    return member.workspaceMembers.find(
-      (workspace) =>
-        workspace.workspaceId === activeWorkspace?.id &&
-        workspace.role !== "OWNER",
-    );
-  });
+  const { data: users } = useAllUsers({ workspaceId: activeWorkspace?.id });
+
+  const data =
+    project?.isPublic === false
+      ? project?.members.map((member) => member.user)
+      : users;
+
+  console.log(
+    "mem",
+    project?.members.map((member) => member.user),
+  );
+
+  const avatars = data;
+  console.log("avatars", projectId);
 
   const [avatar, setAvatar] = useState({
     id: null,
@@ -109,15 +122,34 @@ export function PopoverAvatar({
 
   useEffect(() => {
     if (!create) {
-      if (activeWorkspace) {
-        setAvatar(
-          data?.users.find((avatar) => avatar.id === activeWorkspace.ownerId) ||
-            {},
-        );
+      if (field?.assignee) {
+        setAvatar(field?.assignee || {});
       }
+      console.log("data?.assignee", field);
     }
-  }, [activeWorkspace]);
+  }, [field?.assignee]);
 
+  // useEffect(() => {
+  //   if (!create) {
+  //     if ((activeWorkspace, data?.users)) {
+  //       setAvatar(
+  //         data?.users.find((avatar) => avatar.id === activeWorkspace.ownerId) ||
+  //           {},
+  //       );
+  //     }
+  //   }
+  // }, [activeWorkspace, data?.users]);
+
+  useEffect(() => {
+    if (projectId) {
+      setAvatar({
+        id: null,
+        username: "unassigned",
+        avatarUrl: "/avatars/shadcn.jpg",
+        initial: null,
+      });
+    }
+  }, [projectId]);
   return (
     <>
       <Popover open={open} onOpenChange={setOpen} className="">
@@ -155,6 +187,8 @@ export function PopoverAvatar({
               avatars={avatars}
               setAvatar={setAvatar}
               open={open}
+              field={field}
+              item={field?.avatar}
               setOpen={setOpen}
             />
           )}
@@ -162,6 +196,8 @@ export function PopoverAvatar({
             <CommandOwnerWorkspace
               unassigned={unassigned}
               avatars={avatars}
+              field={field}
+              item={field?.avatar}
               setAvatar={setAvatar}
               open={open}
               setOpen={setOpen}

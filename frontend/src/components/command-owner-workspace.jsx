@@ -39,12 +39,15 @@ export function CommandOwnerWorkspace({
   setAvatar,
   setOpen,
   avatars,
+  field,
+  item,
 }) {
   const [loading, setLoading] = React.useState(false);
 
   const handleSelect = (id, username, avatar, initial) => {
     setOpen(false);
     setAvatar({ id, username, avatar, initial });
+    if (!item) field?.onChange(id);
   };
   const handleTranferWorkspaceOwner = (id, username, avatarUrl) => {
     console.log("asd");

@@ -313,12 +313,24 @@ export default function InboxPage() {
 
   /* ---------- auto-scroll to latest message ---------- */
   useEffect(() => {
-    const viewport = scrollRef.current?.querySelector(
-      "[data-radix-scroll-area-viewport]",
-    );
-    viewport?.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
-  }, [messages, selectedId]);
+    const frameId = requestAnimationFrame(() => {
+      const viewport = scrollRef.current?.querySelector(
+        '[data-slot="scroll-area-viewport"], [data-radix-scroll-area-viewport]',
+      );
 
+      if (!viewport) {
+        console.log("Viewport tidak ditemukan");
+        return;
+      }
+
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [messages, selectedId]);
   /* ---------- auto-grow textarea ---------- */
   useEffect(() => {
     const el = textareaRef.current;
@@ -328,20 +340,37 @@ export default function InboxPage() {
   }, [textMessage]);
 
   /* ---------- send ---------- */
-  const sendMessage = () => {
+  const sendMessage = async () => {
     const text = textMessage.trim();
     if (!text) return;
     setMessages((prev) => [
       ...prev,
       {
         id: crypto.randomUUID(),
-        author: "You",
-        initials: "CN",
+        sender: user,
+        recipientId: participantSelect?.user.id,
+        workspaceId: selected?.workspaceId,
+        type: "DIRECT_MESSAGE",
         content: text,
         createdAt: new Date(),
-        isSelf: true,
+        isSelf: isSelf(user.id),
       },
     ]);
+    //  try {
+    //       await createInvitation.mutateAsync(values);
+    //       toast.add({
+    //         title: "Success",
+    //         description: "Invitation created successfully",
+    //       });
+    //       // fetchData();
+    //     } catch (error) {
+    //       toast.add({
+    //         title: "Error",
+    //         description: error.message,
+    //         variant: "destructive",
+    //       });
+    //     } finally {
+    //     }
     setTextMessage("");
   };
 
@@ -362,7 +391,7 @@ export default function InboxPage() {
       const invitationByMsg = invitation?.find(
         (i) => i.workspaceInvitation.id === msg.workspaceInvitationId,
       );
-      console.log("msg", invitationByMsg);
+      console.log("msg", msg);
       return (
         <div key={msg.id} className="flex min-w-0 flex-col">
           {showSeparator && (

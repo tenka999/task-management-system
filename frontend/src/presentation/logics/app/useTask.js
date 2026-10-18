@@ -37,6 +37,20 @@ export const useTaskApi = () => {
       queryClient.invalidateQueries(["task", id]);
     },
   });
+  const updateTaskPriority = useMutation({
+    mutationFn: ({ id, payload }) => taskApi.updatePriority(id, payload),
+    onSuccess: (data, { id }) => {
+      queryClient.invalidateQueries(["tasks"]);
+      queryClient.invalidateQueries(["task", id]);
+    },
+  });
+  const updateTaskStatus = useMutation({
+    mutationFn: ({ id, payload }) => taskApi.updateStatus(id, payload),
+    onSuccess: (data, { id }) => {
+      queryClient.invalidateQueries(["tasks"]);
+      queryClient.invalidateQueries(["task", id]);
+    },
+  });
 
   const deleteTask = useMutation({
     mutationFn: (id) => taskApi.remove(id),
@@ -45,19 +59,20 @@ export const useTaskApi = () => {
     },
   });
 
-  const updateTaskStatus = useMutation({
-    mutationFn: ({ id, statusId }) => taskApi.updateStatus(id, statusId),
-    onSuccess: (data, { id }) => {
-      queryClient.invalidateQueries(["tasks"]);
-      queryClient.invalidateQueries(["task", id]);
-    },
-  });
+  // const updateTaskStatus = useMutation({
+  //   mutationFn: ({ id, statusId }) => taskApi.updateStatus(id, statusId),
+  //   onSuccess: (data, { id }) => {
+  //     queryClient.invalidateQueries(["tasks"]);
+  //     queryClient.invalidateQueries(["task", id]);
+  //   },
+  // });
 
   return {
     useAllTasks,
     useTaskById,
     createTask,
     updateTask,
+    updateTaskPriority,
     deleteTask,
     updateTaskStatus,
   };

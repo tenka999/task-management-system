@@ -11,7 +11,7 @@ export const userApi = {
     });
 
     if (response.status !== 200) throw new Error("Failed to fetch users");
-    return response.data.data;
+    return response.data.data.users;
   },
 
   // GET /user/:id

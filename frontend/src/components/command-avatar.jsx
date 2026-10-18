@@ -22,10 +22,18 @@ import {
 } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
-export function CommandAvatar({ unassigned, setAvatar, setOpen, avatars }) {
+export function CommandAvatar({
+  unassigned,
+  setAvatar,
+  setOpen,
+  avatars,
+  field,
+  item,
+}) {
   const handleSelect = (id, username, avatar, initial) => {
     setOpen(false);
     setAvatar({ id, username, avatar, initial });
+    if (!item) field?.onChange(id);
   };
   return (
     <Command className="px-1 py-1 pt-2 ">

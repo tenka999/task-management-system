@@ -32,16 +32,20 @@ import {
 import { PopoverFilter } from "./popover-filter";
 import TaskDialog from "./task-dialog";
 import ProjectDialog from "./project-dialog";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import SecureStorage from "@/helpers/SecureStorage";
 export function ButtonGroupProject() {
   const [label, setLabel] = React.useState("personal");
   const handleSuccess = () => {};
+  const { activeWorkspace } = useWorkspace();
+  const use = SecureStorage.getStorage("user");
   return (
     <ButtonGroup>
       <ButtonGroup className="hidden sm:flex">
         <ProjectDialog
           mode="create"
-          workspaceId="workspace123"
-          createdById="user123"
+          workspaceId={activeWorkspace?.id}
+          createdById={use?.id}
           onSuccess={handleSuccess}
         />
       </ButtonGroup>

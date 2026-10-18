@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
@@ -66,39 +66,53 @@ import { PopoverIcon } from "./popover-icon";
 import { PopoverLabel } from "./popover-label";
 import { PopoverAvatar } from "./popover-avatar";
 import { PopoverProject } from "./popover-project";
-
-// Schema validasi
-const projectSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Nama project wajib diisi")
-    .max(100, "Maksimal 100 karakter"),
-  description: z.string().max(500, "Maksimal 500 karakter").optional(),
-  projectKey: z
-    .string()
-    .min(2, "Project key minimal 2 karakter")
-    .max(10, "Project key maksimal 10 karakter")
-    .regex(/^[A-Z0-9]+$/, "Hanya huruf kapital dan angka"),
-  status: z.enum(["ACTIVE", "INACTIVE", "COMPLETED", "ARCHIVED"]),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
-  isPublic: z.boolean().default(false),
-  icon: z.string().optional(),
-  color: z.string().default("#808080"),
-});
+import { useTaskApi } from "@/presentation/logics/app/useTask";
+import { toast } from "./ui/toast";
 
 // Enum status
 const ProjectStatus = {
-  ACTIVE: "Active",
-  INACTIVE: "Inactive",
-  COMPLETED: "Completed",
-  ARCHIVED: "Archived",
+  inProgress: "In Progress",
+  technicalReview: "Technical Review",
+  done: "Done",
+  paused: "Paused",
+  todo: "Todo",
+  backlog: "Backlog",
+  triage: "Triage",
+  idea: "Idea",
+  "product-feedback": "Product Feedback",
+  blocked: "Blocked",
+  shipped: "Shipped",
 };
+
+// Schema validasi
+const taskSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Nama task wajib diisi")
+    .max(100, "Maksimal 100 karakter"),
+  description: z.string().max(500, "Maksimal 500 karakter").optional(),
+  dueDate: z.date().optional(),
+  estimatedTime: z.coerce.number().optional(),
+  status: z.string(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT", "NO_PRIORITY"]),
+  sprintId: z.string().optional(),
+  assigneeId: z.string().optional(),
+  labels: z.optional(z.array(z.object({ labelId: z.int() }))),
+  projectId: z.string(),
+});
+
+// Enum status
+// const taskStatus = {
+//   ACTIVE: "Active",
+//   INACTIVE: "Inactive",
+//   COMPLETED: "Completed",
+//   ARCHIVED: "Archived",
+// };
 
 // Component Dialog Utama
 export function TaskDialog({
   mode = "create",
-  project = null,
+  task = null,
   trigger,
   onSuccess,
   workspaceId,
@@ -107,23 +121,25 @@ export function TaskDialog({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { createTask, updateTask, deleteTask } = useTaskApi();
 
   const isEdit = mode === "edit";
   const isDelete = mode === "delete";
   const isView = mode === "view";
 
   const form = useForm({
-    resolver: zodResolver(projectSchema),
+    resolver: zodResolver(taskSchema),
     defaultValues: {
-      name: project?.name || "",
-      description: project?.description || "",
-      projectKey: project?.projectKey || "",
-      status: project?.status || "ACTIVE",
-      startDate: project?.startDate ? new Date(project.startDate) : undefined,
-      endDate: project?.endDate ? new Date(project.endDate) : undefined,
-      isPublic: project?.isPublic || false,
-      icon: project?.icon || "",
-      color: project?.color || "#808080",
+      title: task?.title || "",
+      description: task?.description || "",
+      dueDate: task?.dueDate ? new Date(task.dueDate) : undefined,
+      estimatedTime: task?.estimatedTime || 0,
+      status: task?.status || "todo",
+      priority: task?.priority || "NO_PRIORITY",
+      sprintId: task?.sprintId || "",
+      assigneeId: task?.assigneeId || "",
+      projectId: task?.projectId || "",
+      labels: task?.labels || [],
     },
   });
 
@@ -134,33 +150,31 @@ export function TaskDialog({
       const payload = {
         ...values,
         workspaceId,
-        createdById,
-        startDate: values.startDate?.toISOString(),
-        endDate: values.endDate?.toISOString(),
+        dueDate: values.dueDate?.toISOString(),
       };
 
       if (isEdit) {
-        // Update existing project
-        const response = await fetch(`/api/projects/${project.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+        await updateTask.mutateAsync({
+          ...payload,
+          taskId: task.id,
         });
 
-        if (!response.ok) throw new Error("Failed to update project");
-
-        console.log("Project updated successfully");
+        toast.add({
+          title: "Success",
+          description: "Task updated successfully",
+        });
       } else {
-        // Create new project
-        const response = await fetch("/api/projects", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+        console.log("payload", payload);
+        await createTask.mutateAsync({
+          ...payload,
         });
+        toast.add({
+          title: "Success",
+          description: "Task created successfully",
+        });
+        // console.log("payload", payload);
 
-        if (!response.ok) throw new Error("Failed to create project");
-
-        console.log("Project created successfully");
+        // if (!response.ok) throw new Error("Failed to create project");
       }
 
       setOpen(false);
@@ -193,6 +207,15 @@ export function TaskDialog({
       setLoading(false);
     }
   };
+
+  const projectId = useWatch({
+    control: form.control,
+    name: "projectId",
+  });
+
+  useEffect(() => {
+    form.setValue("assigneeId", "");
+  }, [projectId]);
 
   const renderTrigger = () => {
     if (trigger) return trigger;
@@ -234,9 +257,9 @@ export function TaskDialog({
           <AlertDialogTrigger render={renderTrigger()}></AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Project</AlertDialogTitle>
+              <AlertDialogTitle>Delete Task</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete "{project?.name}"? This action
+                Are you sure you want to delete "{task?.name}"? This action
                 cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -269,37 +292,33 @@ export function TaskDialog({
       <DialogContent className="sm:max-w-3xl max-h-[70vh] bg-background  ">
         <DialogHeader>
           <DialogTitle className="text-3xl font-semibold">
-            {isEdit
-              ? "Edit Project"
-              : isView
-                ? "Project Details"
-                : "Create New Task"}
+            {isEdit ? "Edit task" : isView ? "task Details" : "Create New Task"}
           </DialogTitle>
         </DialogHeader>
         {isView ? (
           // View Mode
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              {project?.icon && (
+              {task?.icon && (
                 <img
-                  src={project.icon}
-                  alt="Project icon"
+                  src={task.icon}
+                  alt="task icon"
                   className="w-12 h-12 rounded-lg"
                 />
               )}
-              <div>
-                <h3 className="text-lg font-semibold">{project?.name}</h3>
+              {/* <div>
+                <h3 className="text-lg font-semibold">{task?.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {project?.projectKey}
+                  {task?.taskKey}
                 </p>
-              </div>
+              </div> */}
             </div>
 
-            {project?.description && (
+            {task?.description && (
               <div>
                 <h4 className="text-sm font-medium mb-1">Description</h4>
                 <p className="text-sm text-muted-foreground">
-                  {project.description}
+                  {task.description}
                 </p>
               </div>
             )}
@@ -307,30 +326,30 @@ export function TaskDialog({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h4 className="text-sm font-medium mb-1">Status</h4>
-                <p className="text-sm">{ProjectStatus[project?.status]}</p>
+                <p className="text-sm">{ProjectStatus[task?.status]}</p>
               </div>
-              <div>
+              {/* <div>
                 <h4 className="text-sm font-medium mb-1">Visibility</h4>
                 <p className="text-sm">
-                  {project?.isPublic ? "Public" : "Private"}
+                  {task?.isPublic ? "Public" : "Private"}
                 </p>
-              </div>
-              <div>
+              </div> */}
+              {/* <div>
                 <h4 className="text-sm font-medium mb-1">Start Date</h4>
                 <p className="text-sm">
-                  {project?.startDate
+                  {task?.startDate
                     ? format(new Date(project.startDate), "PPP")
                     : "Not set"}
                 </p>
-              </div>
-              <div>
+              </div> */}
+              {/* <div>
                 <h4 className="text-sm font-medium mb-1">End Date</h4>
                 <p className="text-sm">
                   {project?.endDate
                     ? format(new Date(project.endDate), "PPP")
                     : "Not set"}
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         ) : (
@@ -342,15 +361,15 @@ export function TaskDialog({
             >
               <div className="flex justify-between flex-col gap-5">
                 <div className="flex-1 flex flex-col gap-3">
-                  {/* Nama Project */}
+                  {/* Nama task */}
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Project name</FormLabel>
+                        <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter project name" {...field} />
+                          <Input placeholder="Enter task title" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -366,7 +385,7 @@ export function TaskDialog({
                         <FormLabel>Description</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Enter project description"
+                            placeholder="Enter task description"
                             className="min-h-[90px] "
                             {...field}
                           />
@@ -381,7 +400,7 @@ export function TaskDialog({
                 <div className=" flex items-end justify-start gap-3">
                   <FormField
                     control={form.control}
-                    name="startDate"
+                    name="dueDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <div className="flex flex-col gap-2">
@@ -430,11 +449,11 @@ export function TaskDialog({
                   />
                   <FormField
                     control={form.control}
-                    name="estimatedHour"
+                    name="estimatedTime"
                     render={({ field }) => (
                       <FormItem className="  ">
                         <div className="flex flex-col gap-2">
-                          <label className="text-sm ">Estimated hours</label>
+                          <label className="text-sm ">Estimated Time</label>
 
                           <div className="relative">
                             <Input
@@ -443,6 +462,7 @@ export function TaskDialog({
                               step="0.5"
                               placeholder="0"
                               className="pr-12"
+                              {...field}
                             />
 
                             <span
@@ -477,7 +497,7 @@ export function TaskDialog({
                           variant="secondary"
                           showLabel={true}
                           showPercent={false}
-                          item={field}
+                          field={field}
                         />
                       </FormItem>
                     )}
@@ -490,51 +510,51 @@ export function TaskDialog({
                         <PopoverPriority
                           variant="secondary"
                           showLabel={true}
-                          item={field}
+                          field={field}
                         />
                       </FormItem>
                     )}
                   />
                   <FormField
                     control={form.control}
-                    name="avatar"
-                    render={({ field }) => (
-                      <FormItem className="  ">
-                        <PopoverAvatar
-                          variant="secondary"
-                          showLabel={true}
-                          showPercent={false}
-                          item={field}
-                        />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="label"
-                    render={({ field }) => (
-                      <FormItem className="  ">
-                        <PopoverLabel
-                          variant="secondary"
-                          showLabel={true}
-                          showPercent={false}
-                          item={field}
-                        />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="project"
+                    name="projectId"
                     render={({ field }) => (
                       <FormItem className="  ">
                         <PopoverProject
                           variant="secondary"
                           showLabel={true}
                           showPercent={false}
-                          item={field}
+                          field={field}
+                        />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="assigneeId"
+                    render={({ field }) => (
+                      <FormItem className="  ">
+                        <PopoverAvatar
+                          variant="secondary"
+                          showLabel={true}
+                          showPercent={false}
+                          field={field}
+                          projectId={projectId}
+                        />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="labels"
+                    render={({ field }) => (
+                      <FormItem className="  ">
+                        <PopoverLabel
+                          variant="secondary"
+                          showLabel={true}
+                          showPercent={false}
+                          field={field}
                         />
                       </FormItem>
                     )}
@@ -551,9 +571,9 @@ export function TaskDialog({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading}>
+                <Button type="submit">
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isEdit ? "Update Project" : "Create Project"}
+                  {isEdit ? "Update Task" : "Create Task"}
                 </Button>
               </DialogFooter>
             </form>

@@ -42,365 +42,429 @@ import { PopoverStatus } from "./popover-status";
 import { StatusIcon } from "./status-icon";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "./ui/avatar";
-const tasks = [
-  {
-    id: "inProgress",
-    status: "In Progress",
-    statusColor: "yellow",
-    count: 1,
-    items: [
-      {
-        id: "LNUI-773",
-        title: "Calendar: multi-month view with linked navigation",
-        icon: "alert",
-        status: "in-progress",
-        statusColor: "yellow",
+import { useTaskApi } from "@/presentation/logics/app/useTask";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import SecureStorage from "@/helpers/SecureStorage";
+import formatDateTime from "@/helpers/formatDateTime";
+import { PopoverAvatar } from "./popover-avatar";
+import { useNavigate } from "react-router";
 
-        labels: [
-          {
-            name: "Accessibility",
-            color: "purple",
-          },
-          {
-            name: "UI Enhancement",
-            color: "purple",
-          },
-        ],
+// const tasks = [
+//   {
+//     id: "inProgress",
+//     status: "In Progress",
+//     statusColor: "yellow",
+//     count: 1,
+//     items: [
+//       {
+//         id: "LNUI-773",
+//         title: "Calendar: multi-month view with linked navigation",
+//         icon: "alert",
+//         status: "in-progress",
+//         statusColor: "yellow",
 
-        cycle: "Cycle 21",
-        dueDate: "Aug 02",
-        createdDate: "Jul 26",
+//         labels: [
+//           {
+//             name: "Accessibility",
+//             color: "purple",
+//           },
+//           {
+//             name: "UI Enhancement",
+//             color: "purple",
+//           },
+//         ],
 
-        priority: "high",
-        priorityColor: "yellow",
+//         cycle: "Cycle 21",
+//         dueDate: "Aug 02",
+//         createdDate: "Jul 26",
 
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-    ],
+//         priority: "high",
+//         priorityColor: "yellow",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+//     ],
+//   },
+
+//   {
+//     id: "technicalReview",
+//     status: "Technical Review",
+//     statusColor: "green",
+//     count: 1,
+//     items: [
+//       {
+//         id: "LNUI-783",
+//         title: "Combobox: windowed list rendering above 1k options",
+//         icon: "alert",
+//         status: "technical-review",
+//         statusColor: "green",
+
+//         labels: [
+//           {
+//             name: "Bug",
+//             color: "red",
+//           },
+//           {
+//             name: "Refactor",
+//             color: "yellow",
+//           },
+//         ],
+
+//         cycle: "Cycle 21",
+//         dueDate: null,
+//         createdDate: "Jul 22",
+
+//         priority: "high",
+//         priorityColor: "green",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+//     ],
+//   },
+
+//   {
+//     id: "paused",
+//     status: "Paused",
+//     statusColor: "cyan",
+//     count: 1,
+//     items: [
+//       {
+//         id: "LNUI-744",
+//         title: "Audit Dialog scroll locking on iOS Safari",
+//         icon: "chart",
+//         status: "paused",
+//         statusColor: "cyan",
+
+//         labels: [
+//           {
+//             name: "Bug",
+//             color: "red",
+//           },
+//           {
+//             name: "Accessibility",
+//             color: "purple",
+//           },
+//           {
+//             name: "LNDev UI - Modals",
+//             color: "gray",
+//           },
+//         ],
+
+//         cycle: "Cycle 22",
+//         dueDate: null,
+//         createdDate: "Jul 25",
+
+//         priority: "medium",
+//         priorityColor: "cyan",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+//     ],
+//   },
+
+//   {
+//     id: "product-feedback",
+//     status: "Product Feedback",
+//     statusColor: "orange",
+//     count: 2,
+//     items: [
+//       {
+//         id: "LNUI-793",
+//         title: "Data grid: header menu discoverability is low in testing",
+//         icon: "alert",
+//         status: "product-feedback",
+//         statusColor: "orange",
+
+//         labels: [
+//           {
+//             name: "Performance",
+//             color: "yellow",
+//           },
+//           {
+//             name: "Accessibility",
+//             color: "purple",
+//           },
+//         ],
+
+//         cycle: "Cycle 21",
+//         dueDate: null,
+//         createdDate: "Jul 31",
+
+//         priority: "medium",
+//         priorityColor: "orange",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+
+//       {
+//         id: "LNUI-701",
+//         title: "Combobox: keyboard selection skips",
+//         icon: "chart",
+//         status: "product-feedback",
+//         statusColor: "orange",
+
+//         labels: [
+//           {
+//             name: "UI Enhancement",
+//             color: "purple",
+//           },
+//           {
+//             name: "Accessibility",
+//             color: "purple",
+//           },
+//           {
+//             name: "LNDev UI - Core Components",
+//             color: "gray",
+//           },
+//         ],
+
+//         cycle: "Cycle 21",
+//         dueDate: null,
+//         createdDate: "Jul 21",
+
+//         priority: "medium",
+//         priorityColor: "orange",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+//     ],
+//   },
+
+//   {
+//     id: "todo",
+//     status: "Todo",
+//     statusColor: "gray",
+//     count: 5,
+//     items: [
+//       {
+//         id: "LNUI-763",
+//         title: "Avatar: fallback gradient derived from the user id hash",
+//         icon: "alert",
+//         status: "todo",
+//         statusColor: "gray",
+
+//         labels: [
+//           {
+//             name: "Refactor",
+//             color: "yellow",
+//           },
+//           {
+//             name: "Security",
+//             color: "gray",
+//           },
+//         ],
+
+//         cycle: "Cycle 21",
+//         dueDate: null,
+//         createdDate: "Jul 30",
+
+//         priority: "low",
+//         priorityColor: "gray",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+
+//       {
+//         id: "LNUI-723",
+//         title: "Sidebar: double-click on rail to collapse to icons",
+//         icon: "chart",
+//         status: "todo",
+//         statusColor: "gray",
+
+//         labels: [
+//           {
+//             name: "Feature",
+//             color: "green",
+//           },
+//           {
+//             name: "LNDev UI - Sidebar",
+//             color: "gray",
+//           },
+//         ],
+
+//         cycle: "Cycle 21",
+//         dueDate: null,
+//         createdDate: "Jul 30",
+
+//         priority: "medium",
+//         priorityColor: "gray",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+
+//       {
+//         id: "LNUI-923",
+//         title: "Theme: ship a first-class high-contrast preset",
+//         icon: "alert",
+//         status: "todo",
+//         statusColor: "gray",
+
+//         labels: [
+//           {
+//             name: "Refactor",
+//             color: "yellow",
+//           },
+//           {
+//             name: "Security",
+//             color: "gray",
+//           },
+//         ],
+
+//         cycle: "Cycle 22",
+//         dueDate: null,
+//         createdDate: "Jul 29",
+
+//         priority: "low",
+//         priorityColor: "gray",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+
+//       {
+//         id: "LNUI-933",
+//         title: "Icons: per-icon dynamic import codemod",
+//         icon: "alert",
+//         status: "todo",
+//         statusColor: "gray",
+
+//         labels: [
+//           {
+//             name: "Accessibility",
+//             color: "purple",
+//           },
+//           {
+//             name: "UI Enhancement",
+//             color: "purple",
+//           },
+//         ],
+
+//         cycle: "Cycle 22",
+//         dueDate: null,
+//         createdDate: "Jul 25",
+
+//         priority: "medium",
+//         priorityColor: "gray",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+
+//       {
+//         id: "LNUI-752",
+//         title: "Publish theming recipes for brand palette import",
+//         icon: "alert",
+//         status: "todo",
+//         statusColor: "gray",
+
+//         labels: [
+//           {
+//             name: "UI Enhancement",
+//             color: "purple",
+//           },
+//           {
+//             name: "Documentation",
+//             color: "blue",
+//           },
+//         ],
+
+//         cycle: "Cycle 21",
+//         dueDate: null,
+//         createdDate: "Jul 24",
+
+//         priority: "low",
+//         priorityColor: "gray",
+
+//         assignee: {
+//           name: "John Doe",
+//           avatar: null,
+//         },
+//       },
+//     ],
+//   },
+// ];
+
+const STATUS_CONFIG = {
+  inProgress: {
+    color: "#facc15",
+    type: "progress",
   },
 
-  {
-    id: "technicalReview",
-    status: "Technical Review",
-    statusColor: "green",
-    count: 1,
-    items: [
-      {
-        id: "LNUI-783",
-        title: "Combobox: windowed list rendering above 1k options",
-        icon: "alert",
-        status: "technical-review",
-        statusColor: "green",
-
-        labels: [
-          {
-            name: "Bug",
-            color: "red",
-          },
-          {
-            name: "Refactor",
-            color: "yellow",
-          },
-        ],
-
-        cycle: "Cycle 21",
-        dueDate: null,
-        createdDate: "Jul 22",
-
-        priority: "high",
-        priorityColor: "green",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-    ],
+  technicalReview: {
+    color: "#22c55e",
+    type: "review",
   },
 
-  {
-    id: "paused",
-    status: "Paused",
-    statusColor: "cyan",
-    count: 1,
-    items: [
-      {
-        id: "LNUI-744",
-        title: "Audit Dialog scroll locking on iOS Safari",
-        icon: "chart",
-        status: "paused",
-        statusColor: "cyan",
-
-        labels: [
-          {
-            name: "Bug",
-            color: "red",
-          },
-          {
-            name: "Accessibility",
-            color: "purple",
-          },
-          {
-            name: "LNDev UI - Modals",
-            color: "gray",
-          },
-        ],
-
-        cycle: "Cycle 22",
-        dueDate: null,
-        createdDate: "Jul 25",
-
-        priority: "medium",
-        priorityColor: "cyan",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-    ],
+  done: {
+    color: "#6366f1",
+    type: "check",
   },
 
-  {
-    id: "product-feedback",
-    status: "Product Feedback",
-    statusColor: "orange",
-    count: 2,
-    items: [
-      {
-        id: "LNUI-793",
-        title: "Data grid: header menu discoverability is low in testing",
-        icon: "alert",
-        status: "product-feedback",
-        statusColor: "orange",
-
-        labels: [
-          {
-            name: "Performance",
-            color: "yellow",
-          },
-          {
-            name: "Accessibility",
-            color: "purple",
-          },
-        ],
-
-        cycle: "Cycle 21",
-        dueDate: null,
-        createdDate: "Jul 31",
-
-        priority: "medium",
-        priorityColor: "orange",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-
-      {
-        id: "LNUI-701",
-        title: "Combobox: keyboard selection skips",
-        icon: "chart",
-        status: "product-feedback",
-        statusColor: "orange",
-
-        labels: [
-          {
-            name: "UI Enhancement",
-            color: "purple",
-          },
-          {
-            name: "Accessibility",
-            color: "purple",
-          },
-          {
-            name: "LNDev UI - Core Components",
-            color: "gray",
-          },
-        ],
-
-        cycle: "Cycle 21",
-        dueDate: null,
-        createdDate: "Jul 21",
-
-        priority: "medium",
-        priorityColor: "orange",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-    ],
+  paused: {
+    color: "#06b6d4",
+    type: "pause",
   },
 
-  {
-    id: "todo",
-    status: "Todo",
-    statusColor: "gray",
-    count: 5,
-    items: [
-      {
-        id: "LNUI-763",
-        title: "Avatar: fallback gradient derived from the user id hash",
-        icon: "alert",
-        status: "todo",
-        statusColor: "gray",
-
-        labels: [
-          {
-            name: "Refactor",
-            color: "yellow",
-          },
-          {
-            name: "Security",
-            color: "gray",
-          },
-        ],
-
-        cycle: "Cycle 21",
-        dueDate: null,
-        createdDate: "Jul 30",
-
-        priority: "low",
-        priorityColor: "gray",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-
-      {
-        id: "LNUI-723",
-        title: "Sidebar: double-click on rail to collapse to icons",
-        icon: "chart",
-        status: "todo",
-        statusColor: "gray",
-
-        labels: [
-          {
-            name: "Feature",
-            color: "green",
-          },
-          {
-            name: "LNDev UI - Sidebar",
-            color: "gray",
-          },
-        ],
-
-        cycle: "Cycle 21",
-        dueDate: null,
-        createdDate: "Jul 30",
-
-        priority: "medium",
-        priorityColor: "gray",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-
-      {
-        id: "LNUI-923",
-        title: "Theme: ship a first-class high-contrast preset",
-        icon: "alert",
-        status: "todo",
-        statusColor: "gray",
-
-        labels: [
-          {
-            name: "Refactor",
-            color: "yellow",
-          },
-          {
-            name: "Security",
-            color: "gray",
-          },
-        ],
-
-        cycle: "Cycle 22",
-        dueDate: null,
-        createdDate: "Jul 29",
-
-        priority: "low",
-        priorityColor: "gray",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-
-      {
-        id: "LNUI-933",
-        title: "Icons: per-icon dynamic import codemod",
-        icon: "alert",
-        status: "todo",
-        statusColor: "gray",
-
-        labels: [
-          {
-            name: "Accessibility",
-            color: "purple",
-          },
-          {
-            name: "UI Enhancement",
-            color: "purple",
-          },
-        ],
-
-        cycle: "Cycle 22",
-        dueDate: null,
-        createdDate: "Jul 25",
-
-        priority: "medium",
-        priorityColor: "gray",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-
-      {
-        id: "LNUI-752",
-        title: "Publish theming recipes for brand palette import",
-        icon: "alert",
-        status: "todo",
-        statusColor: "gray",
-
-        labels: [
-          {
-            name: "UI Enhancement",
-            color: "purple",
-          },
-          {
-            name: "Documentation",
-            color: "blue",
-          },
-        ],
-
-        cycle: "Cycle 21",
-        dueDate: null,
-        createdDate: "Jul 24",
-
-        priority: "low",
-        priorityColor: "gray",
-
-        assignee: {
-          name: "John Doe",
-          avatar: null,
-        },
-      },
-    ],
+  todo: {
+    color: "#94a3b8",
+    type: "empty",
   },
-];
+
+  backlog: {
+    color: "#94a3b8",
+    type: "dotted",
+  },
+
+  triage: {
+    color: "#f97316",
+    type: "arrow",
+  },
+
+  idea: {
+    color: "#6366f1",
+    type: "dotted",
+  },
+
+  "product-feedback": {
+    color: "#f59e0b",
+    type: "feedback",
+  },
+
+  blocked: {
+    color: "#ef4444",
+    type: "blocked",
+  },
+
+  shipped: {
+    color: "#34d399",
+    type: "check",
+  },
+};
 
 const statuses = [
   {
@@ -580,30 +644,57 @@ const projects = [
   },
 ];
 
-export function ItemTask() {
+export function ItemTask({ projectId }) {
+  console.log("asd", projectId);
   const [variaty, setVariaty] = useState(null);
-
   //   const z = statuses.concat(tasks);
-  const z = statuses.map((status) =>
-    tasks.filter(
-      (task) => task.status !== status.label && statuses.concat(tasks),
-    ),
-  );
-  const a = statuses.map((status) =>
-    tasks.filter((task) => task.status === status.label),
-  );
-  // .map((item) => item.id);
-  const b = statuses
-    .map((status) => tasks.filter((task) => task.status === status.label))
-    .map((item) => item[0]);
-  const c = statuses
-    .map((status) => tasks.filter((task) => task.status === status.label))
-    .map((item) => item[0])
-    .map((items) => (items ? items.items : []));
+  // const z = statuses.map((status) =>
+  //   tasks.filter(
+  //     (task) => task.status !== status.label && statuses.concat(tasks),
+  //   ),
+  // );
+  // const a = statuses.map((status) =>
+  //   tasks.filter((task) => task.status === status.label),
+  // );
+  // // .map((item) => item.id);
+  // const b = statuses
+  //   .map((status) => tasks.filter((task) => task.status === status.label))
+  //   .map((item) => item[0]);
+  // const c = statuses
+  //   .map((status) => tasks.filter((task) => task.status === status.label))
+  //   .map((item) => item[0])
+  //   .map((items) => (items ? items.items : []));
 
+  const navigate = useNavigate();
+  const { activeWorkspace } = useWorkspace();
+  const user = SecureStorage.getStorage("user");
+  const { useAllTasks } = useTaskApi();
+  const { data: tasks } = useAllTasks({
+    workspaceId: activeWorkspace?.id,
+    projectId: projectId,
+    assigneeId: user?.id,
+  });
+  // console.log("task", data);
+  const groupedStatuses = statuses?.map((status) => {
+    const items = tasks?.filter((task) => task.status === status.id);
+
+    return {
+      ...status,
+      count: items?.length,
+      items,
+    };
+  });
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    // Format: yyyy-mm-dd hh:mm:ss
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "2-digit",
+    });
+  };
   return (
     <div className="relative  flex w-full flex-col  ">
-      {tasks.map((task) => (
+      {/* {tasks.map((task) => (
         <div key={task.id}>
           <Item className="p-0 gap-0" key={task.id}>
             <Item variant="muted" size="xs" className="rounded-none  ">
@@ -676,6 +767,113 @@ export function ItemTask() {
                         <AvatarFallback>LN</AvatarFallback>
                         <AvatarBadge />
                       </Avatar>
+                    </ItemActions>
+                  </div>
+                </ItemContent>
+              </Item>
+            ))}
+          </Item>
+        </div>
+      ))} */}
+      {groupedStatuses?.map((status) => (
+        <div key={status.id}>
+          {/* HEADER STATUS */}
+          <Item className="p-0 gap-0">
+            <Item variant="muted" size="xs" className="rounded-none">
+              <ItemContent>
+                <ItemTitle className="flex w-full justify-between px-5">
+                  <div className="flex items-center gap-2">
+                    <StatusIcon status={status.id} size={18} />
+
+                    {status.label}
+
+                    <ItemDescription>{status.count}</ItemDescription>
+                  </div>
+
+                  <ItemActions>
+                    <Plus
+                      size={20}
+                      className="p-0.5 border rounded-xs hover:bg-muted active:translate-y-0.5 transition-all duration-300 ease-in-out"
+                    />
+                  </ItemActions>
+                </ItemTitle>
+              </ItemContent>
+            </Item>
+
+            {/* TASK DI DALAM STATUS */}
+            {status?.items?.map((item) => (
+              <Item
+                key={item.id}
+                className="rounded-none"
+                size="xs"
+                variant={variaty === item.id ? "muted" : "default"}
+                onMouseEnter={() => setVariaty(item.id)}
+                onMouseLeave={() => setVariaty(null)}
+              >
+                <ItemContent>
+                  <div className="flex">
+                    <ItemTitle className="flex w-full px-3 justify-between">
+                      <div className="flex-10 flex gap-1 items-center w-0">
+                        <p className="opacity-60 flex items-center shrink-0">
+                          <PopoverPriority item={item} field={item} />
+                          {/* task number */}#{item.taskNumber}
+                        </p>
+
+                        <PopoverStatus field={item} />
+
+                        <div
+                          className="gap-2 truncate cursor-pointer hover:underline"
+                          onClick={() => navigate(`/app/task/${item.id}`)}
+                        >
+                          {item.title}
+                        </div>
+                      </div>
+                    </ItemTitle>
+
+                    <ItemActions className="gap-2 mr-7">
+                      {/* LABELS */}
+                      {item.labels?.map((label) => (
+                        <Badge
+                          key={label.label.id}
+                          variant="outline"
+                          className="p-2.5"
+                        >
+                          <IconCircleFilled color={label.label.color} />
+
+                          <p className="opacity-60 text-xs">
+                            {label.label.name}
+                          </p>
+                        </Badge>
+                      ))}
+                      <Badge variant="outline" className="p-3 ">
+                        <p className="opacity-60 text-xs">
+                          {item.workspace.name} - {item.project.name}
+                        </p>
+                      </Badge>
+                      <Badge variant="outline" className="p-2.5  ">
+                        <p className="opacity-50 text-xs">Cycle 10</p>
+                      </Badge>
+
+                      <p className="opacity-50 shrink-0">
+                        {" "}
+                        {formatDate(item.dueDate)}
+                      </p>
+
+                      {/* <Avatar>
+                        <AvatarImage src={item.assignee?.avatarUrl} />
+
+                        <AvatarFallback>
+                          {item.assignee?.username?.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+
+                        <AvatarBadge />
+                      </Avatar> */}
+                      <PopoverAvatar
+                        size="icon"
+                        variant="ghost"
+                        showLabel={false}
+                        showPercent={false}
+                      />
                     </ItemActions>
                   </div>
                 </ItemContent>
