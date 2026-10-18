@@ -48,6 +48,19 @@ const taskController = {
     }
   },
 
+  // PUT /tasks/:id
+  async updateTaskPriority(req, res) {
+    try {
+      const task = await taskService.updateTaskPriority(
+        req.params.id,
+        req.body,
+      );
+      res.status(200).json(responseFormat("success", task, "Task updated"));
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
   // DELETE /tasks/:id
   async deleteTask(req, res) {
     try {
@@ -61,11 +74,7 @@ const taskController = {
   // PATCH /tasks/:id/status
   async updateTaskStatus(req, res) {
     try {
-      const task = await taskService.updateTaskStatus(
-        req.params.id,
-        req.body.statusId,
-        req.user.id,
-      );
+      const task = await taskService.updateTaskStatus(req.params.id, req.body);
       res
         .status(200)
         .json(responseFormat("success", task, "Task status updated"));

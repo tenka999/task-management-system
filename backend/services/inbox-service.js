@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import conversationService from "../services/conversation-service.js";
 
 async function getUserInbox(userId, query = {}) {
   const { status, type, isStarred, search, page = 1, limit = 20 } = query;
@@ -32,6 +33,32 @@ async function getUserInbox(userId, query = {}) {
         },
         workspace: {
           select: { id: true, name: true, logoUrl: true },
+        },
+        workspaceInvitation: {
+          include: {
+            workspace: {
+              select: {
+                id: true,
+                name: true,
+                logoUrl: true,
+                description: true,
+                _count: {
+                  select: {
+                    members: true,
+                  },
+                },
+              },
+            },
+            invitedBy: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
+          },
         },
         project: {
           select: { id: true, name: true, projectKey: true },
@@ -317,8 +344,70 @@ async function sendDirectMessage(senderId, data) {
   }
 
   // Generate thread ID if this is a new conversation
-  const threadId =
-    data.threadId || `thread_${Date.now()}_${senderId}_${data.recipientId}`;
+  // const threadId =
+  //   data.threadId || `thread_${Date.now()}_${senderId}_${data.recipientId}`;
+
+  let conversation = null;
+
+  // Hanya buat conversation & notif jika user TERDAFTAR
+  if (recipient) {
+    // Check existing direct conversation (pakai tx, bukan prisma)
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        type: "DIRECT",
+        AND: [
+          { participants: { some: { userId: senderId, isActive: true } } },
+          { participants: { some: { userId: recipient.id, isActive: true } } },
+        ],
+      },
+      include: {
+        participants: { include: { user: true } },
+      },
+    });
+
+    if (
+      existingConversation &&
+      existingConversation.participants.length === 2
+    ) {
+      conversation = existingConversation;
+    } else {
+      // ✅ FIX: participantIds = [user.id], creator = invitedById
+      conversation = await conversationService.createConversation(
+        {
+          type: "DIRECT",
+          participantIds: [recipient.id], // ← User yang di-invite jadi participant
+          workspaceId: data.workspaceId,
+        },
+        senderId, // ← Inviter jadi creator
+      );
+    }
+
+    // ✅ Create notification (pakai tx)
+    notification = await prisma.notification.create({
+      data: {
+        workspaceId: data.workspaceId,
+        type: "NEW_MESSAGE",
+        title: "New Message Received",
+        message: `${data.content}`,
+        userId: user.id, // ← Sudah pasti ada user
+      },
+    });
+
+    // ✅ Create inbox message (pakai tx)
+
+    // ✅ Update conversation last message
+
+    // ✅ Increment unread count
+    await prisma.conversationParticipant.update({
+      where: {
+        conversationId_userId: {
+          conversationId: conversation.id,
+          userId: recipient.id,
+        },
+      },
+      data: { unreadCount: { increment: 1 } },
+    });
+  }
 
   return await prisma.inbox.create({
     data: {

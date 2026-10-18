@@ -5,7 +5,9 @@ const projectController = {
   // GET /projects
   async getAllProjects(req, res) {
     try {
+      console.log("query", req.query);
       const { workspaceId } = req.query;
+      console.log("work", workspaceId);
       const projects = await projectService.getAllProjects(
         workspaceId,
         req.query,
@@ -52,6 +54,32 @@ const projectController = {
       res
         .status(200)
         .json(responseFormat("success", project, "Project updated"));
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+  async updateProjectPriority(req, res) {
+    try {
+      const project = await projectService.updateProjectPriority(
+        req.params.id,
+        req.body,
+      );
+      res
+        .status(200)
+        .json(responseFormat("success", project, "Project priority updated"));
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+  async updateProjectStatus(req, res) {
+    try {
+      const project = await projectService.updateProjectStatus(
+        req.params.id,
+        req.body,
+      );
+      res
+        .status(200)
+        .json(responseFormat("success", project, "Project status updated"));
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }

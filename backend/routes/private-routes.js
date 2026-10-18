@@ -95,9 +95,14 @@ privateRouter.post("/workspace/:id/invite", workspaceController.inviteMember);
 //#endregion workspaces
 
 //#region projects
-privateRouter.get("/projects", projectController.getAllProjects);
+privateRouter.get("/project", projectController.getAllProjects);
 privateRouter.get("/project/:id", projectController.getProjectById);
 privateRouter.post("/project", projectController.createProject);
+privateRouter.put(
+  "/project/:id/priority",
+  projectController.updateProjectPriority,
+);
+privateRouter.put("/project/:id/status", projectController.updateProjectStatus);
 privateRouter.put("/project/:id", projectController.updateProject);
 privateRouter.delete("/project/:id", projectController.deleteProject);
 
@@ -119,9 +124,10 @@ privateRouter.post("/project/:id/statuses", projectController.createTaskStatus);
 privateRouter.get("/tasks", taskController.getAllTasks);
 privateRouter.get("/task/:id", taskController.getTaskById);
 privateRouter.post("/task", taskController.createTask);
+privateRouter.patch("/task/:id/priority", taskController.updateTaskPriority);
+privateRouter.patch("/task/:id/status", taskController.updateTaskStatus);
 privateRouter.put("/task/:id", taskController.updateTask);
 privateRouter.delete("/task/:id", taskController.deleteTask);
-privateRouter.patch("/task/:id/status", taskController.updateTaskStatus);
 //#endregion tasks
 
 //#region comments
@@ -140,7 +146,7 @@ privateRouter.delete("/task/comments/:id", commentController.deleteComment);
 //#endregion comments
 
 //#region labels
-privateRouter.get("/labels", labelController.getAllLabels);
+privateRouter.get("/label", labelController.getAllLabels);
 privateRouter.get("/label/:id", labelController.getLabelById);
 privateRouter.post("/label", labelController.createLabel);
 privateRouter.put("/label/:id", labelController.updateLabel);

@@ -20,7 +20,17 @@ async function getAllProjects(workspaceId, query = {}) {
       skip: (page - 1) * limit,
       take: parseInt(limit),
       include: {
-        iconFile: true,
+        workspace: true,
+        members: {
+          include: {
+            user: true,
+          },
+        },
+        labels: {
+          include: {
+            label: true,
+          },
+        },
         _count: {
           select: {
             tasks: true,
@@ -46,27 +56,19 @@ async function getProjectById(id) {
   return await prisma.project.findUnique({
     where: { id },
     include: {
-      iconFile: true,
-      workspace: {
-        select: { id: true, name: true, logoUrl: true },
-      },
-      createdBy: {
-        select: { id: true, username: true, firstName: true, lastName: true },
+      workspace: true,
+      labels: {
+        include: {
+          label: true,
+        },
       },
       members: {
         include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              avatarUrl: true,
-            },
-          },
+          user: true,
         },
       },
-      taskStatuses: true,
+      tasks: true,
+      activityLogs: true,
       _count: {
         select: {
           tasks: true,
@@ -88,41 +90,26 @@ async function createProject(data, userId) {
       createdById: userId,
       color: data.color,
       icon: data.icon,
+      status: data.status,
+      priority: data.priority,
       startDate: data.startDate ? new Date(data.startDate) : null,
       endDate: data.endDate ? new Date(data.endDate) : null,
+      isPublic: data.isPublic,
       members: {
         create: {
           userId,
           role: "OWNER",
         },
       },
-      taskStatuses: {
-        create: [
-          {
-            name: "To Do",
-            orderPosition: 1,
-            isDefault: true,
-            category: "TODO",
-            color: "#808080",
-          },
-          {
-            name: "In Progress",
-            orderPosition: 2,
-            category: "IN_PROGRESS",
-            color: "#4A90E2",
-          },
-          {
-            name: "Done",
-            orderPosition: 3,
-            category: "DONE",
-            color: "#4AE24A",
-          },
-        ],
+      labels: {
+        createMany: {
+          data: data.labels,
+        },
       },
     },
     include: {
-      taskStatuses: true,
       members: true,
+      labels: true,
     },
   });
 }
@@ -136,10 +123,23 @@ async function updateProject(id, data) {
       status: data.status,
       color: data.color,
       icon: data.icon,
-      iconFileId: data.iconFileId,
       startDate: data.startDate ? new Date(data.startDate) : undefined,
       endDate: data.endDate ? new Date(data.endDate) : undefined,
     },
+  });
+}
+
+async function updateProjectPriority(id, data) {
+  return await prisma.project.update({
+    where: { id },
+    data: { priority: data.priority },
+  });
+}
+
+async function updateProjectStatus(id, data) {
+  return await prisma.project.update({
+    where: { id },
+    data: { status: data.status },
   });
 }
 
@@ -214,6 +214,8 @@ export default {
   getProjectById,
   createProject,
   updateProject,
+  updateProjectStatus,
+  updateProjectPriority,
   deleteProject,
   getProjectMembers,
   addProjectMember,

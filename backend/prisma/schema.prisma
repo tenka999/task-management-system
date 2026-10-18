@@ -33,6 +33,7 @@ enum InvitationStatus {
   PENDING
   ACCEPTED
   DECLINED
+  REVOKE
   EXPIRED
 }
 
@@ -133,7 +134,6 @@ model Workspace {
   workspaceSettings WorkspaceSettings?
   projects          Project[]
   labels            Label[]
-  priorities        TaskPriority[]
   documents         Document[]
   activityLogs      ActivityLog[]
   notifications     Notification[]
@@ -185,7 +185,7 @@ model WorkspaceInvitation {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   invitedBy User      @relation(fields: [invitedById], references: [id])
-  inbox     Inbox?    @relation("WorkspaceInvitation")
+  inboxes   Inbox[]   @relation("WorkspaceInvitation")
 
   @@index([workspaceId, email])
   @@index([token])
@@ -240,6 +240,21 @@ enum ProjectStatus {
   COMPLETED
 }
 
+enum ProjectHealth {
+  NO_UPDATE
+  OFF_TRACK
+  ON_TRACK
+  AT_RISK
+}
+
+enum Priority {
+  NO_PRIORITY
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 enum ProjectMemberRole {
   OWNER
   ADMIN
@@ -256,19 +271,20 @@ model Project {
   name        String
   description String?
   projectKey  String        @unique @map("project_key")
-  status      ProjectStatus @default(ACTIVE)
+  status      String
+  priority    Priority      @default(NO_PRIORITY)
   startDate   DateTime?     @map("start_date")
   endDate     DateTime?     @map("end_date")
   createdById String        @map("created_by_id")
   isPublic    Boolean       @default(false) @map("is_public")
   icon        String?
+  health      ProjectHealth @default(ON_TRACK)
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
   workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdBy     User            @relation(fields: [createdById], references: [id])
   members       ProjectMember[]
-  taskStatuses  TaskStatus[]
   sprints       Sprint[]
   tasks         Task[]
   documents     Document[]
@@ -276,6 +292,7 @@ model Project {
   notifications Notification[]
   inboxes       Inbox[]
   conversations Conversation[]
+  labels        ProjectLabel[]
 
   @@index([projectKey])
   @@index([status])
@@ -305,41 +322,41 @@ model ProjectMember {
 // ============================
 // TASK STATUS & PRIORITIES
 // ============================
-model TaskStatus {
-  id            Int      @id @default(autoincrement())
-  projectId     String   @map("project_id")
-  name          String
-  color         String   @default("#808080")
-  orderPosition Int      @default(0) @map("order_position")
-  isDefault     Boolean  @default(false) @map("is_default")
-  category      String   @default("TODO") // TODO, IN_PROGRESS, DONE
-  createdAt     DateTime @default(now()) @map("created_at")
+// model TaskStatus {
+//   id            Int      @id @default(autoincrement())
+//   projectId     String   @map("project_id")
+//   name          String
+//   color         String   @default("#808080")
+//   orderPosition Int      @default(0) @map("order_position")
+//   isDefault     Boolean  @default(false) @map("is_default")
+//   category      String   @default("TODO") // TODO, IN_PROGRESS, DONE
+//   createdAt     DateTime @default(now()) @map("created_at")
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks   Task[]
+//   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+//   tasks   Task[]
 
-  @@unique([projectId, name])
-  @@index([orderPosition])
-  @@index([projectId, category])
-  @@map("task_statuses")
-}
+//   @@unique([projectId, name])
+//   @@index([orderPosition])
+//   @@index([projectId, category])
+//   @@map("task_statuses")
+// }
 
-model TaskPriority {
-  id          Int      @id @default(autoincrement())
-  workspaceId String?  @map("workspace_id") // null = system default
-  name        String
-  color       String   @default("#808080")
-  weight      Int      @default(0)
-  icon        String?
-  createdAt   DateTime @default(now()) @map("created_at")
+// model TaskPriority {
+//   id          Int      @id @default(autoincrement())
+//   workspaceId String?  @map("workspace_id") // null = system default
+//   name        String
+//   color       String   @default("#808080")
+//   weight      Int      @default(0)
+//   icon        String?
+//   createdAt   DateTime @default(now()) @map("created_at")
 
-  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  tasks     Task[]
+//   workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+//   tasks     Task[]
 
-  @@unique([workspaceId, name])
-  @@index([weight])
-  @@map("task_priorities")
-}
+//   @@unique([workspaceId, name])
+//   @@index([weight])
+//   @@map("task_priorities")
+// }
 
 model Sprint {
   id          Int       @id @default(autoincrement())
@@ -384,28 +401,26 @@ model Task {
   assigneeId      String?   @map("assignee_id")
   reporterId      String    @map("reporter_id")
   sprintId        Int?      @map("sprint_id")
-  statusId        Int       @map("status_id")
-  priorityId      Int       @map("priority_id")
+  priority        Priority  @default(NO_PRIORITY)
+  status          String
   title           String
   description     String?
   dueDate         DateTime? @map("due_date")
-  estimatedHours  Decimal?  @map("estimated_hours") @db.Decimal(10, 2)
-  actualHours     Decimal?  @map("actual_hours") @db.Decimal(10, 2)
+  estimatedTime   Decimal?  @map("estimated_time") @db.Decimal(10, 2)
+  actualTime      Decimal?  @map("actual_time") @db.Decimal(10, 2)
   progressPercent Int       @default(0) @map("progress_percent")
   taskNumber      Int       @map("task_number") // auto-increment per project
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  project    Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  workspace  Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  parentTask Task?        @relation("SubTasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
-  subTasks   Task[]       @relation("SubTasks")
-  assignee   User?        @relation("Assignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-  reporter   User         @relation("Reporter", fields: [reporterId], references: [id])
-  sprint     Sprint?      @relation(fields: [sprintId], references: [id], onDelete: SetNull)
-  status     TaskStatus   @relation(fields: [statusId], references: [id])
-  priority   TaskPriority @relation(fields: [priorityId], references: [id])
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  parentTask Task?     @relation("SubTasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  subTasks   Task[]    @relation("SubTasks")
+  assignee   User?     @relation("Assignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  reporter   User      @relation("Reporter", fields: [reporterId], references: [id])
+  sprint     Sprint?   @relation(fields: [sprintId], references: [id], onDelete: SetNull)
 
   // Task details
   comments       TaskComment[]
@@ -421,15 +436,12 @@ model Task {
   conversations  Conversation[]
 
   @@unique([projectId, taskNumber])
-  @@index([projectId, statusId])
   @@index([assigneeId])
   @@index([dueDate])
   @@index([parentTaskId])
   @@index([reporterId])
   @@index([sprintId])
-  @@index([priorityId])
   @@index([workspaceId])
-  @@index([workspaceId, statusId])
   @@map("tasks")
 }
 
@@ -487,8 +499,9 @@ model Label {
   description String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   tasks     TaskLabel[]
+  project   ProjectLabel[]
 
   @@unique([workspaceId, name])
   @@map("labels")
@@ -505,6 +518,19 @@ model TaskLabel {
   @@id([taskId, labelId])
   @@index([labelId])
   @@map("task_labels")
+}
+
+model ProjectLabel {
+  projectId String   @map("task_id")
+  labelId   Int      @map("label_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  label   Label   @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, labelId])
+  @@index([labelId])
+  @@map("project_labels")
 }
 
 model TaskWatcher {
@@ -541,7 +567,7 @@ model TaskTimeLog {
   id          Int      @id @default(autoincrement())
   taskId      String   @map("task_id")
   userId      String   @map("user_id")
-  hoursSpent  Decimal  @map("hours_spent") @db.Decimal(10, 2)
+  timeSpent   Decimal  @map("time_spent") @db.Decimal(10, 2)
   logDate     DateTime @map("log_date") @db.Date
   description String?
   isBillable  Boolean  @default(true) @map("is_billable")
@@ -587,6 +613,7 @@ enum NotificationType {
   PROJECT_INVITE
   WORKSPACE_INVITE
   MEMBER_JOINED
+  NEW_MESSAGE
 }
 
 // ============================
@@ -746,13 +773,14 @@ model Inbox {
 
   // Attachments
   attachments           InboxAttachment[]
-  user                  User?                @relation(fields: [userId], references: [id])
+  user                  User?             @relation(fields: [userId], references: [id])
   userId                String?
-  conversationId        String?              @map("conversation_id")
-  conversation          Conversation?        @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
-  lastMessageOf         Conversation?        @relation("LastMessage")
-  workspaceInvitationId Int?                 @unique @map("workspace_invitation_id")
-  workspaceInvitation   WorkspaceInvitation? @relation("WorkspaceInvitation", fields: [workspaceInvitationId], references: [id], onDelete: Cascade)
+  conversationId        String?           @map("conversation_id")
+  conversation          Conversation?     @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  lastMessageOf         Conversation?     @relation("LastMessage")
+  workspaceInvitationId Int?              @map("workspace_invitation_id")
+
+  workspaceInvitation WorkspaceInvitation? @relation("WorkspaceInvitation", fields: [workspaceInvitationId], references: [id], onDelete: Cascade)
 
   @@index([recipientId, status])
   @@index([recipientId, type])

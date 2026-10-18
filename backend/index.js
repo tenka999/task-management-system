@@ -6,7 +6,7 @@ const app = express();
 const PORT = 5000;
 const router = Router();
 // import { publicRouter } from "./routes/public-routes.js";
-import  publicRouter  from "./routes/public-routes.js";
+import publicRouter from "./routes/public-routes.js";
 import privateRouter from "./routes/private-routes.js";
 
 app.use(cors());

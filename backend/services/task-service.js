@@ -56,9 +56,8 @@ async function getAllTasks(query = {}) {
             avatarUrl: true,
           },
         },
-        status: true,
-        priority: true,
-        sprint: true,
+        project: true,
+        workspace: true,
         labels: {
           include: { label: true },
         },
@@ -89,23 +88,6 @@ async function getTaskById(id) {
   return await prisma.task.findUnique({
     where: { id },
     include: {
-      project: {
-        select: { id: true, name: true, projectKey: true, color: true },
-      },
-      workspace: {
-        select: { id: true, name: true },
-      },
-      parentTask: {
-        select: { id: true, title: true, taskNumber: true },
-      },
-      subTasks: {
-        include: {
-          status: true,
-          assignee: {
-            select: { id: true, username: true, avatarUrl: true },
-          },
-        },
-      },
       assignee: {
         select: {
           id: true,
@@ -124,61 +106,18 @@ async function getTaskById(id) {
           avatarUrl: true,
         },
       },
-      sprint: true,
-      status: true,
-      priority: true,
+      project: true,
+      workspace: true,
       labels: {
         include: { label: true },
       },
-      watchers: {
-        include: {
-          user: {
-            select: { id: true, username: true, avatarUrl: true },
-          },
-        },
-      },
-      comments: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              avatarUrl: true,
-            },
-          },
-          _count: {
-            select: { replies: true, attachments: true },
-          },
-        },
-        orderBy: { createdAt: "asc" },
-      },
-      attachments: {
-        include: {
-          uploadedBy: {
-            select: { id: true, username: true },
-          },
-        },
-      },
-      timeLogs: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-        orderBy: { logDate: "desc" },
-      },
-      dependencies: {
-        include: {
-          dependency: {
-            select: { id: true, title: true, taskNumber: true, status: true },
-          },
+      _count: {
+        select: {
+          comments: true,
+          attachments: true,
+          subTasks: true,
+          watchers: true,
+          timeLogs: true,
         },
       },
     },
@@ -201,28 +140,19 @@ async function createTask(data, userId) {
       parentTaskId: data.parentTaskId,
       assigneeId: data.assigneeId,
       reporterId: userId,
-      sprintId: data.sprintId,
-      statusId: data.statusId,
-      priorityId: data.priorityId,
+      // sprintId: data.sprintId,
+      status: data.status,
+      priority: data.priority,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
-      estimatedHours: data.estimatedHours,
+      estimatedTime: data.estimatedTime,
       taskNumber: (lastTask?.taskNumber || 0) + 1,
-      labels: data.labelIds
-        ? {
-            create: data.labelIds.map((labelId) => ({
-              labelId: parseInt(labelId),
-            })),
-          }
-        : undefined,
-      watchers: data.watcherIds
-        ? {
-            create: data.watcherIds.map((watcherId) => ({ userId: watcherId })),
-          }
-        : undefined,
+      labels: {
+        createMany: {
+          data: data.labels,
+        },
+      },
     },
     include: {
-      status: true,
-      priority: true,
       assignee: true,
       labels: { include: { label: true } },
     },
@@ -244,33 +174,47 @@ async function updateTask(id, data, userId) {
       statusId: data.statusId,
       priorityId: data.priorityId,
       dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-      estimatedHours: data.estimatedHours,
+      estimatedTime: data.estimatedTime,
+      actualTime: data.actualTime,
       progressPercent: data.progressPercent,
     },
     include: {
-      status: true,
-      priority: true,
       assignee: true,
+      labels: { include: { label: true } },
     },
   });
 
   // Create activity log
-  if (oldTask.statusId !== data.statusId) {
-    await prisma.activityLog.create({
-      data: {
-        workspaceId: oldTask.workspaceId,
-        userId,
-        taskId: id,
-        projectId: oldTask.projectId,
-        actionType: "STATUS_CHANGED",
-        oldValue: String(oldTask.statusId),
-        newValue: String(data.statusId),
-        description: `Status changed to ${updatedTask.status.name}`,
-      },
-    });
-  }
+  // if (oldTask.statusId !== data.statusId) {
+  //   await prisma.activityLog.create({
+  //     data: {
+  //       workspaceId: oldTask.workspaceId,
+  //       userId,
+  //       taskId: id,
+  //       projectId: oldTask.projectId,
+  //       actionType: "STATUS_CHANGED",
+  //       oldValue: String(oldTask.statusId),
+  //       newValue: String(data.statusId),
+  //       description: `Status changed to ${updatedTask.status.name}`,
+  //     },
+  //   });
+  // }
 
   return updatedTask;
+}
+
+async function updateTaskPriority(id, data) {
+  return await prisma.task.update({
+    where: { id },
+    data: { priority: data.priority },
+  });
+}
+
+async function updateTaskStatus(id, data) {
+  return await prisma.task.update({
+    where: { id },
+    data: { status: data.status },
+  });
 }
 
 async function deleteTask(id) {
@@ -279,38 +223,12 @@ async function deleteTask(id) {
   });
 }
 
-async function updateTaskStatus(id, statusId, userId) {
-  const oldTask = await prisma.task.findUnique({ where: { id } });
-
-  const updatedTask = await prisma.task.update({
-    where: { id },
-    data: {
-      statusId: parseInt(statusId),
-      progressPercent: statusId ? 100 : oldTask.progressPercent,
-    },
-  });
-
-  // Log activity
-  await prisma.activityLog.create({
-    data: {
-      workspaceId: oldTask.workspaceId,
-      userId,
-      taskId: id,
-      projectId: oldTask.projectId,
-      actionType: "STATUS_CHANGED",
-      oldValue: String(oldTask.statusId),
-      newValue: String(statusId),
-    },
-  });
-
-  return updatedTask;
-}
-
 export default {
   getAllTasks,
   getTaskById,
   createTask,
   updateTask,
+  updateTaskPriority,
   deleteTask,
   updateTaskStatus,
 };

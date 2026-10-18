@@ -396,6 +396,7 @@ async function createInvitation(workspaceId, data, invitedById) {
     let conversation = null;
     let notification = null;
     let inbox = null;
+    let inboxSender = null;
 
     // Hanya buat conversation & notif jika user TERDAFTAR
     if (user) {
@@ -519,6 +520,38 @@ async function createInvitation(workspaceId, data, invitedById) {
         },
       },
     });
+    inboxSender = await tx.inbox.create({
+      data: {
+        recipientId: invitedById,
+        senderId: invitedById,
+        workspaceId,
+        type: "WORKSPACE_INVITE",
+        priority: "NORMAL",
+        content: `You invite ${user.username} to join ${workspace.name}`,
+        conversationId: conversation.id,
+        workspaceInvitationId: invitation.id,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+        recipient: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
 
     await tx.conversation.update({
       where: { id: conversation.id },
@@ -536,6 +569,7 @@ async function createInvitation(workspaceId, data, invitedById) {
       conversation,
       notification,
       inbox,
+      inboxSender,
       isExistingUser: !!user,
     };
   });
